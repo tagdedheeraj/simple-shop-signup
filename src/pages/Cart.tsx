@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
 import { useLocalization } from '@/contexts/LocalizationContext';
@@ -17,6 +16,8 @@ const Cart: React.FC = () => {
   const [paypalLoaded, setPaypalLoaded] = useState(false);
   const paypalButtonRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const location = useLocation();
+  const customerInfo = location.state?.customerInfo;
 
   useEffect(() => {
     const initPayPal = async () => {
@@ -90,30 +91,14 @@ const Cart: React.FC = () => {
     }
   }, [paypalLoaded, items, totalPrice, clearCart, navigate, currency]);
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
     if (items.length === 0) {
       toast.error('Your cart is empty');
       return;
     }
     
-    setIsProcessing(true);
-    try {
-      const success = await loadPayPalScript(currency);
-      if (success) {
-        // Now using actual PayPal buttons, so this is just a fallback
-        setPaypalLoaded(true);
-        // Wait to see if PayPal buttons load
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        if (!paypalLoaded) {
-          toast.error('Could not load PayPal. Please try again later.');
-        }
-      }
-    } catch (error) {
-      console.error('Checkout error:', error);
-      toast.error('There was an error processing your payment');
-    } finally {
-      setIsProcessing(false);
-    }
+    // Navigate to checkout page to collect customer information
+    navigate('/checkout');
   };
 
   return (
@@ -233,16 +218,29 @@ const Cart: React.FC = () => {
                 </div>
                 
                 {/* PayPal Button Container */}
-                <div 
-                  ref={paypalButtonRef} 
-                  className={`w-full mb-4 ${paypalLoaded ? 'block' : 'hidden'}`}
-                ></div>
+                {customerInfo ? (
+                  <div 
+                    ref={paypalButtonRef} 
+                    className={`w-full mb-4 ${paypalLoaded ? 'block' : 'hidden'}`}
+                  ></div>
+                ) : null}
                 
-                {/* Fallback Button */}
-                {!paypalLoaded && (
+                {/* Proceed to Checkout Button */}
+                {!customerInfo && (
                   <Button 
                     className="w-full mb-4"
                     onClick={handleCheckout}
+                  >
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    {t('proceedToCheckout')}
+                  </Button>
+                )}
+                
+                {/* PayPal Fallback Button */}
+                {customerInfo && !paypalLoaded && (
+                  <Button 
+                    className="w-full mb-4"
+                    onClick={() => loadPayPalScript(currency)}
                     disabled={isProcessing}
                   >
                     {isProcessing ? (
