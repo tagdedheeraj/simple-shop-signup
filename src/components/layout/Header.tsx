@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -16,7 +15,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-import { ShoppingCart, User, Globe, Heart } from 'lucide-react';
+import { ShoppingCart, User, Globe, Heart, Package, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const Header: React.FC = () => {
