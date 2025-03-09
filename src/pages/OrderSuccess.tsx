@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLocalization } from '@/contexts/LocalizationContext';
+import { useNotifications } from '@/contexts/NotificationContext';
 
 interface CustomerInfo {
   fullName: string;
@@ -21,6 +22,7 @@ interface CustomerInfo {
 const OrderSuccess: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLocalization();
+  const { notifyOrderUpdate } = useNotifications();
   const orderId = `GH-${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
 
@@ -36,7 +38,20 @@ const OrderSuccess: React.FC = () => {
         console.error('Failed to parse customer info', e);
       }
     }
-  }, []);
+    
+    // Send order confirmation notification
+    notifyOrderUpdate(orderId, 'confirmed');
+    
+    // Simulate order processing and additional notifications
+    const processingTimeout = setTimeout(() => {
+      notifyOrderUpdate(orderId, 'processing');
+    }, 10000); // 10 seconds after page load
+    
+    // Clean up timeout on unmount
+    return () => {
+      clearTimeout(processingTimeout);
+    };
+  }, [orderId, notifyOrderUpdate]);
 
   return (
     <Layout>

@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import Layout from '@/components/layout/Layout';
 import ProductGrid from '@/components/products/ProductGrid';
 import { getProducts } from '@/services/productService';
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { motion } from 'framer-motion';
 import { Search, Filter, X } from 'lucide-react';
+import PromotionManager from '@/components/promotions/PromotionManager';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -47,12 +47,10 @@ const Products: React.FC = () => {
   const filterProducts = () => {
     let result = [...products];
     
-    // Filter by category
     if (category !== 'all') {
       result = result.filter(product => product.category === category);
     }
     
-    // Filter by search term
     if (searchTerm.trim() !== '') {
       const searchLower = searchTerm.toLowerCase();
       result = result.filter(
@@ -82,6 +80,8 @@ const Products: React.FC = () => {
 
   return (
     <Layout>
+      <PromotionManager />
+      
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -96,7 +96,6 @@ const Products: React.FC = () => {
               </p>
             </div>
             
-            {/* Search and Filter Section */}
             <div className="flex flex-col space-y-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -142,25 +141,21 @@ const Products: React.FC = () => {
                 )}
               </div>
               
-              {/* Mobile Filters */}
-              {showFilters && (
-                <div className="md:hidden">
-                  <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((cat) => (
-                        <SelectItem key={cat.value} value={cat.value}>
-                          {cat.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div className="md:hidden">
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               
-              {/* Desktop Category Buttons */}
               <div className="hidden md:flex items-center gap-2 flex-wrap">
                 {categories.map((cat) => (
                   <Button
