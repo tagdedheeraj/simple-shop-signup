@@ -2,7 +2,7 @@
 import React from 'react';
 import { Product } from '@/types/product';
 import ProductCard from './ProductCard';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 
 interface ProductGridProps {
   products: Product[];
@@ -22,7 +22,9 @@ const ProductGrid: React.FC<ProductGridProps> = ({ products, loading = false }) 
   if (products.length === 0) {
     return (
       <div className="min-h-[400px] flex flex-col items-center justify-center">
-        <p className="text-muted-foreground">No products found</p>
+        <Search className="h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-lg font-medium text-foreground">No products found</p>
+        <p className="text-muted-foreground mt-2">Try adjusting your search or filter criteria</p>
       </div>
     );
   }
