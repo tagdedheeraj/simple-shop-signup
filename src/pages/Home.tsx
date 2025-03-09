@@ -1,11 +1,12 @@
 
 import React from 'react';
 import Layout from '@/components/layout/Layout';
-import HeroBanner from '@/components/home/HeroBanner';
-import FeaturedProducts from '@/components/home/FeaturedProducts';
 import CategoryGrid from '@/components/home/CategoryGrid';
 import PromotionBanner from '@/components/home/PromotionBanner';
 import TestimonialSection from '@/components/home/TestimonialSection';
+import ProductBanner from '@/components/home/ProductBanner';
+import TrendingProducts from '@/components/home/TrendingProducts';
+import FeaturedProducts from '@/components/home/FeaturedProducts';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -42,9 +43,14 @@ const Home: React.FC = () => {
         initial="hidden"
         animate="show"
       >
-        {/* Hero Banner Section */}
+        {/* Product Banner Section (New) */}
         <motion.div variants={item}>
-          <HeroBanner />
+          <ProductBanner />
+        </motion.div>
+        
+        {/* Trending Products Section (New) */}
+        <motion.div variants={item}>
+          <TrendingProducts />
         </motion.div>
         
         {/* Category Grid Section */}

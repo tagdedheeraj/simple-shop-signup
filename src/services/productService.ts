@@ -1,3 +1,4 @@
+
 import { Product, Review } from '@/types/product';
 
 // Mock product data
@@ -181,6 +182,16 @@ export const getRelatedProducts = async (productId: string, limit: number = 4): 
   
   // Return only the requested number of products
   return relatedProducts.slice(0, limit);
+};
+
+// New function to get trending products
+export const getTrendingProducts = async (limit: number = 4): Promise<Product[]> => {
+  await delay(600); // Simulate network delay
+  
+  // In a real app, this would be based on product popularity, reviews, etc.
+  // For this demo, we'll just select random products and mark them as trending
+  const shuffled = [...products].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, limit);
 };
 
 export const addReview = async (productId: string, review: Omit<Review, 'id' | 'date'>): Promise<Review> => {
