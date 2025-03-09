@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
-import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CreditCard } from 'lucide-react';
+import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CreditCard, Loader2 } from 'lucide-react';
 import { loadPayPalScript } from '@/services/paypalService';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
