@@ -1,11 +1,12 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { Product } from '@/types/product';
 
 interface User {
   id: string;
   email: string;
   name: string;
+  favorites?: string[]; // IDs of favorite products
 }
 
 interface AuthContextType {
@@ -15,6 +16,9 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   loading: boolean;
+  updateUserProfile: (data: Partial<User>) => Promise<boolean>;
+  toggleFavorite: (productId: string) => void;
+  isFavorite: (productId: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,6 +43,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     setLoading(false);
   }, []);
+
+  const updateUserProfile = async (data: Partial<User>): Promise<boolean> => {
+    try {
+      if (!user) return false;
+      
+      // Get all users
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const userIndex = users.findIndex((u: any) => u.id === user.id);
+      
+      if (userIndex === -1) return false;
+      
+      // Update user data in the "database"
+      const updatedUser = { ...users[userIndex], ...data };
+      users[userIndex] = updatedUser;
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      // Update current user session
+      const userToSave = {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        name: updatedUser.name,
+        favorites: updatedUser.favorites || []
+      };
+      
+      setUser(userToSave);
+      localStorage.setItem('user', JSON.stringify(userToSave));
+      toast.success('Profile updated successfully');
+      return true;
+    } catch (error) {
+      toast.error('Failed to update profile');
+      return false;
+    }
+  };
+
+  const toggleFavorite = (productId: string) => {
+    if (!user) return;
+    
+    const favorites = user.favorites || [];
+    const newFavorites = favorites.includes(productId)
+      ? favorites.filter(id => id !== productId)
+      : [...favorites, productId];
+    
+    updateUserProfile({ favorites: newFavorites });
+    
+    if (newFavorites.includes(productId)) {
+      toast.success('Added to favorites');
+    } else {
+      toast.success('Removed from favorites');
+    }
+  };
+  
+  const isFavorite = (productId: string): boolean => {
+    if (!user || !user.favorites) return false;
+    return user.favorites.includes(productId);
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -136,7 +195,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login, 
       register, 
       logout,
-      loading
+      loading,
+      updateUserProfile,
+      toggleFavorite,
+      isFavorite
     }}>
       {children}
     </AuthContext.Provider>
