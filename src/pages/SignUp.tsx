@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,29 +8,16 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useReferral } from '@/contexts/ReferralContext';
 
 const SignUp: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [referralCode, setReferralCode] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register } = useAuth();
-  const { applyReferralCode } = useReferral();
   const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    // Check URL for referral code
-    const searchParams = new URLSearchParams(location.search);
-    const refCode = searchParams.get('ref');
-    if (refCode) {
-      setReferralCode(refCode);
-    }
-  }, [location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,10 +33,6 @@ const SignUp: React.FC = () => {
     try {
       const success = await register(name, email, password);
       if (success) {
-        // Apply referral code if provided
-        if (referralCode) {
-          applyReferralCode(referralCode);
-        }
         navigate('/products');
       }
     } finally {
@@ -133,17 +116,6 @@ const SignUp: React.FC = () => {
                   className="bg-white"
                 />
                 {error && <p className="text-destructive text-sm mt-1">{error}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="referralCode">Referral Code (Optional)</Label>
-                <Input
-                  id="referralCode"
-                  type="text"
-                  placeholder="Enter referral code"
-                  value={referralCode}
-                  onChange={(e) => setReferralCode(e.target.value)}
-                  className="bg-white"
-                />
               </div>
               <Button type="submit" className="w-full bg-green-700 hover:bg-green-800" disabled={isSubmitting}>
                 {isSubmitting ? (

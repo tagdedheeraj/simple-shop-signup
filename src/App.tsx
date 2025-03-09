@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,9 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
-import { ReferralProvider } from "@/contexts/ReferralContext";
 import NotificationBanner from "@/components/notifications/NotificationBanner";
-import PromotionManager from "@/components/promotions/PromotionManager";
 
 // Pages
 import SignIn from "./pages/SignIn";
@@ -22,7 +19,6 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 import OrderSuccess from "./pages/OrderSuccess";
-import Referrals from "./pages/Referrals";
 import NotFound from "./pages/NotFound";
 
 // Initialize services
@@ -53,59 +49,51 @@ function App() {
             <WishlistProvider>
               <LocalizationProvider>
                 <NotificationProvider>
-                  <ReferralProvider>
-                    <Toaster />
-                    <Sonner />
-                    <BrowserRouter>
-                      <AnimatePresence mode="wait">
-                        <NotificationBanner />
-                        <PromotionManager />
-                        <Routes>
-                          {/* Auth routes */}
-                          <Route path="/signin" element={<SignIn />} />
-                          <Route path="/signup" element={<SignUp />} />
-                          
-                          {/* Public product routes */}
-                          <Route path="/" element={<Navigate to="/products" replace />} />
-                          
-                          {/* Protected routes */}
-                          <Route path="/products" element={
-                            <ProtectedRoute>
-                              <Products />
-                            </ProtectedRoute>
-                          } />
-                          <Route path="/product/:productId" element={
-                            <ProtectedRoute>
-                              <ProductDetail />
-                            </ProtectedRoute>
-                          } />
-                          <Route path="/cart" element={
-                            <ProtectedRoute>
-                              <Cart />
-                            </ProtectedRoute>
-                          } />
-                          <Route path="/wishlist" element={
-                            <ProtectedRoute>
-                              <Wishlist />
-                            </ProtectedRoute>
-                          } />
-                          <Route path="/referrals" element={
-                            <ProtectedRoute>
-                              <Referrals />
-                            </ProtectedRoute>
-                          } />
-                          <Route path="/order-success" element={
-                            <ProtectedRoute>
-                              <OrderSuccess />
-                            </ProtectedRoute>
-                          } />
-                          
-                          {/* Catch-all route */}
-                          <Route path="*" element={<NotFound />} />
-                        </Routes>
-                      </AnimatePresence>
-                    </BrowserRouter>
-                  </ReferralProvider>
+                  <Toaster />
+                  <Sonner />
+                  <BrowserRouter>
+                    <AnimatePresence mode="wait">
+                      <NotificationBanner />
+                      <Routes>
+                        {/* Auth routes */}
+                        <Route path="/signin" element={<SignIn />} />
+                        <Route path="/signup" element={<SignUp />} />
+                        
+                        {/* Public product routes */}
+                        <Route path="/" element={<Navigate to="/products" replace />} />
+                        
+                        {/* Protected routes */}
+                        <Route path="/products" element={
+                          <ProtectedRoute>
+                            <Products />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/product/:productId" element={
+                          <ProtectedRoute>
+                            <ProductDetail />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/cart" element={
+                          <ProtectedRoute>
+                            <Cart />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/wishlist" element={
+                          <ProtectedRoute>
+                            <Wishlist />
+                          </ProtectedRoute>
+                        } />
+                        <Route path="/order-success" element={
+                          <ProtectedRoute>
+                            <OrderSuccess />
+                          </ProtectedRoute>
+                        } />
+                        
+                        {/* Catch-all route */}
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                    </AnimatePresence>
+                  </BrowserRouter>
                 </NotificationProvider>
               </LocalizationProvider>
             </WishlistProvider>

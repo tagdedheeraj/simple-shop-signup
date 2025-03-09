@@ -7,8 +7,6 @@ import { CheckCircle, ShoppingBag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { useReferral } from '@/contexts/ReferralContext';
 
 interface CustomerInfo {
   fullName: string;
@@ -21,19 +19,12 @@ interface CustomerInfo {
   country: string;
 }
 
-interface OrderDetails {
-  totalAmount: number;
-}
-
 const OrderSuccess: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLocalization();
   const { notifyOrderUpdate } = useNotifications();
-  const { user } = useAuth();
-  const { recordPurchase } = useReferral();
   const orderId = `GH-${Math.floor(Math.random() * 1000000).toString().padStart(6, '0')}`;
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
-  const [orderDetails, setOrderDetails] = useState<OrderDetails | null>(null);
 
   useEffect(() => {
     // Retrieve customer info from localStorage
@@ -45,28 +36,6 @@ const OrderSuccess: React.FC = () => {
         localStorage.removeItem('customerInfo');
       } catch (e) {
         console.error('Failed to parse customer info', e);
-      }
-    }
-    
-    // Retrieve order details from localStorage
-    const storedOrderDetails = localStorage.getItem('lastOrderDetails');
-    if (storedOrderDetails) {
-      try {
-        const details = JSON.parse(storedOrderDetails);
-        setOrderDetails(details);
-        
-        // Process referral commission if applicable
-        if (user) {
-          const referrerId = localStorage.getItem(`referredBy_${user.id}`);
-          if (referrerId && details.totalAmount) {
-            recordPurchase(details.totalAmount, user.id);
-          }
-        }
-        
-        // Clear the stored order details to prevent reuse
-        localStorage.removeItem('lastOrderDetails');
-      } catch (e) {
-        console.error('Failed to parse order details', e);
       }
     }
     
@@ -82,7 +51,7 @@ const OrderSuccess: React.FC = () => {
     return () => {
       clearTimeout(processingTimeout);
     };
-  }, [orderId, notifyOrderUpdate, user, recordPurchase]);
+  }, [orderId, notifyOrderUpdate]);
 
   return (
     <Layout>
@@ -108,15 +77,6 @@ const OrderSuccess: React.FC = () => {
             <p className="text-sm text-muted-foreground">{t('orderReference')}</p>
             <p className="text-xl font-medium">{orderId}</p>
           </div>
-          
-          {orderDetails && (
-            <div className="border-t pt-4 mb-4">
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-muted-foreground">{t('totalAmount')}</p>
-                <p className="text-xl font-medium">₹{orderDetails.totalAmount.toFixed(2)}</p>
-              </div>
-            </div>
-          )}
           
           {customerInfo && (
             <div className="border-t pt-4 mt-2">
