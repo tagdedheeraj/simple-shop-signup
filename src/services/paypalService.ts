@@ -11,20 +11,21 @@ declare global {
   }
 }
 
-export const loadPayPalScript = (): Promise<boolean> => {
+export const loadPayPalScript = (currency = 'USD'): Promise<boolean> => {
   return new Promise((resolve) => {
-    if (document.querySelector('#paypal-script')) {
-      resolve(true);
-      return;
+    // Remove any existing script to re-initialize with current currency
+    const existingScript = document.querySelector('#paypal-script');
+    if (existingScript) {
+      existingScript.remove();
     }
     
     const script = document.createElement('script');
     script.id = 'paypal-script';
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=${currency}`;
     script.async = true;
     
     script.onload = () => {
-      console.log('PayPal script loaded successfully');
+      console.log(`PayPal script loaded successfully with currency: ${currency}`);
       resolve(true);
     };
     
@@ -41,6 +42,7 @@ export const loadPayPalScript = (): Promise<boolean> => {
 export interface PayPalOrder {
   orderId: string;
   totalAmount: number;
+  currency: string;
   items: { name: string; quantity: number; price: number }[];
 }
 

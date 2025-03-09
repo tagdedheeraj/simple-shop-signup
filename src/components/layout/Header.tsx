@@ -3,6 +3,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { useLocalization, SUPPORTED_LANGUAGES } from '@/contexts/LocalizationContext';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,13 +12,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-import { ShoppingCart, User, Menu } from 'lucide-react';
+import { ShoppingCart, User, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
+  const { t, language, setLanguage } = useLocalization();
   const navigate = useNavigate();
 
   return (
@@ -31,6 +35,25 @@ const Header: React.FC = () => {
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
             <>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Globe className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end">
+                  <DropdownMenuLabel>{t('language')}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup value={language} onValueChange={setLanguage}>
+                    {Object.entries(SUPPORTED_LANGUAGES).map(([code, name]) => (
+                      <DropdownMenuRadioItem key={code} value={code}>
+                        {name}
+                      </DropdownMenuRadioItem>
+                    ))}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              
               <Link to="/cart" className="relative p-2">
                 <ShoppingCart className="h-5 w-5 text-primary/80" />
                 {totalItems > 0 && (
@@ -48,19 +71,19 @@ const Header: React.FC = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 mt-1 mr-1 glass-effect" align="end">
                   <DropdownMenuLabel>
-                    <div className="font-normal text-sm text-muted-foreground">Signed in as</div>
+                    <div className="font-normal text-sm text-muted-foreground">{t('signedInAs')}</div>
                     <div className="font-medium">{user?.name}</div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/products')}>
-                    Products
+                    {t('products')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/orders')}>
-                    My Orders
+                    {t('myOrders')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => logout()}>
-                    Sign out
+                    {t('signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -72,13 +95,13 @@ const Header: React.FC = () => {
                 className="text-sm"
                 onClick={() => navigate('/signin')}
               >
-                Sign in
+                {t('signIn')}
               </Button>
               <Button
                 className="text-sm bg-primary text-white hover:bg-primary/90"
                 onClick={() => navigate('/signup')}
               >
-                Sign up
+                {t('signUp')}
               </Button>
             </div>
           )}

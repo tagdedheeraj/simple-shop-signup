@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
+import { useLocalization } from '@/contexts/LocalizationContext';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CreditCard, Loader2 } from 'lucide-react';
 import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypalService';
@@ -11,6 +12,7 @@ import { motion } from 'framer-motion';
 
 const Cart: React.FC = () => {
   const { items, removeFromCart, updateQuantity, totalItems, totalPrice, clearCart } = useCart();
+  const { t, formatPrice, currency } = useLocalization();
   const [isProcessing, setIsProcessing] = useState(false);
   const [paypalLoaded, setPaypalLoaded] = useState(false);
   const paypalButtonRef = useRef<HTMLDivElement>(null);
@@ -18,16 +20,18 @@ const Cart: React.FC = () => {
 
   useEffect(() => {
     const initPayPal = async () => {
-      const success = await loadPayPalScript();
+      const success = await loadPayPalScript(currency);
       if (success) {
         setPaypalLoaded(true);
       }
     };
 
     if (items.length > 0) {
+      // Reload PayPal whenever currency changes
+      setPaypalLoaded(false);
       initPayPal();
     }
-  }, [items.length]);
+  }, [items.length, currency]);
 
   useEffect(() => {
     if (paypalLoaded && paypalButtonRef.current && window.paypal) {
@@ -42,6 +46,7 @@ const Cart: React.FC = () => {
             const orderData = {
               orderId: `ORDER-${Date.now()}`,
               totalAmount: totalPrice,
+              currency: currency,
               items: items.map(item => ({
                 name: item.product.name,
                 quantity: item.quantity,
@@ -83,7 +88,7 @@ const Cart: React.FC = () => {
         }
       }).render(paypalButtonRef.current);
     }
-  }, [paypalLoaded, items, totalPrice, clearCart, navigate]);
+  }, [paypalLoaded, items, totalPrice, clearCart, navigate, currency]);
 
   const handleCheckout = async () => {
     if (items.length === 0) {
@@ -93,7 +98,7 @@ const Cart: React.FC = () => {
     
     setIsProcessing(true);
     try {
-      const success = await loadPayPalScript();
+      const success = await loadPayPalScript(currency);
       if (success) {
         // Now using actual PayPal buttons, so this is just a fallback
         setPaypalLoaded(true);
@@ -120,11 +125,11 @@ const Cart: React.FC = () => {
         className="max-w-5xl mx-auto"
       >
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold">Your Cart</h1>
+          <h1 className="text-3xl font-bold">{t('cart')}</h1>
           {items.length > 0 && (
             <Button variant="ghost" size="sm" onClick={clearCart}>
               <Trash2 className="h-4 w-4 mr-1" />
-              Clear Cart
+              {t('clear')}
             </Button>
           )}
         </div>
@@ -132,12 +137,12 @@ const Cart: React.FC = () => {
         {items.length === 0 ? (
           <div className="text-center py-16 space-y-4">
             <ShoppingBag className="h-16 w-16 mx-auto text-muted-foreground opacity-30" />
-            <h2 className="text-xl font-medium">Your cart is empty</h2>
+            <h2 className="text-xl font-medium">{t('emptyCart')}</h2>
             <p className="text-muted-foreground">
-              Looks like you haven't added any products to your cart yet.
+              {t('emptyCartMessage')}
             </p>
             <Button onClick={() => navigate('/products')} className="mt-4">
-              Browse Products
+              {t('browseProducts')}
             </Button>
           </div>
         ) : (
@@ -164,7 +169,7 @@ const Cart: React.FC = () => {
                     <div className="ml-4 flex-grow">
                       <h3 className="font-medium">{item.product.name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        ${item.product.price.toFixed(2)}
+                        {formatPrice(item.product.price)}
                       </p>
                     </div>
                     
@@ -192,7 +197,7 @@ const Cart: React.FC = () => {
                     </div>
                     
                     <div className="ml-4 w-20 text-right">
-                      ${(item.product.price * item.quantity).toFixed(2)}
+                      {formatPrice(item.product.price * item.quantity)}
                     </div>
                     
                     <Button 
@@ -210,20 +215,20 @@ const Cart: React.FC = () => {
             
             <div className="lg:col-span-1">
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-                <h2 className="text-lg font-medium mb-4">Order Summary</h2>
+                <h2 className="text-lg font-medium mb-4">{t('orderSummary')}</h2>
                 
                 <div className="space-y-3 mb-6">
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Subtotal ({totalItems} items)</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span className="text-muted-foreground">{t('subtotal')} ({totalItems} items)</span>
+                    <span>{formatPrice(totalPrice)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Shipping</span>
-                    <span>Free</span>
+                    <span className="text-muted-foreground">{t('shipping')}</span>
+                    <span>{t('free')}</span>
                   </div>
                   <div className="border-t pt-3 mt-3 flex justify-between font-medium">
-                    <span>Total</span>
-                    <span>${totalPrice.toFixed(2)}</span>
+                    <span>{t('total')}</span>
+                    <span>{formatPrice(totalPrice)}</span>
                   </div>
                 </div>
                 
@@ -243,12 +248,12 @@ const Cart: React.FC = () => {
                     {isProcessing ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Processing...
+                        {t('processing')}
                       </>
                     ) : (
                       <>
                         <CreditCard className="mr-2 h-4 w-4" />
-                        Checkout with PayPal
+                        {t('checkoutPaypal')}
                       </>
                     )}
                   </Button>
@@ -261,12 +266,12 @@ const Cart: React.FC = () => {
                     onClick={() => navigate('/products')}
                   >
                     <ArrowRight className="mr-2 h-4 w-4" />
-                    Continue Shopping
+                    {t('continueShop')}
                   </Button>
                 </div>
                 
                 <p className="text-xs text-muted-foreground mt-4 text-center">
-                  PayPal is in test mode. No real payments will be processed.
+                  {t('paypalTestMode')}
                 </p>
               </div>
             </div>

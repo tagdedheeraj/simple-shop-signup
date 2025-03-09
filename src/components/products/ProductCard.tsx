@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useLocalization } from '@/contexts/LocalizationContext';
 import { ShoppingCart, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -13,6 +14,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
+  const { t, formatPrice } = useLocalization();
   
   return (
     <motion.div 
@@ -31,7 +33,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         />
         <div className="absolute top-2 right-2">
           <span className="inline-block bg-primary/90 text-white text-xs px-2 py-1 rounded-full">
-            ${product.price.toFixed(2)}
+            {formatPrice(product.price)}
           </span>
         </div>
       </div>
@@ -51,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           >
             <Link to={`/product/${product.id}`}>
               <Eye className="h-4 w-4 mr-1" />
-              Details
+              {t('details')}
             </Link>
           </Button>
           
@@ -61,7 +63,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             onClick={() => addToCart(product)}
           >
             <ShoppingCart className="h-4 w-4 mr-1" />
-            Add
+            {t('add')}
           </Button>
         </div>
       </div>
