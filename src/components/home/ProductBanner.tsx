@@ -3,13 +3,13 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles, Tag } from 'lucide-react';
+import { ArrowRight, Tag, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const ProductBanner: React.FC = () => {
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-xl">
-      <div className="bg-gradient-to-r from-amber-700 to-amber-500 h-[450px] flex items-center">
+      <div className="bg-gradient-to-r from-amber-800 to-amber-600 h-[450px] flex items-center">
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
@@ -18,34 +18,36 @@ const ProductBanner: React.FC = () => {
             className="text-white space-y-6 py-8 z-10"
           >
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2 text-sm backdrop-blur-sm">
-              <Sparkles className="h-4 w-4" />
-              <span>Special Offer</span>
+              <Tag className="h-4 w-4" />
+              <span className="font-medium">Special Offer</span>
             </div>
             
             <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-              Premium Quality Organic Products
+              Premium Quality<br />Organic Products
             </h1>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-3 bg-white/10 backdrop-blur-sm py-2 px-4 rounded-lg w-fit">
               <Tag className="h-5 w-5" />
               <span className="text-xl font-bold">20% OFF</span>
               <span className="text-sm bg-white/20 backdrop-blur-sm rounded-full px-3 py-1">
-                Use Code: <span className="font-bold">ORGANIC20</span>
+                Code: <span className="font-bold">ORGANIC20</span>
               </span>
             </div>
             
-            <p className="text-lg opacity-90 font-light">
-              Discover our premium selection of organic products, freshly harvested and delivered to your doorstep.
+            <p className="text-lg opacity-90 font-light max-w-md">
+              Discover our premium selection of organic products, freshly harvested and delivered to your doorstep. Quality you can trust.
             </p>
             
             <div className="flex flex-wrap gap-4 pt-4">
               <Button 
                 size="lg" 
-                className="bg-white text-amber-800 hover:bg-amber-100 rounded-full"
+                className="bg-white text-amber-800 hover:bg-amber-100 rounded-full shadow-md transition-all"
                 asChild
               >
-                <Link to="/products">
-                  Shop Now <ArrowRight className="ml-2 h-5 w-5" />
+                <Link to="/products" className="flex items-center gap-2">
+                  <ShoppingBag className="h-5 w-5" />
+                  Shop Now 
+                  <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
             </div>
@@ -61,32 +63,32 @@ const ProductBanner: React.FC = () => {
             <div className="absolute w-64 h-64 rounded-full bg-white/10 top-10 right-10"></div>
             <div className="absolute w-40 h-40 rounded-full bg-white/5 bottom-10 left-10"></div>
             
-            <Card className="rotate-6 shadow-xl w-80 overflow-hidden">
+            <Card className="rotate-6 shadow-xl w-80 overflow-hidden border-none">
               <CardContent className="p-0">
                 <img 
                   src="https://images.unsplash.com/photo-1586444248902-2f64eddc13df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
                   alt="Premium Whole Wheat Flour"
                   className="w-full h-auto object-cover aspect-[4/3]"
                 />
-                <div className="p-4">
+                <div className="p-4 bg-white">
                   <h3 className="font-medium text-lg">Premium Whole Wheat Flour</h3>
                   <p className="text-muted-foreground text-sm">Organic stone-ground wheat flour</p>
-                  <div className="mt-2 font-bold text-amber-600">$5.99</div>
+                  <div className="mt-2 font-bold text-amber-700">$5.99</div>
                 </div>
               </CardContent>
             </Card>
             
-            <Card className="-rotate-6 shadow-xl w-80 absolute -bottom-10 -right-5 overflow-hidden">
+            <Card className="-rotate-6 shadow-xl w-80 absolute -bottom-10 -right-5 overflow-hidden border-none">
               <CardContent className="p-0">
                 <img 
                   src="https://images.unsplash.com/photo-1594385158317-3a8d922c1711?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
                   alt="Basmati Rice"
                   className="w-full h-auto object-cover aspect-[4/3]"
                 />
-                <div className="p-4">
+                <div className="p-4 bg-white">
                   <h3 className="font-medium text-lg">Basmati Rice</h3>
                   <p className="text-muted-foreground text-sm">Premium long-grain aromatic rice</p>
-                  <div className="mt-2 font-bold text-amber-600">$8.99</div>
+                  <div className="mt-2 font-bold text-amber-700">$8.99</div>
                 </div>
               </CardContent>
             </Card>
