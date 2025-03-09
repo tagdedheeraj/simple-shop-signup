@@ -44,7 +44,6 @@ const SignIn: React.FC = () => {
             alt="Lakshmikrupa Agriculture Pvt. Ltd." 
             className="mx-auto w-48 h-auto mb-4"
           />
-          <h1 className="text-3xl font-bold text-green-800">Welcome to Lakshmikrupa</h1>
           <p className="text-muted-foreground mt-2">Fresh Agricultural Products Direct to You</p>
         </div>
         
