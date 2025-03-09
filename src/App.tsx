@@ -11,6 +11,7 @@ import { WishlistProvider } from "@/contexts/WishlistContext";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 
 // Pages
+import Home from "./pages/Home";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import Products from "./pages/Products";
@@ -57,10 +58,14 @@ function App() {
                       <Route path="/signin" element={<SignIn />} />
                       <Route path="/signup" element={<SignUp />} />
                       
-                      {/* Public product routes */}
-                      <Route path="/" element={<Navigate to="/products" replace />} />
+                      {/* Home route (landing page) */}
+                      <Route path="/" element={
+                        <ProtectedRoute>
+                          <Home />
+                        </ProtectedRoute>
+                      } />
                       
-                      {/* Protected routes */}
+                      {/* Product routes */}                      
                       <Route path="/products" element={
                         <ProtectedRoute>
                           <Products />
