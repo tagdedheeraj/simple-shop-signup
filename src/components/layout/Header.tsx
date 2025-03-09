@@ -15,7 +15,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-import { ShoppingCart, User, Globe, Heart, Settings, Package, LogOut } from 'lucide-react';
+import { ShoppingCart, User, Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const Header: React.FC = () => {
@@ -79,24 +79,14 @@ const Header: React.FC = () => {
                     <div className="font-medium">{user?.name}</div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    {t('profile')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/profile?tab=favorites')}>
-                    <Heart className="mr-2 h-4 w-4" />
-                    {t('favorites')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => navigate('/profile?tab=orders')}>
-                    <Package className="mr-2 h-4 w-4" />
-                    {t('myOrders')}
-                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/products')}>
                     {t('products')}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/orders')}>
+                    {t('myOrders')}
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => logout()}>
-                    <LogOut className="mr-2 h-4 w-4" />
                     {t('signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>

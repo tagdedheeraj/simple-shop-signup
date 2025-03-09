@@ -4,9 +4,8 @@ import { Link } from 'react-router-dom';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
-import { useAuth } from '@/contexts/AuthContext';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { ShoppingCart, Eye, Heart } from 'lucide-react';
+import { ShoppingCart, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ProductCardProps {
@@ -15,10 +14,7 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
-  const { toggleFavorite, isFavorite } = useAuth();
   const { t, formatPrice } = useLocalization();
-  
-  const favorite = isFavorite(product.id);
   
   return (
     <motion.div 
@@ -40,13 +36,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {formatPrice(product.price)}
           </span>
         </div>
-        <button 
-          onClick={() => toggleFavorite(product.id)}
-          className="absolute top-2 left-2 bg-white/80 p-1.5 rounded-full hover:bg-white transition-colors"
-          aria-label={favorite ? t('removeFromFavorites') : t('addToFavorites')}
-        >
-          <Heart className={`h-4 w-4 ${favorite ? 'fill-red-500 text-red-500' : 'text-muted-foreground'}`} />
-        </button>
       </div>
       
       <div className="p-4">

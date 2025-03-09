@@ -17,7 +17,6 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import OrderSuccess from "./pages/OrderSuccess";
 import NotFound from "./pages/NotFound";
-import UserProfile from "./pages/UserProfile";
 
 // Initialize services
 import { initializeProducts } from "./services/productService";
@@ -76,11 +75,6 @@ function App() {
                     <Route path="/order-success" element={
                       <ProtectedRoute>
                         <OrderSuccess />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/profile" element={
-                      <ProtectedRoute>
-                        <UserProfile />
                       </ProtectedRoute>
                     } />
                     
