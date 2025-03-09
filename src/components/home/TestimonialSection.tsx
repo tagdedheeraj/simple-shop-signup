@@ -3,7 +3,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { Star } from 'lucide-react';
+import { Star, Quote } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Testimonial {
@@ -54,7 +54,10 @@ const TestimonialSection: React.FC = () => {
         viewport={{ once: true }}
         className="text-center mb-12"
       >
-        <h2 className="text-3xl font-bold text-green-800 mb-4">
+        <div className="inline-flex items-center justify-center mb-4">
+          <Quote className="h-10 w-10 text-green-600 rotate-180" />
+        </div>
+        <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-green-800 to-teal-600 bg-clip-text text-transparent">
           {t('customerReviews') || 'What Our Customers Say'}
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -70,27 +73,28 @@ const TestimonialSection: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: index * 0.1 }}
             viewport={{ once: true }}
+            whileHover={{ y: -5, transition: { duration: 0.2 } }}
           >
-            <Card className="h-full">
-              <CardContent className="p-6 pt-8">
+            <Card className="h-full border-none shadow-md">
+              <CardContent className="p-6 pt-8 bg-gradient-to-b from-green-50 to-transparent">
                 <div className="flex mb-4">
                   {[...Array(5)].map((_, i) => (
                     <Star 
                       key={i} 
-                      className={`h-5 w-5 ${i < testimonial.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                      className={`h-5 w-5 ${i < testimonial.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
                     />
                   ))}
                 </div>
                 <blockquote className="text-muted-foreground italic">"{testimonial.comment}"</blockquote>
               </CardContent>
-              <CardFooter className="px-6 pb-6 pt-0">
+              <CardFooter className="px-6 pb-6 pt-4">
                 <div className="flex items-center">
-                  <Avatar className="h-10 w-10 mr-3">
+                  <Avatar className="h-12 w-12 mr-4 ring-2 ring-green-100">
                     <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
-                    <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback className="bg-green-700 text-white">{testimonial.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{testimonial.name}</p>
+                    <p className="font-medium text-green-800">{testimonial.name}</p>
                     <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </div>

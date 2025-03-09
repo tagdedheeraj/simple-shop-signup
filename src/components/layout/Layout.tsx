@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   }
   
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-secondary/20 to-background">
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50/50 to-background">
       <Header />
       <main className="flex-1 container mx-auto px-4 py-8 pb-20 md:pb-8 max-w-7xl">
         {children}

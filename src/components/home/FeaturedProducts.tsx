@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { Button } from '@/components/ui/button';
 import ProductGrid from '@/components/products/ProductGrid';
-import { Loader2, ArrowRight } from 'lucide-react';
+import { Loader2, ArrowRight, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getProducts } from '@/services/productService';
@@ -36,9 +36,14 @@ const FeaturedProducts: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         viewport={{ once: true }}
-        className="text-center mb-12"
+        className="text-center mb-10"
       >
-        <h2 className="text-3xl font-bold text-green-800 mb-4">
+        <div className="inline-flex items-center gap-2 bg-green-50 text-green-700 rounded-full px-4 py-2 text-sm mb-4">
+          <BadgeCheck className="h-4 w-4" />
+          <span>{t('handpicked') || 'Handpicked Selection'}</span>
+        </div>
+        
+        <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-green-800 to-teal-600 bg-clip-text text-transparent">
           {t('featuredProducts') || 'Featured Products'}
         </h2>
         <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -48,17 +53,23 @@ const FeaturedProducts: React.FC = () => {
       
       {products && <ProductGrid products={products} />}
       
-      <div className="text-center mt-12">
+      <motion.div 
+        className="text-center mt-12"
+        initial={{ opacity: 0, y: 10 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        viewport={{ once: true }}
+      >
         <Button 
           size="lg" 
-          className="bg-green-700 hover:bg-green-800 text-white"
+          className="bg-gradient-to-r from-green-700 to-green-600 hover:from-green-800 hover:to-green-700 text-white rounded-full shadow-md"
           asChild
         >
           <Link to="/products">
             {t('viewAllProducts') || 'View All Products'} <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </Button>
-      </div>
+      </motion.div>
     </section>
   );
 };

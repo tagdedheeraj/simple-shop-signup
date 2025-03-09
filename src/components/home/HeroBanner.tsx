@@ -3,32 +3,39 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Leaf } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const HeroBanner: React.FC = () => {
   const { t } = useLocalization();
   
   return (
-    <div className="relative rounded-xl overflow-hidden">
-      <div className="bg-gradient-to-r from-green-800 to-green-600 h-[500px] flex items-center">
+    <div className="relative rounded-2xl overflow-hidden shadow-xl">
+      <div className="bg-gradient-to-r from-green-900 to-green-600 h-[550px] flex items-center">
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
           <motion.div 
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-white space-y-6 py-8"
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="text-white space-y-8 py-8 z-10"
           >
-            <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-              {t('heroTitle') || 'Quality Organic Products for a Healthy Lifestyle'}
+            <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-2 text-sm backdrop-blur-sm">
+              <Leaf className="h-4 w-4" />
+              <span>{t('organicProducts') || '100% Organic Products'}</span>
+            </div>
+            
+            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+              {t('heroTitle') || 'Fresh & Healthy Organic Products'}
             </h1>
-            <p className="text-lg md:text-xl opacity-90">
-              {t('heroSubtitle') || 'Discover locally-sourced organic fruits, vegetables, and agricultural products'}
+            
+            <p className="text-lg md:text-xl opacity-90 font-light">
+              {t('heroSubtitle') || 'Discover locally-sourced organic fruits, vegetables, and agricultural products for a healthier lifestyle'}
             </p>
+            
             <div className="flex flex-wrap gap-4 pt-4">
               <Button 
                 size="lg" 
-                className="bg-white text-green-800 hover:bg-green-100"
+                className="bg-white text-green-800 hover:bg-green-100 rounded-full"
                 asChild
               >
                 <Link to="/products">
@@ -38,7 +45,7 @@ const HeroBanner: React.FC = () => {
               <Button 
                 size="lg" 
                 variant="outline" 
-                className="border-white text-white hover:bg-white/10"
+                className="border-white text-white hover:bg-white/10 rounded-full"
               >
                 {t('learnMore') || 'Learn More'}
               </Button>
@@ -48,13 +55,17 @@ const HeroBanner: React.FC = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="hidden md:flex items-center justify-center"
+            transition={{ duration: 0.7, delay: 0.2 }}
+            className="hidden md:flex items-center justify-center relative"
           >
+            {/* Decorative circles */}
+            <div className="absolute w-64 h-64 rounded-full bg-white/10 top-10 right-10"></div>
+            <div className="absolute w-40 h-40 rounded-full bg-white/5 bottom-10 left-10"></div>
+            
             <img 
               src="/lovable-uploads/2a6a68af-beec-4906-b6e9-5eb249505820.png"
               alt="Lakshmikrupa"
-              className="max-h-80 drop-shadow-2xl"
+              className="max-h-96 drop-shadow-2xl relative z-10"
             />
           </motion.div>
         </div>
