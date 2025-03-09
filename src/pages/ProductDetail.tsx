@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -11,6 +10,7 @@ import { Loader2, ChevronLeft, ShoppingCart, Plus, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import ProductReviews from '@/components/products/ProductReviews';
+import RelatedProducts from '@/components/products/RelatedProducts';
 import { toast } from 'sonner';
 
 const ProductDetail: React.FC = () => {
@@ -209,6 +209,8 @@ const ProductDetail: React.FC = () => {
           onAddReview={handleAddReview}
         />
       </div>
+
+      <RelatedProducts productId={product.id} />
     </Layout>
   );
 };
