@@ -16,7 +16,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-import { ShoppingCart, User, Globe, Heart, Home } from 'lucide-react';
+import { ShoppingCart, User, Globe, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -68,20 +68,6 @@ const Header: React.FC = () => {
           />
           <span className="text-green-800 font-semibold hidden md:inline-block">Lakshmikrupa</span>
         </Link>
-        
-        <div className="hidden md:flex items-center space-x-1">
-          <Button variant="ghost" asChild>
-            <Link to="/" className="flex items-center gap-1">
-              <Home className="h-4 w-4" />
-              <span>Home</span>
-            </Link>
-          </Button>
-          <Button variant="ghost" asChild>
-            <Link to="/products" className="flex items-center gap-1">
-              <span>Products</span>
-            </Link>
-          </Button>
-        </div>
         
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
