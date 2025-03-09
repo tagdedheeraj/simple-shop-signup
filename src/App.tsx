@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -53,7 +54,7 @@ function App() {
                     <Route path="/signup" element={<SignUp />} />
                     
                     {/* Public product routes */}
-                    <Route path="/" element={<Navigate to="/signin" replace />} />
+                    <Route path="/" element={<Navigate to="/products" replace />} />
                     
                     {/* Protected routes */}
                     <Route path="/products" element={

@@ -41,7 +41,7 @@ const SignUp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-secondary/30 to-background">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-b from-green-50 to-background">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -49,14 +49,19 @@ const SignUp: React.FC = () => {
         className="w-full max-w-md"
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold">Create an account</h1>
-          <p className="text-muted-foreground mt-2">Join GlobalHarvest to access fresh products worldwide</p>
+          <img 
+            src="/lovable-uploads/2a6a68af-beec-4906-b6e9-5eb249505820.png" 
+            alt="Lakshmikrupa Agriculture Pvt. Ltd." 
+            className="mx-auto w-48 h-auto mb-4"
+          />
+          <h1 className="text-3xl font-bold text-green-800">Join Lakshmikrupa</h1>
+          <p className="text-muted-foreground mt-2">Access premium agricultural products worldwide</p>
         </div>
         
         <Card className="border-border/40 shadow-lg backdrop-blur-sm bg-white/90">
           <CardHeader>
-            <CardTitle>Sign Up</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-2xl text-center text-green-800">Create Account</CardTitle>
+            <CardDescription className="text-center">
               Enter your information to create an account
             </CardDescription>
           </CardHeader>
@@ -112,7 +117,7 @@ const SignUp: React.FC = () => {
                 />
                 {error && <p className="text-destructive text-sm mt-1">{error}</p>}
               </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
+              <Button type="submit" className="w-full bg-green-700 hover:bg-green-800" disabled={isSubmitting}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -127,12 +132,16 @@ const SignUp: React.FC = () => {
           <CardFooter className="flex justify-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
-              <Link to="/signin" className="text-primary hover:underline">
+              <Link to="/signin" className="text-green-700 hover:underline">
                 Sign in
               </Link>
             </p>
           </CardFooter>
         </Card>
+        
+        <div className="mt-8 text-center text-sm text-muted-foreground">
+          <p>© {new Date().getFullYear()} Lakshmikrupa Agriculture Pvt. Ltd. All rights reserved.</p>
+        </div>
       </motion.div>
     </div>
   );

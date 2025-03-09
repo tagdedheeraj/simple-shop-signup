@@ -27,9 +27,13 @@ const Header: React.FC = () => {
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-lg bg-white/70 border-b border-gray-100 animate-slide-down">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold tracking-tight transition-all hover:opacity-80">
-          <span className="text-primary">Global</span>
-          <span className="text-primary/80">Harvest</span>
+        <Link to="/" className="flex items-center gap-2">
+          <img 
+            src="/lovable-uploads/2a6a68af-beec-4906-b6e9-5eb249505820.png" 
+            alt="Lakshmikrupa Agriculture Pvt. Ltd." 
+            className="h-10 w-auto"
+          />
+          <span className="text-green-800 font-semibold hidden md:inline-block">Lakshmikrupa</span>
         </Link>
         
         <div className="flex items-center space-x-4">
@@ -55,9 +59,9 @@ const Header: React.FC = () => {
               </DropdownMenu>
               
               <Link to="/cart" className="relative p-2">
-                <ShoppingCart className="h-5 w-5 text-primary/80" />
+                <ShoppingCart className="h-5 w-5 text-green-800" />
                 {totalItems > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-primary text-white rounded-full text-xs">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-green-700 text-white rounded-full text-xs">
                     {totalItems}
                   </Badge>
                 )}
@@ -92,13 +96,13 @@ const Header: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
-                className="text-sm"
+                className="text-sm text-green-800"
                 onClick={() => navigate('/signin')}
               >
                 {t('signIn')}
               </Button>
               <Button
-                className="text-sm bg-primary text-white hover:bg-primary/90"
+                className="text-sm bg-green-700 text-white hover:bg-green-800"
                 onClick={() => navigate('/signup')}
               >
                 {t('signUp')}
