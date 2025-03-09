@@ -5,8 +5,9 @@ import { getProductById, addReview } from '@/services/productService';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ChevronLeft, ShoppingCart, Plus, Minus } from 'lucide-react';
+import { Loader2, ChevronLeft, ShoppingCart, Plus, Minus, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import ProductReviews from '@/components/products/ProductReviews';
@@ -19,6 +20,7 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -72,7 +74,6 @@ const ProductDetail: React.FC = () => {
         comment
       });
       
-      // Refresh product data to show the new review
       const updatedProduct = await getProductById(product.id);
       if (updatedProduct) {
         setProduct(updatedProduct);
@@ -81,6 +82,16 @@ const ProductDetail: React.FC = () => {
       console.error('Error adding review:', error);
       toast.error('Failed to add review');
       throw error;
+    }
+  };
+
+  const handleWishlistToggle = () => {
+    if (!product) return;
+    
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
     }
   };
 
@@ -131,13 +142,23 @@ const ProductDetail: React.FC = () => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="rounded-lg overflow-hidden bg-white shadow-md"
+          className="rounded-lg overflow-hidden bg-white shadow-md relative"
         >
           <img 
             src={product.image} 
             alt={product.name} 
             className="w-full h-auto object-cover aspect-square"
           />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleWishlistToggle}
+            className="absolute top-4 right-4 bg-white/90 rounded-full shadow-md z-10 hover:bg-white"
+          >
+            <Heart 
+              className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+            />
+          </Button>
         </motion.div>
         
         <motion.div 
@@ -184,14 +205,28 @@ const ProductDetail: React.FC = () => {
             </p>
           </div>
           
-          <Button 
-            size="lg" 
-            onClick={handleAddToCart}
-            className="mt-4"
-          >
-            <ShoppingCart className="h-5 w-5 mr-2" />
-            Add to Cart
-          </Button>
+          <div className="flex gap-3 mt-4">
+            <Button 
+              size="lg" 
+              onClick={handleAddToCart}
+              className="flex-1"
+            >
+              <ShoppingCart className="h-5 w-5 mr-2" />
+              Add to Cart
+            </Button>
+            
+            <Button 
+              size="lg" 
+              variant={isInWishlist(product.id) ? "destructive" : "outline"}
+              onClick={handleWishlistToggle}
+              className="min-w-[120px]"
+            >
+              <Heart 
+                className={`h-5 w-5 mr-2 ${isInWishlist(product.id) ? 'fill-white' : ''}`} 
+              />
+              {isInWishlist(product.id) ? 'Remove' : 'Wishlist'}
+            </Button>
+          </div>
           
           <div className="pt-6 mt-6 border-t border-border">
             <h3 className="font-medium mb-2">Shipping Worldwide</h3>

@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
+import { WishlistProvider } from "@/contexts/WishlistContext";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 
 // Pages
@@ -15,6 +16,7 @@ import SignUp from "./pages/SignUp";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
+import Wishlist from "./pages/Wishlist";
 import OrderSuccess from "./pages/OrderSuccess";
 import NotFound from "./pages/NotFound";
 
@@ -43,47 +45,54 @@ function App() {
       <TooltipProvider>
         <AuthProvider>
           <CartProvider>
-            <LocalizationProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AnimatePresence mode="wait">
-                  <Routes>
-                    {/* Auth routes */}
-                    <Route path="/signin" element={<SignIn />} />
-                    <Route path="/signup" element={<SignUp />} />
-                    
-                    {/* Public product routes */}
-                    <Route path="/" element={<Navigate to="/products" replace />} />
-                    
-                    {/* Protected routes */}
-                    <Route path="/products" element={
-                      <ProtectedRoute>
-                        <Products />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/product/:productId" element={
-                      <ProtectedRoute>
-                        <ProductDetail />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/cart" element={
-                      <ProtectedRoute>
-                        <Cart />
-                      </ProtectedRoute>
-                    } />
-                    <Route path="/order-success" element={
-                      <ProtectedRoute>
-                        <OrderSuccess />
-                      </ProtectedRoute>
-                    } />
-                    
-                    {/* Catch-all route */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </AnimatePresence>
-              </BrowserRouter>
-            </LocalizationProvider>
+            <WishlistProvider>
+              <LocalizationProvider>
+                <Toaster />
+                <Sonner />
+                <BrowserRouter>
+                  <AnimatePresence mode="wait">
+                    <Routes>
+                      {/* Auth routes */}
+                      <Route path="/signin" element={<SignIn />} />
+                      <Route path="/signup" element={<SignUp />} />
+                      
+                      {/* Public product routes */}
+                      <Route path="/" element={<Navigate to="/products" replace />} />
+                      
+                      {/* Protected routes */}
+                      <Route path="/products" element={
+                        <ProtectedRoute>
+                          <Products />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/product/:productId" element={
+                        <ProtectedRoute>
+                          <ProductDetail />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/cart" element={
+                        <ProtectedRoute>
+                          <Cart />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/wishlist" element={
+                        <ProtectedRoute>
+                          <Wishlist />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/order-success" element={
+                        <ProtectedRoute>
+                          <OrderSuccess />
+                        </ProtectedRoute>
+                      } />
+                      
+                      {/* Catch-all route */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </AnimatePresence>
+                </BrowserRouter>
+              </LocalizationProvider>
+            </WishlistProvider>
           </CartProvider>
         </AuthProvider>
       </TooltipProvider>

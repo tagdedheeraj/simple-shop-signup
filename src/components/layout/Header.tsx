@@ -3,6 +3,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { useLocalization, SUPPORTED_LANGUAGES } from '@/contexts/LocalizationContext';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,12 +16,13 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
-import { ShoppingCart, User, Globe } from 'lucide-react';
+import { ShoppingCart, User, Globe, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { totalItems } = useCart();
+  const { totalItems: wishlistItems } = useWishlist();
   const { t, language, setLanguage } = useLocalization();
   const navigate = useNavigate();
 
@@ -58,6 +60,15 @@ const Header: React.FC = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
               
+              <Link to="/wishlist" className="relative p-2">
+                <Heart className="h-5 w-5 text-green-800" />
+                {wishlistItems > 0 && (
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 text-white rounded-full text-xs">
+                    {wishlistItems}
+                  </Badge>
+                )}
+              </Link>
+              
               <Link to="/cart" className="relative p-2">
                 <ShoppingCart className="h-5 w-5 text-green-800" />
                 {totalItems > 0 && (
@@ -81,6 +92,9 @@ const Header: React.FC = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/products')}>
                     {t('products')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/wishlist')}>
+                    {t('wishlist')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/orders')}>
                     {t('myOrders')}

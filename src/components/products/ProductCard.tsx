@@ -4,8 +4,9 @@ import { Link } from 'react-router-dom';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/contexts/WishlistContext';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { ShoppingCart, Eye, Star } from 'lucide-react';
+import { ShoppingCart, Eye, Star, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface ProductCardProps {
@@ -14,12 +15,24 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { t, formatPrice } = useLocalization();
   
   // Calculate average rating
   const averageRating = product.reviews && product.reviews.length 
     ? product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length 
     : 0;
+  
+  const handleWishlistToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id);
+    } else {
+      addToWishlist(product);
+    }
+  };
   
   return (
     <motion.div 
@@ -41,6 +54,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             {formatPrice(product.price)}
           </span>
         </div>
+        <button 
+          onClick={handleWishlistToggle}
+          className="absolute top-2 left-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all"
+        >
+          <Heart 
+            className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
+          />
+        </button>
       </div>
       
       <div className="p-4">
