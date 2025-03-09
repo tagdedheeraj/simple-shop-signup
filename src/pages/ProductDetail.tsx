@@ -2,13 +2,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
-import { getProductById } from '@/services/productService';
+import { getProductById, addReview } from '@/services/productService';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, ChevronLeft, ShoppingCart, Plus, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
+import ProductReviews from '@/components/products/ProductReviews';
+import { toast } from 'sonner';
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -16,6 +19,7 @@ const ProductDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,6 +58,29 @@ const ProductDetail: React.FC = () => {
   const decreaseQuantity = () => {
     if (quantity > 1) {
       setQuantity(prev => prev - 1);
+    }
+  };
+  
+  const handleAddReview = async (rating: number, comment: string) => {
+    if (!product || !user) return;
+    
+    try {
+      await addReview(product.id, {
+        userId: user.id,
+        userName: user.name,
+        rating,
+        comment
+      });
+      
+      // Refresh product data to show the new review
+      const updatedProduct = await getProductById(product.id);
+      if (updatedProduct) {
+        setProduct(updatedProduct);
+      }
+    } catch (error) {
+      console.error('Error adding review:', error);
+      toast.error('Failed to add review');
+      throw error;
     }
   };
 
@@ -173,6 +200,14 @@ const ProductDetail: React.FC = () => {
             </p>
           </div>
         </motion.div>
+      </div>
+      
+      <div className="mt-12">
+        <ProductReviews 
+          productId={product.id}
+          reviews={product.reviews} 
+          onAddReview={handleAddReview}
+        />
       </div>
     </Layout>
   );
