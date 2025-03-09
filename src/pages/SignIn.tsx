@@ -23,7 +23,7 @@ const SignIn: React.FC = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        navigate('/products');
+        navigate('/'); // Changed from '/products' to '/'
       }
     } finally {
       setIsSubmitting(false);

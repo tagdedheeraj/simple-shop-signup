@@ -7,18 +7,9 @@ import TestimonialSection from '@/components/home/TestimonialSection';
 import ProductBanner from '@/components/home/ProductBanner';
 import TrendingProducts from '@/components/home/TrendingProducts';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
-import { useAuth } from '@/contexts/AuthContext';
-import { Navigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const Home: React.FC = () => {
-  const { isAuthenticated } = useAuth();
-  
-  // If not authenticated, redirect to sign in
-  if (!isAuthenticated) {
-    return <Navigate to="/signin" replace />;
-  }
-  
   // Animation variants for staggered children
   const container = {
     hidden: { opacity: 0 },

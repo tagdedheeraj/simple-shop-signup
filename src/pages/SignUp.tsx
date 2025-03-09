@@ -33,7 +33,7 @@ const SignUp: React.FC = () => {
     try {
       const success = await register(name, email, password);
       if (success) {
-        navigate('/products');
+        navigate('/'); // Changed from '/products' to '/'
       }
     } finally {
       setIsSubmitting(false);
