@@ -1,6 +1,7 @@
 
 import React from 'react';
 import Header from './Header';
+import BottomBar from './BottomBar';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
@@ -23,14 +24,15 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-secondary/20 to-background">
       <Header />
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-7xl">
+      <main className="flex-1 container mx-auto px-4 py-8 pb-20 md:pb-8 max-w-7xl">
         {children}
       </main>
-      <footer className="py-6 border-t border-border/40 bg-background">
+      <footer className="py-6 border-t border-border/40 bg-background hidden md:block">
         <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} GlobalHarvest. All rights reserved.
         </div>
       </footer>
+      <BottomBar />
     </div>
   );
 };

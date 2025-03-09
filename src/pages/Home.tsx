@@ -19,7 +19,7 @@ const Home: React.FC = () => {
   
   return (
     <Layout>
-      <div className="space-y-16 pb-16">
+      <div className="space-y-12 pb-8 md:space-y-16 md:pb-16">
         {/* Hero Banner Section */}
         <HeroBanner />
         
