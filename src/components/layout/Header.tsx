@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { ShoppingCart, User, Globe, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const Header: React.FC = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -25,6 +26,36 @@ const Header: React.FC = () => {
   const { totalItems: wishlistItems } = useWishlist();
   const { t, language, setLanguage } = useLocalization();
   const navigate = useNavigate();
+
+  const renderUserAvatar = () => {
+    if (!user) return <User className="h-5 w-5" />;
+    
+    if (user.photoUrl) {
+      return (
+        <Avatar className="h-8 w-8 border border-green-100">
+          <AvatarImage src={user.photoUrl} alt={user.name} />
+          <AvatarFallback className="bg-green-100 text-green-800 text-xs">
+            {getUserInitials()}
+          </AvatarFallback>
+        </Avatar>
+      );
+    }
+    
+    return (
+      <Avatar className="h-8 w-8 border border-green-100">
+        <AvatarFallback className="bg-green-100 text-green-800 text-xs">
+          {getUserInitials()}
+        </AvatarFallback>
+      </Avatar>
+    );
+  };
+  
+  const getUserInitials = () => {
+    if (!user?.name) return '?';
+    const nameParts = user.name.split(' ');
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+    return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full backdrop-blur-lg bg-white/70 border-b border-gray-100 animate-slide-down">
@@ -81,7 +112,7 @@ const Header: React.FC = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
-                    <User className="h-5 w-5" />
+                    {renderUserAvatar()}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56 mt-1 mr-1 glass-effect" align="end">
@@ -90,6 +121,9 @@ const Header: React.FC = () => {
                     <div className="font-medium">{user?.name}</div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    {t('profile')}
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/products')}>
                     {t('products')}
                   </DropdownMenuItem>

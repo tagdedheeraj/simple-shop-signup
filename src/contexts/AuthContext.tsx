@@ -6,6 +6,8 @@ interface User {
   id: string;
   email: string;
   name: string;
+  phone?: string;
+  photoUrl?: string;
 }
 
 interface AuthContextType {
@@ -14,6 +16,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
+  updateProfile: (data: Partial<Omit<User, 'id' | 'name'>>) => Promise<boolean>;
+  updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   loading: boolean;
 }
 
@@ -58,7 +62,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userToSave = {
           id: foundUser.id,
           email: foundUser.email,
-          name: foundUser.name
+          name: foundUser.name,
+          phone: foundUser.phone || '',
+          photoUrl: foundUser.photoUrl || ''
         };
         
         setUser(userToSave);
@@ -96,7 +102,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         id: crypto.randomUUID(),
         name,
         email,
-        password // In a real app, this would be hashed
+        password, // In a real app, this would be hashed
+        phone: '',
+        photoUrl: ''
       };
       
       // Save to "database" (localStorage)
@@ -107,7 +115,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userToSave = {
         id: newUser.id,
         email: newUser.email,
-        name: newUser.name
+        name: newUser.name,
+        phone: newUser.phone,
+        photoUrl: newUser.photoUrl
       };
       
       setUser(userToSave);
@@ -117,6 +127,94 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (error) {
       toast.error('Registration failed');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateProfile = async (data: Partial<Omit<User, 'id' | 'name'>>): Promise<boolean> => {
+    try {
+      setLoading(true);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      if (!user) {
+        toast.error('User not authenticated');
+        return false;
+      }
+      
+      // Update user in "database" (localStorage)
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const userIndex = users.findIndex((u: any) => u.id === user.id);
+      
+      if (userIndex === -1) {
+        toast.error('User not found');
+        return false;
+      }
+      
+      // Update user data
+      users[userIndex] = {
+        ...users[userIndex],
+        ...data
+      };
+      
+      // Save updated users array
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      // Update current user in state and localStorage
+      const updatedUser = {
+        ...user,
+        ...data
+      };
+      
+      setUser(updatedUser);
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      
+      toast.success('Profile updated successfully');
+      return true;
+    } catch (error) {
+      toast.error('Profile update failed');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updatePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      if (!user) {
+        toast.error('User not authenticated');
+        return false;
+      }
+      
+      // Verify current password
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const userIndex = users.findIndex((u: any) => 
+        u.id === user.id && u.password === currentPassword
+      );
+      
+      if (userIndex === -1) {
+        toast.error('Current password is incorrect');
+        return false;
+      }
+      
+      // Update password
+      users[userIndex].password = newPassword;
+      
+      // Save updated users array
+      localStorage.setItem('users', JSON.stringify(users));
+      
+      toast.success('Password updated successfully');
+      return true;
+    } catch (error) {
+      toast.error('Password update failed');
       return false;
     } finally {
       setLoading(false);
@@ -136,6 +234,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       login, 
       register, 
       logout,
+      updateProfile,
+      updatePassword,
       loading
     }}>
       {children}
