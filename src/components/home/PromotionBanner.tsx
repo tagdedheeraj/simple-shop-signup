@@ -78,7 +78,7 @@ const PromotionBanner: React.FC = () => {
                   </div>
                   
                   <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
-                    {t('specialDiscountTitle') || 'Fresh Organic Products at Special Prices'}
+                    {t('specialDiscountTitle') || 'Special Discount'}
                   </h2>
                   
                   <TabsList className="bg-white/20 backdrop-blur-md border border-white/20 w-fit">

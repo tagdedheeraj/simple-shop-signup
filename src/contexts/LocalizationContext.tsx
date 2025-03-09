@@ -68,6 +68,10 @@ export const translations: Record<string, Record<string, string>> = {
     thankYou: 'Thank you for your purchase.',
     emptyCart: 'Your cart is empty',
     browseProducts: 'Browse Products',
+    specialDiscountTitle: 'Special Discount',
+    limitedTimeOffer: 'Limited Time Offer',
+    useCode: 'Use Code',
+    shopNow: 'Shop Now',
   },
   fr: {
     welcome: 'Bienvenue à GlobalHarvest',
@@ -89,6 +93,10 @@ export const translations: Record<string, Record<string, string>> = {
     thankYou: 'Merci pour votre achat.',
     emptyCart: 'Votre panier est vide',
     browseProducts: 'Parcourir les produits',
+    specialDiscountTitle: 'Réduction Spéciale',
+    limitedTimeOffer: 'Offre à Durée Limitée',
+    useCode: 'Utilisez le Code',
+    shopNow: 'Acheter Maintenant',
   },
   es: {
     welcome: 'Bienvenido a GlobalHarvest',
@@ -110,6 +118,10 @@ export const translations: Record<string, Record<string, string>> = {
     thankYou: 'Gracias por su compra.',
     emptyCart: 'Tu carrito está vacío',
     browseProducts: 'Explorar productos',
+    specialDiscountTitle: 'Descuento Especial',
+    limitedTimeOffer: 'Oferta por Tiempo Limitado',
+    useCode: 'Usar Código',
+    shopNow: 'Comprar Ahora',
   },
   // Add more languages as needed
 };
