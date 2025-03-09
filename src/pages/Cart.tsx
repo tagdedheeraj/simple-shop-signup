@@ -1,18 +1,89 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CreditCard, Loader2 } from 'lucide-react';
-import { loadPayPalScript } from '@/services/paypalService';
+import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypalService';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
 const Cart: React.FC = () => {
   const { items, removeFromCart, updateQuantity, totalItems, totalPrice, clearCart } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
+  const paypalButtonRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const initPayPal = async () => {
+      const success = await loadPayPalScript();
+      if (success) {
+        setPaypalLoaded(true);
+      }
+    };
+
+    if (items.length > 0) {
+      initPayPal();
+    }
+  }, [items.length]);
+
+  useEffect(() => {
+    if (paypalLoaded && paypalButtonRef.current && window.paypal) {
+      // Clear any existing buttons
+      paypalButtonRef.current.innerHTML = '';
+      
+      // Render the PayPal button
+      window.paypal.Buttons({
+        // Set up the transaction
+        createOrder: async () => {
+          try {
+            const orderData = {
+              orderId: `ORDER-${Date.now()}`,
+              totalAmount: totalPrice,
+              items: items.map(item => ({
+                name: item.product.name,
+                quantity: item.quantity,
+                price: item.product.price
+              }))
+            };
+            
+            return await createPayPalOrder(orderData);
+          } catch (error) {
+            console.error('Failed to create order:', error);
+            toast.error('Could not create PayPal order');
+            throw error;
+          }
+        },
+        
+        // Finalize the transaction
+        onApprove: async (data: any, actions: any) => {
+          setIsProcessing(true);
+          try {
+            const success = await capturePayPalOrder(data.orderID);
+            if (success) {
+              clearCart();
+              toast.success('Your order has been placed successfully!');
+              navigate('/order-success');
+            }
+          } catch (error) {
+            console.error('Error capturing PayPal order:', error);
+            toast.error('There was an error processing your payment');
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        
+        // Handle errors
+        onError: (err: any) => {
+          console.error('PayPal error:', err);
+          toast.error('PayPal encountered an error. Please try again later.');
+          setIsProcessing(false);
+        }
+      }).render(paypalButtonRef.current);
+    }
+  }, [paypalLoaded, items, totalPrice, clearCart, navigate]);
 
   const handleCheckout = async () => {
     if (items.length === 0) {
@@ -24,11 +95,13 @@ const Cart: React.FC = () => {
     try {
       const success = await loadPayPalScript();
       if (success) {
-        // Simulate successful checkout
+        // Now using actual PayPal buttons, so this is just a fallback
+        setPaypalLoaded(true);
+        // Wait to see if PayPal buttons load
         await new Promise(resolve => setTimeout(resolve, 1500));
-        clearCart();
-        toast.success('Your order has been placed successfully!');
-        navigate('/order-success');
+        if (!paypalLoaded) {
+          toast.error('Could not load PayPal. Please try again later.');
+        }
       }
     } catch (error) {
       console.error('Checkout error:', error);
@@ -154,23 +227,32 @@ const Cart: React.FC = () => {
                   </div>
                 </div>
                 
-                <Button 
-                  className="w-full"
-                  onClick={handleCheckout}
-                  disabled={isProcessing}
-                >
-                  {isProcessing ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Checkout (PayPal)
-                    </>
-                  )}
-                </Button>
+                {/* PayPal Button Container */}
+                <div 
+                  ref={paypalButtonRef} 
+                  className={`w-full mb-4 ${paypalLoaded ? 'block' : 'hidden'}`}
+                ></div>
+                
+                {/* Fallback Button */}
+                {!paypalLoaded && (
+                  <Button 
+                    className="w-full mb-4"
+                    onClick={handleCheckout}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Checkout with PayPal
+                      </>
+                    )}
+                  </Button>
+                )}
                 
                 <div className="mt-4">
                   <Button 

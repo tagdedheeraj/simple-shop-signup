@@ -1,8 +1,15 @@
 
 import { toast } from 'sonner';
 
-// PayPal test mode settings
+// PayPal test mode settings - using sandbox mode
 const PAYPAL_CLIENT_ID = 'sb'; // 'sb' is the sandbox mode client ID
+
+// Declare PayPal global for TypeScript
+declare global {
+  interface Window {
+    paypal: any;
+  }
+}
 
 export const loadPayPalScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
@@ -31,7 +38,7 @@ export const loadPayPalScript = (): Promise<boolean> => {
   });
 };
 
-interface PayPalOrder {
+export interface PayPalOrder {
   orderId: string;
   totalAmount: number;
   items: { name: string; quantity: number; price: number }[];
@@ -42,8 +49,10 @@ export const createPayPalOrder = async (order: PayPalOrder): Promise<string> => 
   // which would then create an order with the PayPal API
   
   // For this demo, we're simulating a successful order creation
+  console.log('Creating PayPal order:', order);
   await new Promise(resolve => setTimeout(resolve, 500));
   
+  // In sandbox mode, we can return any string as the order ID
   return `TEST-ORDER-${Math.random().toString(36).substr(2, 9)}`;
 };
 
@@ -52,8 +61,8 @@ export const capturePayPalOrder = async (orderId: string): Promise<boolean> => {
   // which would then capture the payment with the PayPal API
   
   // For this demo, we're simulating a successful payment capture
+  console.log(`Capturing payment for order: ${orderId}`);
   await new Promise(resolve => setTimeout(resolve, 800));
   
-  console.log(`Payment captured for order: ${orderId}`);
   return true;
 };
