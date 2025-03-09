@@ -1,4 +1,3 @@
-
 import { Product, Review } from '@/types/product';
 
 // Mock product data
@@ -27,22 +26,6 @@ const products: Product[] = [
         rating: 4,
         comment: 'Very good texture and flavor. Will buy again!',
         date: '2023-08-20T14:15:00Z'
-      },
-      {
-        id: '103',
-        userId: 'user3',
-        userName: 'Ravi Kumar',
-        rating: 5,
-        comment: 'Best flour for making chapatis and parathas. My family loves it!',
-        date: '2023-09-10T10:45:00Z'
-      },
-      {
-        id: '104',
-        userId: 'user4',
-        userName: 'Priya Sharma',
-        rating: 4,
-        comment: 'Great quality product, makes soft rotis every time.',
-        date: '2023-10-05T18:20:00Z'
       }
     ]
   },
@@ -70,14 +53,6 @@ const products: Product[] = [
         rating: 5,
         comment: 'Authentic basmati flavor, reminds me of home. Grains stay separate when cooked.',
         date: '2023-09-15T14:30:00Z'
-      },
-      {
-        id: '203',
-        userId: 'user6',
-        userName: 'Sarah Wilson',
-        rating: 4,
-        comment: 'Very fragrant rice, perfect for biryani and pulao.',
-        date: '2023-10-10T09:15:00Z'
       }
     ]
   },
@@ -105,14 +80,6 @@ const products: Product[] = [
         rating: 4,
         comment: 'Good quality spinach, stays fresh for days in the refrigerator.',
         date: '2023-10-02T11:30:00Z'
-      },
-      {
-        id: '303',
-        userId: 'user9',
-        userName: 'Lisa Chen',
-        rating: 3,
-        comment: 'Nice, but some leaves were slightly wilted on arrival.',
-        date: '2023-10-15T14:20:00Z'
       }
     ]
   },
@@ -140,14 +107,6 @@ const products: Product[] = [
         rating: 4,
         comment: 'Good size and quality. Perfect for daily cooking.',
         date: '2023-10-08T17:45:00Z'
-      },
-      {
-        id: '403',
-        userId: 'user12',
-        userName: 'James Brown',
-        rating: 5,
-        comment: 'These red onions add a beautiful color and mild flavor to my dishes.',
-        date: '2023-10-20T13:10:00Z'
       }
     ]
   },
@@ -175,22 +134,6 @@ const products: Product[] = [
         rating: 3,
         comment: 'Good selection, but some fruits were a bit bruised during delivery.',
         date: '2023-10-05T09:45:00Z'
-      },
-      {
-        id: '503',
-        userId: 'user15',
-        userName: 'Maria Rodriguez',
-        rating: 5,
-        comment: 'Great value for money. All fruits were fresh and delicious.',
-        date: '2023-10-12T12:20:00Z'
-      },
-      {
-        id: '504',
-        userId: 'user16',
-        userName: 'Alex Thompson',
-        rating: 4,
-        comment: 'Nice assortment of seasonal fruits. My kids loved it!',
-        date: '2023-10-25T16:10:00Z'
       }
     ]
   }
