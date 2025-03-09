@@ -43,12 +43,12 @@ const Home: React.FC = () => {
         initial="hidden"
         animate="show"
       >
-        {/* Product Banner Section (New) */}
+        {/* Product Banner Section */}
         <motion.div variants={item}>
           <ProductBanner />
         </motion.div>
         
-        {/* Trending Products Section (New) */}
+        {/* Trending Products Section */}
         <motion.div variants={item}>
           <TrendingProducts />
         </motion.div>
@@ -63,7 +63,7 @@ const Home: React.FC = () => {
           <FeaturedProducts />
         </motion.div>
         
-        {/* Promotion Banner */}
+        {/* Promotion Banner - Redesigned */}
         <motion.div variants={item}>
           <PromotionBanner />
         </motion.div>
