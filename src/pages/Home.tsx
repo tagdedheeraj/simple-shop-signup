@@ -1,6 +1,7 @@
 
 import React from 'react';
 import Layout from '@/components/layout/Layout';
+import HeroBanner from '@/components/home/HeroBanner';
 import CategoryGrid from '@/components/home/CategoryGrid';
 import PromotionBanner from '@/components/home/PromotionBanner';
 import TestimonialSection from '@/components/home/TestimonialSection';
@@ -34,6 +35,11 @@ const Home: React.FC = () => {
         initial="hidden"
         animate="show"
       >
+        {/* Hero Banner Section */}
+        <motion.div variants={item}>
+          <HeroBanner />
+        </motion.div>
+        
         {/* Product Banner Section */}
         <motion.div variants={item}>
           <ProductBanner />
