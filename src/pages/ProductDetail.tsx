@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -8,12 +7,32 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/contexts/WishlistContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2, ChevronLeft, ShoppingCart, Plus, Minus, Heart, CreditCard, ShieldCheck } from 'lucide-react';
+import { 
+  Loader2, 
+  ChevronLeft, 
+  ShoppingCart, 
+  Plus, 
+  Minus, 
+  Heart, 
+  CreditCard, 
+  ShieldCheck,
+  Clock,
+  Truck,
+  BadgeCheck,
+  Leaf,
+  ThumbsUp,
+  HeadphoneIcon,
+  Star
+} from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import ProductReviews from '@/components/products/ProductReviews';
 import RelatedProducts from '@/components/products/RelatedProducts';
 import { toast } from 'sonner';
+import { 
+  Card,
+  CardContent
+} from '@/components/ui/card';
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -150,6 +169,9 @@ const ProductDetail: React.FC = () => {
             alt={product.name} 
             className="w-full h-auto object-cover aspect-square"
           />
+          <Badge variant="secondary" className="absolute top-4 left-4 z-10 bg-white/90">
+            <BadgeCheck className="h-4 w-4 text-green-500 mr-1" /> Verified Product
+          </Badge>
           <Button
             variant="outline"
             size="icon"
@@ -171,6 +193,14 @@ const ProductDetail: React.FC = () => {
           <div>
             <Badge className="mb-2">{product.category}</Badge>
             <h1 className="text-3xl font-bold">{product.name}</h1>
+            <div className="flex items-center mt-1">
+              <Badge variant="outline" className="mr-2 bg-green-50 border-green-200 text-green-700">
+                <Leaf className="h-3 w-3 mr-1" /> Organic
+              </Badge>
+              <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
+                <BadgeCheck className="h-3 w-3 mr-1" /> Quality Tested
+              </Badge>
+            </div>
             <p className="text-2xl font-medium mt-2">${product.price.toFixed(2)}</p>
           </div>
           
@@ -229,10 +259,58 @@ const ProductDetail: React.FC = () => {
             </Button>
           </div>
           
+          {/* Shipping Information with Icons */}
           <div className="pt-6 mt-6 border-t border-border">
-            <h3 className="font-medium mb-2">Shipping Worldwide</h3>
+            <div className="flex items-center mb-3">
+              <Truck className="h-5 w-5 text-primary mr-2" />
+              <h3 className="font-medium">Fast & Reliable Shipping</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-start">
+                <Clock className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                <p className="text-sm text-muted-foreground">
+                  Delivery within 2-4 business days
+                </p>
+              </div>
+              <div className="flex items-start">
+                <Leaf className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                <p className="text-sm text-muted-foreground">
+                  Eco-friendly packaging
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Product Guarantees */}
+          <div className="pt-4 border-t border-border">
+            <div className="flex items-center mb-3">
+              <ShieldCheck className="h-5 w-5 text-primary mr-2" />
+              <h3 className="font-medium">Our Guarantees</h3>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex items-start">
+                <BadgeCheck className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                <p className="text-sm text-muted-foreground">
+                  100% Satisfaction Guarantee
+                </p>
+              </div>
+              <div className="flex items-start">
+                <ThumbsUp className="h-4 w-4 text-green-600 mt-0.5 mr-2 flex-shrink-0" />
+                <p className="text-sm text-muted-foreground">
+                  30-Day Money Back Guarantee
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Support */}
+          <div className="pt-4 border-t border-border">
+            <div className="flex items-center mb-3">
+              <HeadphoneIcon className="h-5 w-5 text-primary mr-2" />
+              <h3 className="font-medium">24/7 Customer Support</h3>
+            </div>
             <p className="text-sm text-muted-foreground">
-              We ship our premium products globally, ensuring quality and freshness through specialized packaging.
+              Have questions? Our dedicated support team is available 24/7 to assist you with any inquiries.
             </p>
           </div>
 
@@ -288,7 +366,53 @@ const ProductDetail: React.FC = () => {
         </motion.div>
       </div>
       
-      <div className="mt-12">
+      {/* Customer Testimonials */}
+      <div className="mt-12 mb-8">
+        <h2 className="text-xl font-semibold mb-4">What Our Customers Say</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex text-yellow-400 mb-2">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <Star key={star} className="h-4 w-4 fill-yellow-400" />
+                ))}
+              </div>
+              <p className="text-sm mb-3">
+                "This product exceeded my expectations. The quality is outstanding and the customer service was excellent."
+              </p>
+              <p className="text-xs text-muted-foreground font-medium">— Maria J., Verified Buyer</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex text-yellow-400 mb-2">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <Star key={star} className="h-4 w-4 fill-yellow-400" />
+                ))}
+              </div>
+              <p className="text-sm mb-3">
+                "Fast shipping and the product was exactly as described. Will definitely purchase from this store again!"
+              </p>
+              <p className="text-xs text-muted-foreground font-medium">— Robert K., Verified Buyer</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex text-yellow-400 mb-2">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <Star key={star} className="h-4 w-4 fill-yellow-400" />
+                ))}
+              </div>
+              <p className="text-sm mb-3">
+                "I've been ordering regularly for months. The consistency and quality are always top-notch. Highly recommend!"
+              </p>
+              <p className="text-xs text-muted-foreground font-medium">— Eliza T., Verified Buyer</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="mb-12">
         <ProductReviews 
           productId={product.id}
           reviews={product.reviews} 
