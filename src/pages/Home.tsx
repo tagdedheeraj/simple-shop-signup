@@ -40,11 +40,6 @@ const Home: React.FC = () => {
           <HeroBanner />
         </motion.div>
         
-        {/* Product Banner Section */}
-        <motion.div variants={item}>
-          <ProductBanner />
-        </motion.div>
-        
         {/* Trending Products Section */}
         <motion.div variants={item}>
           <TrendingProducts />
