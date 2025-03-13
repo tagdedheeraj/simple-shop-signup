@@ -24,7 +24,7 @@ const HeroBanner: React.FC = () => {
               <span>{t('organicProducts') || '100% Organic Products'}</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight">
+            <h1 className="text-4xl md:text-6xl font-bold font-heading leading-tight">
               {t('heroTitle') || 'Fresh & Healthy Organic Products'}
             </h1>
             
