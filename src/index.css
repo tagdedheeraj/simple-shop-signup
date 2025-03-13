@@ -36,6 +36,12 @@
     --ring: 240 5.9% 10%;
 
     --radius: 0.5rem;
+
+    /* Green theme colors */
+    --green-primary: 142 76% 36%;
+    --green-secondary: 160 84% 39%;
+    --green-accent: 148 60% 60%;
+    --green-light: 148 60% 97%;
   }
  
   .dark {
@@ -66,6 +72,12 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+
+    /* Green theme colors - dark mode */
+    --green-primary: 142 76% 26%;
+    --green-secondary: 160 84% 29%;
+    --green-accent: 148 50% 50%;
+    --green-light: 148 30% 20%;
   }
 }
 
@@ -81,6 +93,13 @@
   
   .glass-effect {
     @apply bg-white/80 backdrop-blur-lg border border-white/20;
+  }
+
+  .green-glass {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(16, 185, 129, 0.1);
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);
   }
 
   .purple-glass {
@@ -132,12 +151,12 @@
   }
   
   .bottom-nav-item-active {
-    @apply text-violet-600;
+    @apply text-green-600;
   }
   
   .bottom-nav-item-active::after {
     content: '';
-    @apply absolute -bottom-2 w-1.5 h-1.5 bg-violet-500 rounded-full;
+    @apply absolute -bottom-2 w-1.5 h-1.5 bg-green-500 rounded-full;
   }
   
   .bottom-nav-icon-container {
@@ -145,15 +164,15 @@
   }
   
   .bottom-nav-icon-container-active {
-    @apply bg-violet-50 text-violet-600;
+    @apply bg-green-50 text-green-600;
   }
 
   .nav-glow {
-    box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
   }
   
   .bottom-nav-pill {
-    @apply bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold text-xs px-2 py-0.5 rounded-full absolute -top-1 -right-1;
+    @apply bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold text-xs px-2 py-0.5 rounded-full absolute -top-1 -right-1;
   }
   
   /* Chat bubble animations */
@@ -175,7 +194,53 @@
     to { opacity: 0; transform: translateY(10px) scale(0.95); }
   }
 
-  /* New pulse animation */
+  /* Nature-inspired pulse animation */
+  @keyframes leafPulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+  }
+
+  /* Continuous grow effect for plants */
+  @keyframes gentleGrow {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .pulse-green {
+    animation: leafPulse 2s infinite;
+  }
+
+  .gentle-grow {
+    animation: gentleGrow 3s ease-in-out infinite;
+  }
+
+  /* New green gradient background */
+  .eco-gradient {
+    background: linear-gradient(90deg, hsla(139, 70%, 75%, 1) 0%, hsla(63, 90%, 76%, 1) 100%);
+  }
+
+  .forest-gradient {
+    background: linear-gradient(90deg, hsla(59, 86%, 68%, 1) 0%, hsla(134, 36%, 53%, 1) 100%);
+  }
+
+  .pulse-violet {
+    animation: softPulse 2s infinite;
+  }
+  
   @keyframes softPulse {
     0% {
       box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4);
@@ -186,9 +251,5 @@
     100% {
       box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
     }
-  }
-
-  .pulse-violet {
-    animation: softPulse 2s infinite;
   }
 }
