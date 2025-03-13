@@ -32,7 +32,7 @@ const SignIn: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -46,7 +46,7 @@ const SignIn: React.FC = () => {
             transition={{ duration: 0.5 }}
             src="/lovable-uploads/2a6a68af-beec-4906-b6e9-5eb249505820.png" 
             alt="Lakshmikrupa Agriculture Pvt. Ltd." 
-            className="mx-auto w-48 h-auto mb-3"
+            className="mx-auto w-48 h-auto mb-4"
           />
           <motion.p 
             initial={{ opacity: 0 }}
@@ -63,11 +63,14 @@ const SignIn: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="border-green-100/40 shadow-xl backdrop-blur-sm bg-white/90 overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-emerald-500/10 pointer-events-none" />
+          <Card className="border-emerald-100 shadow-xl backdrop-blur-sm bg-white/90 overflow-hidden rounded-xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-teal-500/10 pointer-events-none rounded-xl" />
+            
+            <div className="absolute -top-12 -right-12 w-40 h-40 bg-gradient-to-br from-emerald-400/20 to-teal-400/20 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-gradient-to-tr from-teal-400/20 to-cyan-400/20 rounded-full blur-2xl pointer-events-none" />
             
             <CardHeader className="space-y-1 relative z-10">
-              <CardTitle className="text-2xl text-center text-emerald-800 font-bold">
+              <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
                 Welcome Back
               </CardTitle>
               <CardDescription className="text-center text-emerald-700/70">
@@ -78,9 +81,9 @@ const SignIn: React.FC = () => {
             <CardContent className="relative z-10">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-emerald-800">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
+                  <Label htmlFor="email" className="text-emerald-800 font-medium">Email</Label>
+                  <div className="relative group">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 group-hover:text-emerald-800 transition-colors" />
                     <Input
                       id="email"
                       type="email"
@@ -88,21 +91,21 @@ const SignIn: React.FC = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="bg-white pl-10 border-emerald-200 focus-visible:ring-emerald-500"
+                      className="bg-white/70 pl-10 border-emerald-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 transition-all"
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-emerald-800">Password</Label>
+                    <Label htmlFor="password" className="text-emerald-800 font-medium">Password</Label>
                     <Link to="/forgot-password" className="text-xs text-emerald-600 hover:text-emerald-800 hover:underline transition-colors">
                       Forgot password?
                     </Link>
                   </div>
                   
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600" />
+                  <div className="relative group">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 group-hover:text-emerald-800 transition-colors" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
@@ -110,12 +113,12 @@ const SignIn: React.FC = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="bg-white pl-10 pr-10 border-emerald-200 focus-visible:ring-emerald-500"
+                      className="bg-white/70 pl-10 pr-10 border-emerald-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 transition-all"
                     />
                     <button 
                       type="button" 
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 hover:text-emerald-800"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 hover:text-emerald-800 transition-colors"
                     >
                       {showPassword ? 
                         <EyeOff className="h-4 w-4" /> : 
@@ -128,10 +131,11 @@ const SignIn: React.FC = () => {
                 <motion.div
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
+                  className="pt-2"
                 >
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white border-0 h-11"
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white border-0 h-11 shadow-md shadow-emerald-500/20"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
