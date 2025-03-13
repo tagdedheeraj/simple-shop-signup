@@ -2,8 +2,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { Star, Quote } from 'lucide-react';
+import { Star, Quote, CheckCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Testimonial {
@@ -13,6 +14,8 @@ interface Testimonial {
   avatar: string;
   comment: string;
   rating: number;
+  verifiedPurchase: boolean;
+  date: string;
 }
 
 const TestimonialSection: React.FC = () => {
@@ -25,7 +28,9 @@ const TestimonialSection: React.FC = () => {
       role: "Regular Customer",
       avatar: "https://randomuser.me/api/portraits/men/32.jpg",
       comment: "I've been ordering from Lakshmikrupa for over a year now. The produce is always fresh and the service is excellent!",
-      rating: 5
+      rating: 5,
+      verifiedPurchase: true,
+      date: "March 15, 2023"
     },
     {
       id: 2,
@@ -33,7 +38,9 @@ const TestimonialSection: React.FC = () => {
       role: "Chef",
       avatar: "https://randomuser.me/api/portraits/women/44.jpg",
       comment: "As a professional chef, I'm very particular about ingredients. Lakshmikrupa delivers exceptional quality organic products consistently.",
-      rating: 5
+      rating: 5,
+      verifiedPurchase: true,
+      date: "January 8, 2023"
     },
     {
       id: 3,
@@ -41,7 +48,9 @@ const TestimonialSection: React.FC = () => {
       role: "Health Enthusiast",
       avatar: "https://randomuser.me/api/portraits/men/67.jpg",
       comment: "The organic vegetables from Lakshmikrupa have made a noticeable difference in my health journey. Highly recommended!",
-      rating: 4
+      rating: 4,
+      verifiedPurchase: true,
+      date: "February 22, 2023"
     }
   ];
   
@@ -63,6 +72,15 @@ const TestimonialSection: React.FC = () => {
         <p className="text-muted-foreground max-w-2xl mx-auto">
           {t('customerReviewsDescription') || 'Discover why our customers love shopping with us'}
         </p>
+        <div className="flex items-center justify-center mt-4 gap-1">
+          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+          <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+          <span className="ml-2 font-medium">4.8 out of 5</span>
+          <span className="ml-1 text-muted-foreground">based on 453 reviews</span>
+        </div>
       </motion.div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -77,15 +95,24 @@ const TestimonialSection: React.FC = () => {
           >
             <Card className="h-full border-none shadow-md">
               <CardContent className="p-6 pt-8 bg-gradient-to-b from-green-50 to-transparent">
-                <div className="flex mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star 
-                      key={i} 
-                      className={`h-5 w-5 ${i < testimonial.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
-                    />
-                  ))}
+                <div className="flex justify-between items-center mb-4">
+                  <div className="flex">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`h-5 w-5 ${i < testimonial.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-200'}`} 
+                      />
+                    ))}
+                  </div>
+                  {testimonial.verifiedPurchase && (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
+                      <CheckCircle className="h-3 w-3" />
+                      <span className="text-xs">Verified</span>
+                    </Badge>
+                  )}
                 </div>
                 <blockquote className="text-muted-foreground italic">"{testimonial.comment}"</blockquote>
+                <p className="text-xs text-gray-500 mt-3">{testimonial.date}</p>
               </CardContent>
               <CardFooter className="px-6 pb-6 pt-4">
                 <div className="flex items-center">

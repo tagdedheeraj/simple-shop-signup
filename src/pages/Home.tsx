@@ -7,6 +7,9 @@ import TestimonialSection from '@/components/home/TestimonialSection';
 import ProductBanner from '@/components/home/ProductBanner';
 import TrendingProducts from '@/components/home/TrendingProducts';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
+import TrustBadgesSection from '@/components/home/TrustBadgesSection';
+import CustomerStatistics from '@/components/home/CustomerStatistics';
+import PaymentTrustBadges from '@/components/home/PaymentTrustBadges';
 import { motion } from 'framer-motion';
 
 const Home: React.FC = () => {
@@ -29,7 +32,7 @@ const Home: React.FC = () => {
   return (
     <Layout>
       <motion.div 
-        className="space-y-16 pb-8 md:space-y-24 md:pb-16"
+        className="space-y-12 pb-8 md:space-y-20 md:pb-16"
         variants={container}
         initial="hidden"
         animate="show"
@@ -39,9 +42,19 @@ const Home: React.FC = () => {
           <ProductBanner />
         </motion.div>
         
+        {/* Trust Badges Section - NEW */}
+        <motion.div variants={item}>
+          <TrustBadgesSection />
+        </motion.div>
+        
         {/* Trending Products Section */}
         <motion.div variants={item}>
           <TrendingProducts />
+        </motion.div>
+        
+        {/* Customer Statistics - NEW */}
+        <motion.div variants={item}>
+          <CustomerStatistics />
         </motion.div>
         
         {/* Category Grid Section */}
@@ -62,6 +75,11 @@ const Home: React.FC = () => {
         {/* Testimonials */}
         <motion.div variants={item}>
           <TestimonialSection />
+        </motion.div>
+        
+        {/* Payment Trust Badges - NEW */}
+        <motion.div variants={item}>
+          <PaymentTrustBadges />
         </motion.div>
       </motion.div>
     </Layout>
