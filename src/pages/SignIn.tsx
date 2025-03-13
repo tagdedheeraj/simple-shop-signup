@@ -52,7 +52,7 @@ const SignIn: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-emerald-700 mt-2 font-medium"
+            className="font-accent text-emerald-700 mt-2 font-medium tracking-wide"
           >
             Fresh Agricultural Products Direct to You
           </motion.p>
@@ -70,10 +70,10 @@ const SignIn: React.FC = () => {
             <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-gradient-to-tr from-teal-400/20 to-cyan-400/20 rounded-full blur-2xl pointer-events-none" />
             
             <CardHeader className="space-y-1 relative z-10">
-              <CardTitle className="text-2xl font-bold text-center bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
+              <CardTitle className="text-3xl font-heading font-bold text-center bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
                 Welcome Back
               </CardTitle>
-              <CardDescription className="text-center text-emerald-700/70">
+              <CardDescription className="font-accent text-center text-emerald-700/70 tracking-wide">
                 Enter your credentials to access your account
               </CardDescription>
             </CardHeader>
@@ -81,9 +81,9 @@ const SignIn: React.FC = () => {
             <CardContent className="relative z-10">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-emerald-800 font-medium">Email</Label>
+                  <Label htmlFor="email" className="text-emerald-800 font-accent font-medium tracking-wide">Email</Label>
                   <div className="relative group">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 group-hover:text-emerald-800 transition-colors" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-emerald-600 group-hover:text-emerald-800 transition-colors" />
                     <Input
                       id="email"
                       type="email"
@@ -91,21 +91,21 @@ const SignIn: React.FC = () => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="bg-white/70 pl-10 border-emerald-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 transition-all"
+                      className="font-accent bg-white/70 pl-10 border-emerald-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 transition-all"
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-emerald-800 font-medium">Password</Label>
-                    <Link to="/forgot-password" className="text-xs text-emerald-600 hover:text-emerald-800 hover:underline transition-colors">
+                    <Label htmlFor="password" className="text-emerald-800 font-accent font-medium tracking-wide">Password</Label>
+                    <Link to="/forgot-password" className="text-xs font-accent text-emerald-600 hover:text-emerald-800 hover:underline transition-colors">
                       Forgot password?
                     </Link>
                   </div>
                   
                   <div className="relative group">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-600 group-hover:text-emerald-800 transition-colors" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-emerald-600 group-hover:text-emerald-800 transition-colors" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
@@ -113,7 +113,7 @@ const SignIn: React.FC = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
-                      className="bg-white/70 pl-10 pr-10 border-emerald-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 transition-all"
+                      className="font-accent bg-white/70 pl-10 pr-10 border-emerald-200 focus-visible:ring-emerald-500 focus-visible:border-emerald-500 transition-all"
                     />
                     <button 
                       type="button" 
@@ -121,8 +121,8 @@ const SignIn: React.FC = () => {
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 hover:text-emerald-800 transition-colors"
                     >
                       {showPassword ? 
-                        <EyeOff className="h-4 w-4" /> : 
-                        <Eye className="h-4 w-4" />
+                        <EyeOff className="h-4.5 w-4.5" /> : 
+                        <Eye className="h-4.5 w-4.5" />
                       }
                     </button>
                   </div>
@@ -135,18 +135,18 @@ const SignIn: React.FC = () => {
                 >
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white border-0 h-11 shadow-md shadow-emerald-500/20"
+                    className="w-full font-accent tracking-wide font-medium bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white border-0 h-11 shadow-md shadow-emerald-500/20"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Signing in...
+                        <Loader2 className="mr-2 h-4.5 w-4.5 animate-spin" />
+                        <span className="font-accent">Signing in...</span>
                       </>
                     ) : (
                       <>
-                        <LogIn className="mr-2 h-4 w-4" />
-                        Sign In
+                        <LogIn className="mr-2 h-4.5 w-4.5" />
+                        <span className="font-accent">Sign In</span>
                       </>
                     )}
                   </Button>
@@ -155,7 +155,7 @@ const SignIn: React.FC = () => {
             </CardContent>
             
             <CardFooter className="flex justify-center relative z-10 pb-6">
-              <p className="text-sm text-emerald-700">
+              <p className="text-sm font-accent text-emerald-700">
                 Don't have an account?{' '}
                 <Link to="/signup" className="font-semibold text-emerald-600 hover:text-emerald-800 hover:underline transition-colors">
                   Create Account
@@ -165,7 +165,7 @@ const SignIn: React.FC = () => {
           </Card>
         </motion.div>
         
-        <div className="mt-8 text-center text-sm text-emerald-700/80">
+        <div className="mt-8 text-center text-sm font-accent text-emerald-700/80">
           <p>© {new Date().getFullYear()} Lakshmikrupa Agriculture Pvt. Ltd. All rights reserved.</p>
         </div>
       </motion.div>
