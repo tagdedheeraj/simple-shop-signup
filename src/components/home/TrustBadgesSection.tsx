@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Shield, Truck, RotateCcw, Award, HeadphonesIcon } from 'lucide-react';
+import { Shield, Truck, RotateCcw, Award, HeadphonesIcon, Leaf } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const TrustBadgesSection: React.FC = () => {
@@ -29,6 +29,11 @@ const TrustBadgesSection: React.FC = () => {
       icon: <HeadphonesIcon className="h-6 w-6" />,
       title: "24/7 Support",
       description: "Get assistance whenever you need it",
+    },
+    {
+      icon: <Leaf className="h-6 w-6" />,
+      title: "Eco-Friendly",
+      description: "Sustainable products and packaging",
     }
   ];
 
@@ -49,7 +54,7 @@ const TrustBadgesSection: React.FC = () => {
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {trustFeatures.map((feature, index) => (
           <motion.div
             key={index}
