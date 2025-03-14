@@ -6,7 +6,6 @@ import PromotionBanner from '@/components/home/PromotionBanner';
 import TestimonialSection from '@/components/home/TestimonialSection';
 import ProductBanner from '@/components/home/ProductBanner';
 import TrendingProducts from '@/components/home/TrendingProducts';
-import FeaturedProducts from '@/components/home/FeaturedProducts';
 import TrustBadgesSection from '@/components/home/TrustBadgesSection';
 import CustomerStatistics from '@/components/home/CustomerStatistics';
 import PaymentTrustBadges from '@/components/home/PaymentTrustBadges';
@@ -60,11 +59,6 @@ const Home: React.FC = () => {
         {/* Category Grid Section */}
         <motion.div variants={item}>
           <CategoryGrid />
-        </motion.div>
-        
-        {/* Featured Products Section */}
-        <motion.div variants={item}>
-          <FeaturedProducts />
         </motion.div>
         
         {/* Promotion Banner - Redesigned */}
