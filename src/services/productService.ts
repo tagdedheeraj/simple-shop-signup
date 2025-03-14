@@ -18,7 +18,11 @@ const products: Product[] = [
         userName: 'John Doe',
         rating: 5,
         comment: 'Excellent quality flour! Made the best bread I\'ve ever baked.',
-        date: '2023-07-15T09:30:00Z'
+        date: '2023-07-15T09:30:00Z',
+        photos: [
+          'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&q=80',
+          'https://images.unsplash.com/photo-1612204321161-9e9b8a4cb122?w=300&q=80'
+        ]
       },
       {
         id: '102',
@@ -45,7 +49,10 @@ const products: Product[] = [
         userName: 'Mike Johnson',
         rating: 5,
         comment: 'The aroma of this rice is incredible! Perfect texture when cooked.',
-        date: '2023-09-05T11:45:00Z'
+        date: '2023-09-05T11:45:00Z',
+        photos: [
+          'https://images.unsplash.com/photo-1516901121982-4ba280115a36?w=300&q=80'
+        ]
       },
       {
         id: '202',

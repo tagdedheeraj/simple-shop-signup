@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -83,7 +82,7 @@ const ProductDetail: React.FC = () => {
     }
   };
   
-  const handleAddReview = async (rating: number, comment: string) => {
+  const handleAddReview = async (rating: number, comment: string, photos?: string[]) => {
     if (!product || !user) return;
     
     try {
@@ -91,7 +90,8 @@ const ProductDetail: React.FC = () => {
         userId: user.id,
         userName: user.name,
         rating,
-        comment
+        comment,
+        photos
       });
       
       const updatedProduct = await getProductById(product.id);
