@@ -106,7 +106,7 @@ const RecentPurchaseToast: React.FC = () => {
         </div>
       </div>,
       {
-        position: "bottom-left",
+        position: "top-right", // Changed from bottom-left to top-right
         duration: 4000,
         icon: <ShoppingBag className="h-5 w-5 text-green-600" />
       }
