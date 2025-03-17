@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -22,10 +21,64 @@ import {
   Phone, 
   CalendarDays,
   CreditCard,
-  CheckCircle2
+  CheckCircle2,
+  MapPin,
+  ShoppingBag,
+  Clock3,
+  Package,
+  Truck,
+  Check,
+  Home
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+
+const orderHistory = [
+  {
+    id: "ORD-38291",
+    date: "May 12, 2023",
+    total: "$129.99",
+    status: "Delivered",
+    items: 3
+  },
+  {
+    id: "ORD-37128",
+    date: "April 23, 2023",
+    total: "$79.50",
+    status: "Delivered",
+    items: 2
+  },
+  {
+    id: "ORD-36091",
+    date: "March 15, 2023",
+    total: "$214.30",
+    status: "Delivered",
+    items: 4
+  }
+];
+
+const addresses = [
+  {
+    id: "addr-1",
+    name: "Home",
+    street: "123 Main Street",
+    city: "San Francisco",
+    state: "CA",
+    zip: "94107",
+    country: "United States",
+    isDefault: true
+  },
+  {
+    id: "addr-2",
+    name: "Office",
+    street: "456 Market Street, Suite 300",
+    city: "San Francisco",
+    state: "CA",
+    zip: "94102",
+    country: "United States",
+    isDefault: false
+  }
+];
 
 const UserProfile: React.FC = () => {
   const { user, updateProfile, updatePassword, loading } = useAuth();
@@ -139,10 +192,8 @@ const UserProfile: React.FC = () => {
     return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
   };
 
-  // Sample data for member since date - would typically come from user object
   const memberSince = 'June 2023';
   
-  // Animation variants for staggered animations
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -166,17 +217,14 @@ const UserProfile: React.FC = () => {
     }
   };
   
-  // Check password strength
   const getPasswordStrength = () => {
     if (!passwordData.newPassword) return 0;
     
     let strength = 0;
     
-    // Length check
     if (passwordData.newPassword.length >= 6) strength += 1;
     if (passwordData.newPassword.length >= 10) strength += 1;
     
-    // Character type checks
     if (/[A-Z]/.test(passwordData.newPassword)) strength += 1;
     if (/[0-9]/.test(passwordData.newPassword)) strength += 1;
     if (/[^A-Za-z0-9]/.test(passwordData.newPassword)) strength += 1;
@@ -186,17 +234,34 @@ const UserProfile: React.FC = () => {
   
   const passwordStrength = getPasswordStrength();
   
+  const renderOrderStatusBadge = (status: string) => {
+    switch (status) {
+      case "Delivered":
+        return <Badge className="bg-green-100 text-green-700 hover:bg-green-200">
+          <Check className="mr-1 h-3 w-3" /> {status}
+        </Badge>;
+      case "Processing":
+        return <Badge className="bg-blue-100 text-blue-700 hover:bg-blue-200">
+          <Package className="mr-1 h-3 w-3" /> {status}
+        </Badge>;
+      case "Shipped":
+        return <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-200">
+          <Truck className="mr-1 h-3 w-3" /> {status}
+        </Badge>;
+      default:
+        return <Badge className="bg-gray-100 text-gray-700 hover:bg-gray-200">{status}</Badge>;
+    }
+  };
+
   return (
     <Layout>
       <div className="container max-w-5xl py-8">
-        {/* Profile Header */}
         <motion.div 
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
           className="relative mb-12 overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 via-green-500 to-green-400 p-8 shadow-lg"
         >
-          {/* Decorative elements */}
           <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
           <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl"></div>
           <div className="absolute top-1/3 right-1/4 h-24 w-24 rounded-full bg-white/5"></div>
@@ -284,9 +349,8 @@ const UserProfile: React.FC = () => {
           </div>
         </motion.div>
         
-        {/* Tabs and Content Area */}
         <Tabs defaultValue="account" className="w-full">
-          <TabsList className="mb-8 w-full max-w-md mx-auto grid grid-cols-2 h-14 rounded-xl bg-white shadow-md border border-green-100 p-1.5">
+          <TabsList className="mb-8 w-full max-w-md mx-auto grid grid-cols-4 h-14 rounded-xl bg-white shadow-md border border-green-100 p-1.5">
             <TabsTrigger 
               value="account"
               className="rounded-lg text-base data-[state=active]:bg-green-50 data-[state=active]:text-green-800 data-[state=active]:shadow-sm transition-all duration-200"
@@ -301,10 +365,23 @@ const UserProfile: React.FC = () => {
               <Shield className="mr-2 h-4 w-4" />
               Security
             </TabsTrigger>
+            <TabsTrigger 
+              value="orders"
+              className="rounded-lg text-base data-[state=active]:bg-green-50 data-[state=active]:text-green-800 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              <ShoppingBag className="mr-2 h-4 w-4" />
+              Orders
+            </TabsTrigger>
+            <TabsTrigger 
+              value="addresses"
+              className="rounded-lg text-base data-[state=active]:bg-green-50 data-[state=active]:text-green-800 data-[state=active]:shadow-sm transition-all duration-200"
+            >
+              <MapPin className="mr-2 h-4 w-4" />
+              Addresses
+            </TabsTrigger>
           </TabsList>
           
           <div className="grid grid-cols-1 gap-8 md:grid-cols-[300px_1fr]">
-            {/* Profile Summary Card */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -360,6 +437,26 @@ const UserProfile: React.FC = () => {
                       <div>
                         <h3 className="font-medium text-gray-800">Premium Plan</h3>
                         <p className="text-xs text-gray-500">Account Type</p>
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div variants={itemVariants} className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-green-50 text-green-700">
+                        <ShoppingBag className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-800">{orderHistory.length} Orders</h3>
+                        <p className="text-xs text-gray-500">Purchase History</p>
+                      </div>
+                    </motion.div>
+                    
+                    <motion.div variants={itemVariants} className="flex items-center gap-3">
+                      <div className="p-2 rounded-full bg-green-50 text-green-700">
+                        <MapPin className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-medium text-gray-800">{addresses.length} Addresses</h3>
+                        <p className="text-xs text-gray-500">Saved Locations</p>
                       </div>
                     </motion.div>
                   </motion.div>
@@ -598,6 +695,165 @@ const UserProfile: React.FC = () => {
                         </Button>
                       </CardFooter>
                     </form>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+              
+              <TabsContent value="orders" className="m-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Card className="border-green-100 shadow-md rounded-xl overflow-hidden">
+                    <CardHeader className="bg-gradient-to-r from-green-50 to-green-100/50 border-b border-green-100 pb-4">
+                      <CardTitle className="text-lg text-green-800 flex items-center gap-2">
+                        <ShoppingBag className="h-5 w-5" />
+                        Order History
+                      </CardTitle>
+                      <CardDescription className="text-green-600">
+                        View and manage your previous orders
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      {orderHistory.length > 0 ? (
+                        <div className="divide-y divide-gray-100">
+                          {orderHistory.map((order) => (
+                            <div key={order.id} className="p-4 hover:bg-gray-50 transition-colors">
+                              <div className="flex flex-wrap justify-between items-start gap-4">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="font-medium">{order.id}</h3>
+                                    {renderOrderStatusBadge(order.status)}
+                                  </div>
+                                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                                    <div className="flex items-center gap-1">
+                                      <Clock3 className="h-3.5 w-3.5" />
+                                      <span>{order.date}</span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <Package className="h-3.5 w-3.5" />
+                                      <span>{order.items} items</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="font-medium text-green-700">{order.total}</span>
+                                  <Button variant="outline" size="sm" className="h-8 text-xs border-green-200 hover:bg-green-50 hover:text-green-800">
+                                    View Details
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-12 px-4 text-center">
+                          <div className="bg-gray-50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                            <ShoppingBag className="h-7 w-7 text-gray-400" />
+                          </div>
+                          <h3 className="text-lg font-medium text-gray-700 mb-1">No orders yet</h3>
+                          <p className="text-gray-500 mb-4">You haven't placed any orders yet.</p>
+                          <Button className="bg-green-600 hover:bg-green-700 text-white">
+                            Start Shopping
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="bg-gray-50/70 border-t border-gray-100 py-4 flex justify-between">
+                      <p className="text-sm text-gray-500">
+                        Need help with an order? <a href="#" className="text-green-600 hover:underline">Contact Support</a>
+                      </p>
+                      <Button variant="outline" className="border-green-200 hover:bg-green-50 hover:text-green-800 text-sm">
+                        View All Orders
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
+              </TabsContent>
+              
+              <TabsContent value="addresses" className="m-0">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <Card className="border-green-100 shadow-md rounded-xl overflow-hidden">
+                    <CardHeader className="bg-gradient-to-r from-green-50 to-green-100/50 border-b border-green-100 pb-4">
+                      <CardTitle className="text-lg text-green-800 flex items-center gap-2">
+                        <MapPin className="h-5 w-5" />
+                        Shipping Addresses
+                      </CardTitle>
+                      <CardDescription className="text-green-600">
+                        Manage your shipping address information
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-4 grid gap-4 sm:grid-cols-2">
+                      {addresses.map((address) => (
+                        <div 
+                          key={address.id} 
+                          className={`p-4 border rounded-lg ${
+                            address.isDefault 
+                              ? 'border-green-200 bg-green-50/50' 
+                              : 'border-gray-200 hover:border-gray-300'
+                          } transition-colors`}
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-medium text-gray-800">{address.name}</h3>
+                              {address.isDefault && (
+                                <Badge className="bg-green-100 text-green-700 hover:bg-green-200">Default</Badge>
+                              )}
+                            </div>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
+                              <span className="sr-only">Edit address</span>
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M12 20V4M4 12h16" />
+                              </svg>
+                            </Button>
+                          </div>
+                          <div className="text-sm text-gray-600 space-y-1">
+                            <p>{address.street}</p>
+                            <p>{address.city}, {address.state} {address.zip}</p>
+                            <p>{address.country}</p>
+                          </div>
+                          <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap gap-2">
+                            <Button variant="outline" size="sm" className="h-8 text-xs">
+                              Edit
+                            </Button>
+                            {!address.isDefault && (
+                              <Button variant="outline" size="sm" className="h-8 text-xs">
+                                Set as Default
+                              </Button>
+                            )}
+                            {!address.isDefault && (
+                              <Button variant="ghost" size="sm" className="h-8 text-xs text-red-600 hover:text-red-700 hover:bg-red-50">
+                                Remove
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      <div className="p-4 border border-dashed border-gray-200 rounded-lg flex flex-col items-center justify-center text-center bg-gray-50/50 hover:bg-gray-50 transition-colors cursor-pointer">
+                        <div className="w-12 h-12 mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                        </div>
+                        <h3 className="font-medium text-gray-700 mb-1">Add New Address</h3>
+                        <p className="text-sm text-gray-500">Add a new shipping destination</p>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="bg-gray-50/70 border-t border-gray-100 py-4 flex justify-between">
+                      <p className="text-sm text-gray-500">
+                        Addresses are used for shipping and billing
+                      </p>
+                      <Button className="bg-green-600 hover:bg-green-700 text-white transition-colors shadow-sm">
+                        <Home className="h-4 w-4 mr-2" />
+                        Add New Address
+                      </Button>
+                    </CardFooter>
                   </Card>
                 </motion.div>
               </TabsContent>
