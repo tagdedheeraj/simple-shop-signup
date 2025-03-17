@@ -106,8 +106,8 @@ const RecentPurchaseToast: React.FC = () => {
         </div>
       </div>,
       {
-        position: "top-right", // Changed from bottom-left to top-right
-        duration: 4000,
+        position: "top-right",
+        duration: 3000, // Changed from 4000 to 3000 milliseconds (3 seconds)
         icon: <ShoppingBag className="h-5 w-5 text-green-600" />
       }
     );
