@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -111,7 +110,6 @@ const UserProfile: React.FC = () => {
   const [showProfileImage, setShowProfileImage] = useState(false);
   
   useEffect(() => {
-    // Show profile image with a small delay for animation
     const timer = setTimeout(() => {
       setShowProfileImage(true);
     }, 300);
@@ -137,7 +135,6 @@ const UserProfile: React.FC = () => {
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!profileData.email) {
       toast.error('Email is required');
       return;
@@ -157,7 +154,6 @@ const UserProfile: React.FC = () => {
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
     if (!passwordData.currentPassword || !passwordData.newPassword) {
       toast.error('All password fields are required');
       return;
@@ -179,7 +175,6 @@ const UserProfile: React.FC = () => {
     );
     
     if (success) {
-      // Clear password fields after successful update
       setPasswordData({
         currentPassword: '',
         newPassword: '',
@@ -288,168 +283,189 @@ const UserProfile: React.FC = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="relative mb-12 overflow-hidden rounded-3xl bg-gradient-to-r from-green-600 via-green-500 to-emerald-400 p-10 shadow-xl"
+          className="relative mb-12 overflow-hidden rounded-3xl shadow-xl"
         >
-          {/* Abstract background shapes */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-violet-500 to-indigo-600 opacity-90">
+            <div className="absolute inset-0 bg-grid-white/[0.05] bg-[size:20px_20px]"></div>
+          </div>
+          
           <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-white/5 blur-3xl"></div>
           <div className="absolute -bottom-32 -left-32 h-96 w-96 rounded-full bg-white/5 blur-3xl"></div>
-          <div className="absolute top-1/4 right-1/3 h-32 w-32 rounded-full bg-white/5 blur-xl"></div>
-          <div className="absolute bottom-1/4 left-1/3 h-24 w-24 rounded-full bg-white/5 blur-md"></div>
+          <div className="absolute top-1/3 right-1/4 h-48 w-48 rounded-full bg-white/10 blur-2xl"></div>
+          <div className="absolute bottom-1/3 left-1/4 h-32 w-32 rounded-full bg-white/5 blur-xl"></div>
           
-          <div className="relative z-10 flex flex-col items-start gap-8 md:flex-row md:items-center">
-            <AnimatePresence>
-              {showProfileImage && (
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ 
-                    type: "spring", 
-                    stiffness: 100,
-                    damping: 15,
-                    delay: 0.1
-                  }}
-                  className="relative group"
-                >
-                  <motion.div 
-                    animate={{ 
-                      boxShadow: ["0px 0px 0px 0px rgba(255,255,255,0.2)", "0px 0px 0px 8px rgba(255,255,255,0.2)", "0px 0px 0px 0px rgba(255,255,255,0.2)"]
-                    }}
-                    transition={{ 
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatType: "reverse"
-                    }}
-                    className="absolute inset-0 rounded-full"
-                  ></motion.div>
-                  <div className="relative">
-                    <Avatar className="h-32 w-32 border-4 border-white/20 ring-4 ring-white/10 ring-offset-2 ring-offset-green-500 shadow-2xl">
-                      <AvatarImage src={previewImage || undefined} alt={user.name} className="object-cover" />
-                      <AvatarFallback className="text-3xl bg-gradient-to-br from-emerald-400 to-green-600 text-white">
-                        {renderInitials()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <motion.button 
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={triggerFileInput}
-                      className="absolute bottom-0 right-0 bg-white text-green-700 p-2.5 rounded-full shadow-lg hover:bg-green-50 transition-colors"
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-40 right-12 h-[500px] w-[500px] rounded-full border border-white/10 opacity-20"></div>
+            <div className="absolute -bottom-40 left-12 h-[400px] w-[400px] rounded-full border border-white/10 opacity-20"></div>
+            <div className="absolute top-1/4 right-1/3 h-24 w-24 rounded-full border border-white/20 opacity-30"></div>
+          </div>
+          
+          <div className="relative z-10 backdrop-blur-sm">
+            <div className="mx-auto max-w-5xl p-6 md:p-10">
+              <div className="grid gap-8 md:grid-cols-[auto_1fr_auto] items-center">
+                <AnimatePresence>
+                  {showProfileImage && (
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 100,
+                        damping: 15,
+                        delay: 0.1
+                      }}
+                      className="relative group"
                     >
-                      <Camera className="h-5 w-5" />
-                    </motion.button>
-                    <input 
-                      type="file" 
-                      ref={fileInputRef}
-                      onChange={handleFileChange}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-            
-            <div className="mt-4 md:mt-0">
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.4 }}
-              >
-                <motion.div 
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.3, duration: 0.4 }}
-                  className="flex items-center gap-3 mb-2"
-                >
-                  <h1 className="text-3xl font-bold text-white">{user.name}</h1>
-                  <Badge className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 font-medium py-1.5">
-                    <Sparkles className="h-3.5 w-3.5 mr-1" /> Premium Member
-                  </Badge>
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.4 }}
-                  className="flex flex-col space-y-1.5 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-6 text-white/90"
-                >
-                  <div className="flex items-center gap-1.5">
-                    <Mail className="h-4 w-4" />
-                    <span className="text-sm">{user.email}</span>
-                  </div>
-                  {user.phone && (
-                    <div className="flex items-center gap-1.5">
-                      <Phone className="h-4 w-4" />
-                      <span className="text-sm">{user.phone}</span>
-                    </div>
+                      <motion.div 
+                        animate={{ 
+                          boxShadow: ["0px 0px 0px 0px rgba(255,255,255,0.2)", "0px 0px 0px 8px rgba(255,255,255,0.2)", "0px 0px 0px 0px rgba(255,255,255,0.2)"]
+                        }}
+                        transition={{ 
+                          duration: 2,
+                          repeat: Infinity,
+                          repeatType: "reverse"
+                        }}
+                        className="absolute inset-0 rounded-full"
+                      ></motion.div>
+                      <div className="relative">
+                        <div className="p-1 bg-white/20 backdrop-blur-md rounded-full">
+                          <Avatar className="h-36 w-36 border-4 border-white/30 ring-2 ring-white/10 shadow-2xl">
+                            <AvatarImage src={previewImage || undefined} alt={user.name} className="object-cover" />
+                            <AvatarFallback className="text-3xl bg-gradient-to-br from-indigo-400 to-purple-600 text-white">
+                              {renderInitials()}
+                            </AvatarFallback>
+                          </Avatar>
+                        </div>
+                        <motion.button 
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={triggerFileInput}
+                          className="absolute bottom-1 right-1 bg-white text-purple-700 p-3 rounded-full shadow-lg hover:bg-purple-50 transition-colors z-10"
+                        >
+                          <Camera className="h-5 w-5" />
+                        </motion.button>
+                        <input 
+                          type="file" 
+                          ref={fileInputRef}
+                          onChange={handleFileChange}
+                          accept="image/*"
+                          className="hidden"
+                        />
+                      </div>
+                    </motion.div>
                   )}
-                </motion.div>
-                <motion.div 
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.5 }}
-                  className="mt-3 flex items-center gap-1.5 text-white/70"
-                >
-                  <CalendarDays className="h-3.5 w-3.5" />
-                  <span className="text-xs">Member since {memberSince}</span>
-                </motion.div>
-              </motion.div>
-            </div>
-            
-            <div className="ml-auto mt-6 md:mt-0 flex-shrink-0">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 }}
-              >
-                <div className="w-full md:w-auto flex flex-wrap items-center justify-center gap-3">
+                </AnimatePresence>
+                
+                <div className="space-y-4">
                   <motion.div 
-                    whileHover={{ y: -3, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-                    className="bg-white/10 backdrop-blur-md p-3 rounded-xl"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.4 }}
                   >
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs text-white/70">Status</span>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <motion.span 
-                          animate={{ 
-                            scale: [1, 1.2, 1],
-                            opacity: [1, 0.8, 1] 
-                          }}
-                          transition={{ 
-                            duration: 2,
-                            repeat: Infinity,
-                            repeatType: "loop"
-                          }}
-                          className="h-2.5 w-2.5 rounded-full bg-green-300"
-                        ></motion.span>
-                        <span className="text-sm font-medium text-white">Active</span>
+                    <motion.div 
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.4 }}
+                      className="flex flex-wrap items-center gap-3 mb-2"
+                    >
+                      <h1 className="text-4xl font-bold text-white tracking-tight">{user.name}</h1>
+                      <Badge className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 font-medium py-1.5">
+                        <Sparkles className="h-3.5 w-3.5 mr-1" /> Premium Member
+                      </Badge>
+                    </motion.div>
+                    
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                      className="flex flex-col space-y-2 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-6"
+                    >
+                      <div className="flex items-center gap-2 text-white/90 backdrop-blur-md bg-white/10 px-3 py-1.5 rounded-full">
+                        <Mail className="h-4 w-4" />
+                        <span className="text-sm font-medium">{user.email}</span>
                       </div>
-                    </div>
+                      {user.phone && (
+                        <div className="flex items-center gap-2 text-white/90 backdrop-blur-md bg-white/10 px-3 py-1.5 rounded-full">
+                          <Phone className="h-4 w-4" />
+                          <span className="text-sm font-medium">{user.phone}</span>
+                        </div>
+                      )}
+                    </motion.div>
+                    
+                    <motion.div 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                      className="mt-4 flex items-center gap-1.5 text-white/80"
+                    >
+                      <div className="flex items-center gap-2 backdrop-blur-md bg-white/10 px-3 py-1.5 rounded-full">
+                        <CalendarDays className="h-3.5 w-3.5" />
+                        <span className="text-xs">Member since {memberSince}</span>
+                      </div>
+                    </motion.div>
                   </motion.div>
-                  
-                  <motion.div 
-                    whileHover={{ y: -3, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-                    className="bg-white/10 backdrop-blur-md p-3 rounded-xl"
+                </div>
+                
+                <div className="ml-auto flex-shrink-0">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 }}
                   >
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs text-white/70">Orders</span>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className="text-sm font-medium text-white">{orderHistory.length}</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div 
-                    whileHover={{ y: -3, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
-                    className="bg-white/10 backdrop-blur-md p-3 rounded-xl"
-                  >
-                    <div className="flex flex-col items-center">
-                      <span className="text-xs text-white/70">Addresses</span>
-                      <div className="flex items-center gap-1.5 mt-1">
-                        <span className="text-sm font-medium text-white">{addresses.length}</span>
-                      </div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <motion.div 
+                        whileHover={{ y: -3, scale: 1.05 }}
+                        className="bg-white/10 backdrop-blur-md p-4 rounded-xl"
+                      >
+                        <div className="flex flex-col items-center">
+                          <div className="w-9 h-9 mb-2 rounded-full bg-white/20 flex items-center justify-center">
+                            <motion.span 
+                              animate={{ 
+                                scale: [1, 1.2, 1],
+                                opacity: [1, 0.8, 1] 
+                              }}
+                              transition={{ 
+                                duration: 2,
+                                repeat: Infinity,
+                                repeatType: "loop"
+                              }}
+                              className="h-2.5 w-2.5 rounded-full bg-green-300"
+                            ></motion.span>
+                          </div>
+                          <span className="text-lg font-semibold text-white">Active</span>
+                          <span className="text-xs mt-1 text-white/60">Status</span>
+                        </div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        whileHover={{ y: -3, scale: 1.05 }}
+                        className="bg-white/10 backdrop-blur-md p-4 rounded-xl"
+                      >
+                        <div className="flex flex-col items-center">
+                          <div className="w-9 h-9 mb-2 rounded-full bg-white/20 flex items-center justify-center">
+                            <ShoppingBag className="h-5 w-5 text-white/80" />
+                          </div>
+                          <span className="text-lg font-semibold text-white">{orderHistory.length}</span>
+                          <span className="text-xs mt-1 text-white/60">Orders</span>
+                        </div>
+                      </motion.div>
+                      
+                      <motion.div 
+                        whileHover={{ y: -3, scale: 1.05 }}
+                        className="bg-white/10 backdrop-blur-md p-4 rounded-xl"
+                      >
+                        <div className="flex flex-col items-center">
+                          <div className="w-9 h-9 mb-2 rounded-full bg-white/20 flex items-center justify-center">
+                            <MapPin className="h-5 w-5 text-white/80" />
+                          </div>
+                          <span className="text-lg font-semibold text-white">{addresses.length}</span>
+                          <span className="text-xs mt-1 text-white/60">Addresses</span>
+                        </div>
+                      </motion.div>
                     </div>
                   </motion.div>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -509,7 +525,6 @@ const UserProfile: React.FC = () => {
               </TabsTrigger>
             </TabsList>
             
-            {/* Animated indicator */}
             <motion.div 
               className="absolute left-0 right-0 -bottom-4 flex justify-center pointer-events-none"
               initial={false}
