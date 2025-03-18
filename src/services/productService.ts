@@ -1,4 +1,3 @@
-
 import { Product, Review } from '@/types/product';
 
 // Mock product data
@@ -39,7 +38,7 @@ const products: Product[] = [
     name: 'Basmati Rice',
     description: 'Premium long-grain aromatic rice grown in the foothills of the Himalayas.',
     price: 8.99,
-    image: 'https://images.unsplash.com/photo-1594385158317-3a8d922c1711?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
     category: 'rice',
     stock: 75,
     reviews: [

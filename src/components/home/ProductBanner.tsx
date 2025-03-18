@@ -81,7 +81,7 @@ const ProductBanner: React.FC = () => {
             <Card className="-rotate-6 shadow-xl w-80 absolute -bottom-10 -right-5 overflow-hidden border-none">
               <CardContent className="p-0">
                 <img 
-                  src="https://images.unsplash.com/photo-1594385158317-3a8d922c1711?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
+                  src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
                   alt="Basmati Rice"
                   className="w-full h-auto object-cover aspect-[4/3]"
                 />
