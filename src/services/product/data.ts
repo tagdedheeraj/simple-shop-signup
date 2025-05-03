@@ -1,7 +1,8 @@
+
 import { Product, Review } from '@/types/product';
 
 // Mock product data
-const products: Product[] = [
+export const products: Product[] = [
   {
     id: '1',
     name: 'Premium Whole Wheat Flour',
@@ -309,90 +310,3 @@ const products: Product[] = [
     reviews: []
   }
 ];
-
-// Simulate API calls with a delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
-
-export const getProducts = async (): Promise<Product[]> => {
-  await delay(800); // Simulate network delay
-  return [...products];
-};
-
-export const getProductById = async (id: string): Promise<Product | undefined> => {
-  await delay(500); // Simulate network delay
-  return products.find(product => product.id === id);
-};
-
-export const getProductsByCategory = async (category: string): Promise<Product[]> => {
-  await delay(800); // Simulate network delay
-  return products.filter(product => product.category === category);
-};
-
-export const getRelatedProducts = async (productId: string, limit: number = 4): Promise<Product[]> => {
-  await delay(600); // Simulate network delay
-  
-  const currentProduct = products.find(p => p.id === productId);
-  if (!currentProduct) return [];
-  
-  // Find products in the same category, excluding the current product
-  let relatedProducts = products.filter(p => 
-    p.category === currentProduct.category && p.id !== currentProduct.id
-  );
-  
-  // If we don't have enough products in the same category, add some random products
-  if (relatedProducts.length < limit) {
-    const otherProducts = products.filter(p => 
-      p.category !== currentProduct.category && p.id !== currentProduct.id
-    );
-    
-    // Shuffle the array to get random products
-    const shuffled = [...otherProducts].sort(() => 0.5 - Math.random());
-    relatedProducts = [...relatedProducts, ...shuffled.slice(0, limit - relatedProducts.length)];
-  }
-  
-  // Return only the requested number of products
-  return relatedProducts.slice(0, limit);
-};
-
-// New function to get trending products
-export const getTrendingProducts = async (limit: number = 4): Promise<Product[]> => {
-  await delay(600); // Simulate network delay
-  
-  // In a real app, this would be based on product popularity, reviews, etc.
-  // For this demo, we'll just select random products and mark them as trending
-  const shuffled = [...products].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, limit);
-};
-
-export const addReview = async (productId: string, review: Omit<Review, 'id' | 'date'>): Promise<Review> => {
-  await delay(500); // Simulate network delay
-  
-  const product = products.find(p => p.id === productId);
-  if (!product) {
-    throw new Error('Product not found');
-  }
-  
-  const newReview: Review = {
-    ...review,
-    id: crypto.randomUUID(),
-    date: new Date().toISOString()
-  };
-  
-  if (!product.reviews) {
-    product.reviews = [];
-  }
-  
-  product.reviews.push(newReview);
-  
-  // In a real app, this would update the backend
-  localStorage.setItem('products', JSON.stringify(products));
-  
-  return newReview;
-};
-
-// Initialize products in localStorage if they don't exist
-export const initializeProducts = () => {
-  if (!localStorage.getItem('products')) {
-    localStorage.setItem('products', JSON.stringify(products));
-  }
-};
