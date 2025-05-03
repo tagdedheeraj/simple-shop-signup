@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -5,7 +6,7 @@ import { useCart } from '@/contexts/CartContext';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { Button } from '@/components/ui/button';
 import { Trash2, Plus, Minus, ArrowRight, ShoppingBag, CreditCard, Loader2 } from 'lucide-react';
-import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypalService';
+import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypal';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 

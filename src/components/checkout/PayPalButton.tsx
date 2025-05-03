@@ -1,11 +1,10 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useCart } from '@/contexts/CartContext';
 import { Loader2 } from 'lucide-react';
-import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypalService';
+import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypal';
 import { CustomerInfo } from './CustomerInfoForm';
 
 interface PayPalButtonProps {
