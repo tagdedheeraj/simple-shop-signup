@@ -25,7 +25,7 @@ import UserProfile from "./pages/UserProfile";
 import { initializeProducts } from "./services/product";
 
 // Initialize mock data
-initializeProducts();
+initializeProducts({ forceRefresh: false });
 
 const queryClient = new QueryClient();
 
