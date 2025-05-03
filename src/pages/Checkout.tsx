@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ArrowRight, CreditCard, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CreditCard, Loader2, ShieldCheck } from 'lucide-react';
 import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypalService';
 
 interface CustomerInfo {
