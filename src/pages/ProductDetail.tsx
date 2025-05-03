@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -21,7 +22,8 @@ import {
   Clock, 
   BadgeCheck, 
   Leaf, 
-  Headphones 
+  Headphones,
+  Share
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
@@ -32,6 +34,11 @@ import {
   Card, 
   CardContent 
 } from '@/components/ui/card';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const ProductDetail: React.FC = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -115,6 +122,36 @@ const ProductDetail: React.FC = () => {
     }
   };
 
+  const handleShareProduct = () => {
+    if (!product) return;
+    
+    // Get the current URL to share
+    const shareUrl = window.location.href;
+    
+    // Try to use the Web Share API if available
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: `Check out this product: ${product.name}`,
+        url: shareUrl,
+      })
+        .then(() => toast.success('Product shared successfully'))
+        .catch((error) => console.error('Error sharing product:', error));
+    } else {
+      // Fallback to copying to clipboard
+      navigator.clipboard.writeText(shareUrl)
+        .then(() => toast.success('Product link copied to clipboard!'))
+        .catch(() => toast.error('Failed to copy link'));
+    }
+  };
+
+  // Code for share buttons
+  const socialShareLinks = {
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(product?.name || 'Check out this product!')}`,
+    whatsapp: `https://wa.me/?text=${encodeURIComponent(`${product?.name}: ${window.location.href}`)}`,
+  };
+
   if (loading) {
     return (
       <Layout>
@@ -176,16 +213,70 @@ const ProductDetail: React.FC = () => {
             alt={product.name} 
             className="w-full h-auto object-cover aspect-square"
           />
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleWishlistToggle}
-            className="absolute top-4 right-4 bg-white/90 rounded-full shadow-md z-10 hover:bg-white"
-          >
-            <Heart 
-              className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
-            />
-          </Button>
+
+          <div className="absolute top-4 right-4 flex gap-2 z-10">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleWishlistToggle}
+              className="bg-white/90 rounded-full shadow-md hover:bg-white"
+            >
+              <Heart 
+                className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} 
+              />
+            </Button>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="bg-white/90 rounded-full shadow-md hover:bg-white"
+                >
+                  <Share className="h-5 w-5 text-gray-600" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 p-4">
+                <h4 className="font-medium mb-2">Share this product</h4>
+                <div className="flex gap-2 mb-3">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => window.open(socialShareLinks.facebook, '_blank')}
+                  >
+                    Facebook
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => window.open(socialShareLinks.twitter, '_blank')}
+                  >
+                    Twitter
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => window.open(socialShareLinks.whatsapp, '_blank')}
+                  >
+                    WhatsApp
+                  </Button>
+                </div>
+                <div className="pt-2 border-t">
+                  <Button 
+                    variant="default" 
+                    className="w-full"
+                    onClick={handleShareProduct}
+                  >
+                    <Share className="h-4 w-4 mr-2" />
+                    Copy Link
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </motion.div>
         
         <motion.div 

@@ -143,6 +143,170 @@ const products: Product[] = [
         date: '2023-10-05T09:45:00Z'
       }
     ]
+  },
+  // New wheat products
+  {
+    id: '6',
+    name: 'Organic Wheat Berries',
+    description: 'Whole grain wheat berries for sprouting or grinding into flour at home.',
+    price: 4.49,
+    image: 'https://images.unsplash.com/photo-1556060880-053a05a35b43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 40,
+    reviews: [
+      {
+        id: '601',
+        userId: 'user15',
+        userName: 'Lisa Brown',
+        rating: 5,
+        comment: 'Perfect for homemade flour and sprouting! Very fresh quality.',
+        date: '2023-11-12T08:30:00Z'
+      }
+    ]
+  },
+  {
+    id: '7',
+    name: 'Premium Semolina',
+    description: 'Fine-ground durum wheat semolina, ideal for pasta making and desserts.',
+    price: 3.99,
+    image: 'https://images.unsplash.com/photo-1563435059883-425331801a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 65,
+    reviews: []
+  },
+  // New rice products
+  {
+    id: '8',
+    name: 'Jasmine Rice',
+    description: 'Fragrant Thai jasmine rice with a subtle floral aroma.',
+    price: 7.49,
+    image: 'https://images.unsplash.com/photo-1626236104356-12c2d206d692?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'rice',
+    stock: 85,
+    reviews: [
+      {
+        id: '801',
+        userId: 'user16',
+        userName: 'Sarah Chen',
+        rating: 5,
+        comment: 'Authentic jasmine rice with wonderful aroma. Perfect with curries!',
+        date: '2023-10-22T19:15:00Z'
+      }
+    ]
+  },
+  {
+    id: '9',
+    name: 'Brown Rice',
+    description: 'Whole grain brown rice rich in fiber and nutrients.',
+    price: 6.99,
+    image: 'https://images.unsplash.com/photo-1595475207225-428b62bda831?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'rice',
+    stock: 70,
+    reviews: []
+  },
+  // Millet (Bajra) products
+  {
+    id: '10',
+    name: 'Pearl Millet (Bajra)',
+    description: 'Nutritious pearl millet grains, high in protein and minerals.',
+    price: 4.79,
+    image: 'https://images.unsplash.com/photo-1622970236141-c51a55932077?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 45,
+    reviews: []
+  },
+  {
+    id: '11',
+    name: 'Bajra Flour',
+    description: 'Stone-ground pearl millet flour, perfect for traditional flatbreads.',
+    price: 5.29,
+    image: 'https://images.unsplash.com/photo-1627485937980-221c88ac04f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 35,
+    reviews: []
+  },
+  // Sorghum (Jowar) products
+  {
+    id: '12',
+    name: 'Sorghum (Jowar) Grains',
+    description: 'Whole sorghum grains, gluten-free with a mild, sweet flavor.',
+    price: 4.99,
+    image: 'https://images.unsplash.com/photo-1631209121750-a9f355ebe522?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 50,
+    reviews: []
+  },
+  {
+    id: '13',
+    name: 'Jowar Flour',
+    description: 'Fine sorghum flour, perfect for gluten-free baking and traditional recipes.',
+    price: 5.49,
+    image: 'https://images.unsplash.com/photo-1616663364399-cdb4c699349a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 40,
+    reviews: []
+  },
+  // Fruits
+  {
+    id: '14',
+    name: 'Organic Apples',
+    description: 'Fresh, crisp organic apples picked at peak ripeness.',
+    price: 4.99,
+    image: 'https://images.unsplash.com/photo-1567306226408-c302e9a70439?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'fruits',
+    stock: 100,
+    reviews: []
+  },
+  {
+    id: '15',
+    name: 'Premium Bananas',
+    description: 'Sweet, organic bananas perfect for snacking or baking.',
+    price: 3.49,
+    image: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'fruits',
+    stock: 120,
+    reviews: []
+  },
+  {
+    id: '16',
+    name: 'Sweet Mangoes',
+    description: 'Juicy, tropical mangoes with sweet, fiber-free flesh.',
+    price: 7.99,
+    image: 'https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'fruits',
+    stock: 50,
+    reviews: []
+  },
+  // Vegetables
+  {
+    id: '17',
+    name: 'Fresh Tomatoes',
+    description: 'Vine-ripened tomatoes, perfect for salads and cooking.',
+    price: 2.99,
+    image: 'https://images.unsplash.com/photo-1524593166156-312f362cada0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'vegetable',
+    stock: 80,
+    reviews: []
+  },
+  {
+    id: '18',
+    name: 'Organic Carrots',
+    description: 'Sweet, crunchy organic carrots, freshly harvested.',
+    price: 2.49,
+    image: 'https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'vegetable',
+    stock: 90,
+    reviews: []
+  },
+  {
+    id: '19',
+    name: 'Green Bell Peppers',
+    description: 'Crisp, flavorful bell peppers from local organic farms.',
+    price: 1.99,
+    image: 'https://images.unsplash.com/photo-1563565375-f3fdfdbefa83?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'vegetable',
+    stock: 70,
+    reviews: []
   }
 ];
 
