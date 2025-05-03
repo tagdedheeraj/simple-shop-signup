@@ -1,0 +1,105 @@
+
+import { Product } from '@/types/product';
+
+export const wheatProducts: Product[] = [
+  {
+    id: '1',
+    name: 'Premium Whole Wheat Flour',
+    description: 'Organic stone-ground wheat flour, perfect for making healthy bread and pastries.',
+    price: 5.99,
+    image: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 50,
+    reviews: [
+      {
+        id: '101',
+        userId: 'user1',
+        userName: 'John Doe',
+        rating: 5,
+        comment: 'Excellent quality flour! Made the best bread I\'ve ever baked.',
+        date: '2023-07-15T09:30:00Z',
+        photos: [
+          'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=300&q=80',
+          'https://images.unsplash.com/photo-1612204321161-9e9b8a4cb122?w=300&q=80'
+        ]
+      },
+      {
+        id: '102',
+        userId: 'user2',
+        userName: 'Jane Smith',
+        rating: 4,
+        comment: 'Very good texture and flavor. Will buy again!',
+        date: '2023-08-20T14:15:00Z'
+      }
+    ]
+  },
+  {
+    id: '6',
+    name: 'Organic Wheat Berries',
+    description: 'Whole grain wheat berries for sprouting or grinding into flour at home.',
+    price: 4.49,
+    image: 'https://images.unsplash.com/photo-1556060880-053a05a35b43?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 40,
+    reviews: [
+      {
+        id: '601',
+        userId: 'user15',
+        userName: 'Lisa Brown',
+        rating: 5,
+        comment: 'Perfect for homemade flour and sprouting! Very fresh quality.',
+        date: '2023-11-12T08:30:00Z'
+      }
+    ]
+  },
+  {
+    id: '7',
+    name: 'Premium Semolina',
+    description: 'Fine-ground durum wheat semolina, ideal for pasta making and desserts.',
+    price: 3.99,
+    image: 'https://images.unsplash.com/photo-1563435059883-425331801a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 65,
+    reviews: []
+  },
+  {
+    id: '10',
+    name: 'Pearl Millet (Bajra)',
+    description: 'Nutritious pearl millet grains, high in protein and minerals.',
+    price: 4.79,
+    image: 'https://images.unsplash.com/photo-1622970236141-c51a55932077?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 45,
+    reviews: []
+  },
+  {
+    id: '11',
+    name: 'Bajra Flour',
+    description: 'Stone-ground pearl millet flour, perfect for traditional flatbreads.',
+    price: 5.29,
+    image: 'https://images.unsplash.com/photo-1627485937980-221c88ac04f9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 35,
+    reviews: []
+  },
+  {
+    id: '12',
+    name: 'Sorghum (Jowar) Grains',
+    description: 'Whole sorghum grains, gluten-free with a mild, sweet flavor.',
+    price: 4.99,
+    image: 'https://images.unsplash.com/photo-1631209121750-a9f355ebe522?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 50,
+    reviews: []
+  },
+  {
+    id: '13',
+    name: 'Jowar Flour',
+    description: 'Fine sorghum flour, perfect for gluten-free baking and traditional recipes.',
+    price: 5.49,
+    image: 'https://images.unsplash.com/photo-1616663364399-cdb4c699349a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 40,
+    reviews: []
+  }
+];
