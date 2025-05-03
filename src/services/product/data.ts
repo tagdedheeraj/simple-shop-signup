@@ -1,4 +1,3 @@
-
 import { Product, Review } from '@/types/product';
 
 // Mock product data
