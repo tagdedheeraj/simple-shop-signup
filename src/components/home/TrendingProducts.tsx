@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import ProductGrid from '@/components/products/ProductGrid';
 import { Loader2, ArrowRight, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { getTrendingProducts } from '@/services/productService';
+import { getTrendingProducts } from '@/services/product';
 
 const TrendingProducts: React.FC = () => {
   const { data: products, isLoading } = useQuery({

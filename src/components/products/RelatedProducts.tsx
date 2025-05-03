@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Product } from '@/types/product';
-import { getRelatedProducts } from '@/services/productService';
+import { getRelatedProducts } from '@/services/product';
 import ProductCard from './ProductCard';
 import { Loader2, Link as LinkIcon } from 'lucide-react';
 import { motion } from 'framer-motion';

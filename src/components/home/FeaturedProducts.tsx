@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalization } from '@/contexts/LocalizationContext';
@@ -7,7 +6,7 @@ import ProductGrid from '@/components/products/ProductGrid';
 import { Loader2, ArrowRight, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { getProducts } from '@/services/productService';
+import { getProducts } from '@/services/product';
 
 const FeaturedProducts: React.FC = () => {
   const { t } = useLocalization();

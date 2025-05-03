@@ -22,7 +22,7 @@ import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
 
 // Initialize services
-import { initializeProducts } from "./services/productService";
+import { initializeProducts } from "./services/product";
 
 // Initialize mock data
 initializeProducts();
