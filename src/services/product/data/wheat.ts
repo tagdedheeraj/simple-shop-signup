@@ -101,5 +101,75 @@ export const wheatProducts: Product[] = [
     category: 'wheat',
     stock: 40,
     reviews: []
+  },
+  {
+    id: '29',
+    name: 'Hard White Wheat',
+    description: 'High-protein white wheat ideal for bread and pastries with a milder flavor.',
+    price: 5.49,
+    image: 'https://images.unsplash.com/photo-1565429501018-8a254d6c8f5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 55,
+    reviews: []
+  },
+  {
+    id: '30',
+    name: 'Khorasan Wheat',
+    description: 'Ancient grain with rich, nutty flavor and high nutritional value.',
+    price: 6.99,
+    image: 'https://images.unsplash.com/photo-1533167649158-6d508895b680?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 35,
+    reviews: []
+  },
+  {
+    id: '31',
+    name: 'Spelt Wheat',
+    description: 'Ancient wheat variety with a distinctive nutty flavor, perfect for baking.',
+    price: 6.49,
+    image: 'https://images.unsplash.com/photo-1542990253-0d0f5be5f0ed?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 40,
+    reviews: []
+  },
+  {
+    id: '32',
+    name: 'Einkorn Wheat',
+    description: 'One of the oldest wheat varieties with high protein content and rich taste.',
+    price: 7.49,
+    image: 'https://images.unsplash.com/photo-1530407389687-5f73f0a5c966?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 30,
+    reviews: []
+  },
+  {
+    id: '33',
+    name: 'Rye Grain',
+    description: 'Hearty rye grain perfect for robust breads and traditional recipes.',
+    price: 4.99,
+    image: 'https://images.unsplash.com/photo-1550507164-9e576eba0db9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 45,
+    reviews: []
+  },
+  {
+    id: '34',
+    name: 'Soft White Wheat',
+    description: 'Low protein wheat perfect for pastries, cookies, and cakes.',
+    price: 5.29,
+    image: 'https://images.unsplash.com/photo-1570701123784-5dffe1c85bdf?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 50,
+    reviews: []
+  },
+  {
+    id: '35',
+    name: 'Hard Red Wheat',
+    description: 'High protein wheat with robust flavor, ideal for hearty breads and baking.',
+    price: 5.79,
+    image: 'https://images.unsplash.com/photo-1540661116512-12e516d30ce4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    category: 'wheat',
+    stock: 60,
+    reviews: []
   }
 ];
