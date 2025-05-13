@@ -1,6 +1,7 @@
 
 import { Product } from '@/types/product';
 import { delay } from './utils';
+import { products } from './data';
 
 // Get products from localStorage or fallback to imported data
 const getStoredProducts = (): Product[] => {
@@ -9,7 +10,6 @@ const getStoredProducts = (): Product[] => {
     return JSON.parse(storedProducts);
   }
   // Fallback to imported data if localStorage is empty
-  const { products } = require('./data');
   return products;
 };
 

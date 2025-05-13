@@ -1,4 +1,6 @@
 
+import { products } from './data';
+
 // Simulate API calls with a delay
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -7,8 +9,7 @@ export const initializeProducts = (options?: { forceRefresh?: boolean }) => {
   const shouldRefresh = options?.forceRefresh === true;
   
   if (shouldRefresh || !localStorage.getItem('products')) {
-    // Import products from data when needed
-    const { products } = require('./data');
+    // Use the directly imported products instead of require
     localStorage.setItem('products', JSON.stringify(products));
   }
 };
