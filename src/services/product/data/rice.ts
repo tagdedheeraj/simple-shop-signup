@@ -7,7 +7,7 @@ export const riceProducts: Product[] = [
     name: 'Basmati Rice',
     description: 'Premium long-grain aromatic rice grown in the foothills of the Himalayas.',
     price: 8.99,
-    image: 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    image: '/lovable-uploads/d0f264a7-374d-4e2d-98aa-2a9f1427b94e.png',
     category: 'rice',
     stock: 75,
     reviews: [
@@ -37,7 +37,7 @@ export const riceProducts: Product[] = [
     name: 'Jasmine Rice',
     description: 'Fragrant Thai jasmine rice with a subtle floral aroma.',
     price: 7.49,
-    image: 'https://images.unsplash.com/photo-1626236104356-12c2d206d692?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    image: '/lovable-uploads/9646d92f-ac2e-46f5-ac58-961b615e3686.png',
     category: 'rice',
     stock: 85,
     reviews: [
@@ -56,7 +56,7 @@ export const riceProducts: Product[] = [
     name: 'Brown Rice',
     description: 'Whole grain brown rice rich in fiber and nutrients.',
     price: 6.99,
-    image: 'https://images.unsplash.com/photo-1595475207225-428b62bda831?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    image: '/lovable-uploads/39136ca6-67f4-46c7-8d50-c7cd78ce0ded.png',
     category: 'rice',
     stock: 70,
     reviews: []
