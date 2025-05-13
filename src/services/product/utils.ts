@@ -12,3 +12,17 @@ export const initializeProducts = (options?: { forceRefresh?: boolean }) => {
     localStorage.setItem('products', JSON.stringify(products));
   }
 };
+
+// Force refresh product data from source files
+export const refreshProductData = async () => {
+  // Clear existing product data from localStorage
+  localStorage.removeItem('products');
+  
+  // Re-initialize with fresh data
+  initializeProducts({ forceRefresh: true });
+  
+  // Add a small delay to simulate API call
+  await delay(300);
+  
+  return true;
+};

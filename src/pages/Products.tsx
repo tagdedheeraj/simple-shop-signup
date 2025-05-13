@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import Layout from '@/components/layout/Layout';
 import ProductGrid from '@/components/products/ProductGrid';
-import { getProducts } from '@/services/product';
+import { getProducts, refreshProductData } from '@/services/product';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,35 +14,53 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { motion } from 'framer-motion';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [category, setCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getProducts();
-        setProducts(data);
-        setFilteredProducts(data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const data = await getProducts();
+      setProducts(data);
+      setFilteredProducts(data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProducts();
   }, []);
 
   useEffect(() => {
     filterProducts();
   }, [category, searchTerm, products]);
+
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await refreshProductData();
+      await fetchProducts();
+      toast.success('Product data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing products:', error);
+      toast.error('Failed to refresh product data');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const filterProducts = () => {
     let result = [...products];
@@ -88,11 +107,23 @@ const Products: React.FC = () => {
       >
         <div className="flex flex-col space-y-8">
           <div className="flex flex-col space-y-4">
-            <div className="flex flex-col space-y-2">
-              <h1 className="text-3xl font-bold">Our Products</h1>
-              <p className="text-muted-foreground">
-                Browse our selection of fresh, quality products shipped worldwide
-              </p>
+            <div className="flex justify-between items-center">
+              <div className="space-y-2">
+                <h1 className="text-3xl font-bold">Our Products</h1>
+                <p className="text-muted-foreground">
+                  Browse our selection of fresh, quality products shipped worldwide
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefresh}
+                disabled={refreshing}
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                {refreshing ? 'Refreshing...' : 'Refresh Products'}
+              </Button>
             </div>
             
             {/* Search and Filter Section */}
@@ -182,7 +213,7 @@ const Products: React.FC = () => {
             </div>
           )}
           
-          <ProductGrid products={filteredProducts} loading={loading} />
+          <ProductGrid products={filteredProducts} loading={loading || refreshing} />
         </div>
       </motion.div>
     </Layout>
