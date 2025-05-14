@@ -10,7 +10,6 @@ import TrustBadgesSection from '@/components/home/TrustBadgesSection';
 import CustomerStatistics from '@/components/home/CustomerStatistics';
 import PaymentTrustBadges from '@/components/home/PaymentTrustBadges';
 import FAQSection from '@/components/home/FAQSection';
-import RecentPurchaseToast from '@/components/notifications/RecentPurchaseToast';
 import { motion } from 'framer-motion';
 
 const Home: React.FC = () => {
@@ -32,9 +31,6 @@ const Home: React.FC = () => {
   
   return (
     <Layout>
-      {/* Purchase notifications component (invisible but functional) */}
-      <RecentPurchaseToast />
-      
       <motion.div 
         className="space-y-12 pb-8 md:space-y-20 md:pb-16"
         variants={container}
