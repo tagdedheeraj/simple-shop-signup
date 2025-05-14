@@ -27,7 +27,6 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, RefreshCw } from 'lucide-react';
-import { getImageWithTimestamp } from '@/lib/utils';
 
 interface ProductsTableProps {
   products: Product[];
@@ -57,6 +56,14 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     }
     setDeleteConfirmOpen(false);
     setProductToDelete(null);
+  };
+
+  // Ensure image has a timestamp parameter to prevent caching
+  const ensureTimestamp = (url: string) => {
+    if (!url) return "";
+    const timestamp = Date.now();
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}t=${timestamp}`;
   };
 
   return (
@@ -97,9 +104,10 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   <TableCell>
                     <div className="h-12 w-12 overflow-hidden rounded-md bg-gray-100">
                       <img 
-                        src={getImageWithTimestamp(product.image)} 
+                        src={ensureTimestamp(product.image)} 
                         alt={product.name} 
                         className="h-full w-full object-cover"
+                        key={product.id + Date.now()} // Force re-render on update
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = "/placeholder.svg";
                         }}

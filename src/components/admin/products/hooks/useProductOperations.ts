@@ -78,8 +78,8 @@ export const useProductOperations = () => {
       // Save back to localStorage using the utility function
       persistProducts(allProducts);
       
-      // Refresh products list
-      await fetchProducts();
+      // Refresh products list immediately
+      setTimeout(() => fetchProducts(), 100);
       return true;
     } catch (error) {
       console.error('Error saving product:', error);
@@ -102,7 +102,7 @@ export const useProductOperations = () => {
       
       toast.success('Product deleted successfully');
       // Refresh products list
-      await fetchProducts();
+      setTimeout(() => fetchProducts(), 100);
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);

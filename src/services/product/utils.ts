@@ -29,9 +29,17 @@ export const initializeProducts = (options?: { forceRefresh?: boolean }) => {
 export const addTimestampToImage = (imageUrl: string): string => {
   if (!imageUrl) return imageUrl;
   
-  // Add or update timestamp parameter
-  const separator = imageUrl.includes('?') ? '&' : '?';
-  return `${imageUrl}${separator}t=${Date.now()}`;
+  // Remove any existing timestamp parameter if present
+  let cleanUrl = imageUrl;
+  if (imageUrl.includes('?t=')) {
+    cleanUrl = imageUrl.split('?t=')[0];
+  } else if (imageUrl.includes('&t=')) {
+    cleanUrl = imageUrl.replace(/&t=\d+/, '');
+  }
+  
+  // Add timestamp parameter
+  const separator = cleanUrl.includes('?') ? '&' : '?';
+  return `${cleanUrl}${separator}t=${Date.now()}`;
 };
 
 // Force refresh product data from source files
@@ -51,6 +59,6 @@ export const refreshProductData = async () => {
 
 // Export a function to persist products to localStorage
 export const persistProducts = (products: any[]) => {
-  console.log('Persisting products to localStorage');
+  console.log('Persisting products to localStorage', products);
   localStorage.setItem('products', JSON.stringify(products));
 };

@@ -14,7 +14,7 @@ const ProductBanner: React.FC = () => {
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products-banner'],
     queryFn: getProducts,
-    staleTime: 300000, // 5 minutes
+    staleTime: 0, // Set to 0 to always fetch fresh data
   });
 
   // Get two products to display (preferably wheat and rice products)
@@ -101,6 +101,7 @@ const ProductBanner: React.FC = () => {
                       src={firstProduct.image} 
                       alt={firstProduct.name}
                       className="w-full h-full object-cover"
+                      key={firstProduct.id + Date.now()}
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">
@@ -120,6 +121,7 @@ const ProductBanner: React.FC = () => {
                       src={secondProduct.image} 
                       alt={secondProduct.name}
                       className="w-full h-full object-cover"
+                      key={secondProduct.id + Date.now()}
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">

@@ -7,7 +7,7 @@ import { addReview } from './reviews';
 
 // Initialize products when importing this module, but only if they don't exist
 // This prevents resetting user's custom products
-initializeProducts({ forceRefresh: false });
+initializeProducts();
 
 // Export all product service functions
 export {
