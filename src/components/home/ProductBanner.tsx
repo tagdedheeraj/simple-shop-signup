@@ -1,37 +1,21 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Tag, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getProducts, addTimestampToImage } from '@/services/product';
+import { getProducts } from '@/services/product';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Product } from '@/types/product';
 
 const ProductBanner: React.FC = () => {
-  const [imageKeys, setImageKeys] = useState<{[key: string]: string}>({});
-  
-  // Fetch products with a shorter timeout and disable retry on error
+  // Fetch products for displaying in the banner with staleTime to prevent frequent refetching
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products-banner', Date.now()],
+    queryKey: ['products-banner'],
     queryFn: getProducts,
-    staleTime: 0,
-    retry: false,
-    refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    cacheTime: 5 * 60 * 1000, // 5 minutes cache
+    staleTime: 0, // Set to 0 to always fetch fresh data
   });
-
-  // Generate unique keys for images
-  useEffect(() => {
-    const keys: {[key: string]: string} = {};
-    products.forEach(product => {
-      keys[product.id] = `${product.id}-${Date.now()}`;
-    });
-    setImageKeys(keys);
-  }, [products]);
 
   // Get two products to display (preferably wheat and rice products)
   const wheatProduct = products.find(p => p.category === 'wheat');
@@ -41,47 +25,17 @@ const ProductBanner: React.FC = () => {
   const firstProduct = wheatProduct || products[0];
   const secondProduct = riceProduct || (products.length > 1 ? products[1] : products[0]);
 
-  // Ensuring images have timestamps
-  const getImageWithTimestamp = (product: Product | undefined) => {
-    if (!product) return "";
-    return addTimestampToImage(product.image);
-  };
-
-  // Show a minimal loading state instead of a full-height loader
   if (isLoading || !products.length) {
     return (
       <div className="relative rounded-2xl overflow-hidden shadow-xl">
-        <div className="bg-gradient-to-r from-amber-800 to-amber-600 h-[450px] flex items-center">
-          <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
-            <motion.div
-              initial={{ opacity: 0.7 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="text-white space-y-6 py-8 z-10"
-            >
-              <h1 className="text-4xl md:text-5xl font-bold leading-tight">
-                Premium Quality<br />Organic Products
-              </h1>
-              <p className="text-lg opacity-90 font-light max-w-md">
-                Discover our premium selection of organic products, freshly harvested and delivered to your doorstep.
-              </p>
-            </motion.div>
-          </div>
-        </div>
-        
-        {/* Wave shape divider */}
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full h-auto">
-            <path 
-              fill="#ffffff" 
-              fillOpacity="1" 
-              d="M0,96L80,80C160,64,320,32,480,32C640,32,800,64,960,69.3C1120,75,1280,53,1360,42.7L1440,32L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"
-            ></path>
-          </svg>
+        <div className="bg-gradient-to-r from-amber-800 to-amber-600 h-[450px] flex items-center justify-center">
+          <div className="text-white text-xl">Loading products...</div>
         </div>
       </div>
     );
   }
+
+  console.log('ProductBanner rendering with products:', { firstProduct, secondProduct });
 
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-xl">
@@ -144,15 +98,10 @@ const ProductBanner: React.FC = () => {
                 <CardContent className="p-0">
                   <AspectRatio ratio={4/3}>
                     <img 
-                      src={getImageWithTimestamp(firstProduct)} 
+                      src={firstProduct.image} 
                       alt={firstProduct.name}
                       className="w-full h-full object-cover"
-                      key={imageKeys[firstProduct.id] || `${firstProduct.id}-${Date.now()}`}
-                      onError={(e) => {
-                        console.log('Image error in banner', e);
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
-                      loading="eager"
+                      key={firstProduct.id + Date.now()}
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">
@@ -169,15 +118,10 @@ const ProductBanner: React.FC = () => {
                 <CardContent className="p-0">
                   <AspectRatio ratio={4/3}>
                     <img 
-                      src={getImageWithTimestamp(secondProduct)} 
+                      src={secondProduct.image} 
                       alt={secondProduct.name}
                       className="w-full h-full object-cover"
-                      key={imageKeys[secondProduct.id] || `${secondProduct.id}-${Date.now()}`}
-                      onError={(e) => {
-                        console.log('Image error in banner', e);
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
-                      loading="eager"
+                      key={secondProduct.id + Date.now()}
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">

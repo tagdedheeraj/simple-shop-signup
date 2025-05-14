@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Heart } from 'lucide-react';
 import { Product } from '@/types/product';
 import { useWishlist } from '@/contexts/WishlistContext';
@@ -11,28 +11,6 @@ interface ProductImageProps {
 
 const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-  const [imageKey, setImageKey] = useState<string>(`${product.id}-${Date.now()}`);
-  const [imageSrc, setImageSrc] = useState<string>('');
-  
-  useEffect(() => {
-    // Ensure a fresh image URL on each render and component update
-    const timestamp = Date.now();
-    let url = product.image || '';
-    
-    // Clean up any existing timestamp
-    if (url.includes('?t=')) {
-      url = url.split('?t=')[0];
-    } else if (url.includes('&t=')) {
-      url = url.replace(/&t=\d+/, '');
-    }
-    
-    // Add fresh timestamp
-    const separator = url.includes('?') ? '&' : '?';
-    const newSrc = `${url}${separator}t=${timestamp}`;
-    
-    setImageSrc(newSrc);
-    setImageKey(`${product.id}-${timestamp}`);
-  }, [product.id, product.image]);
 
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -45,21 +23,25 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
     }
   };
   
-  const handleImageError = () => {
-    console.log('Image failed to load:', imageSrc);
-    // Try loading with a new timestamp on error
-    setImageKey(`${product.id}-error-${Date.now()}`);
+  // Ensure image has a timestamp parameter to prevent caching
+  const ensureTimestamp = (url: string) => {
+    if (!url) return "";
+    const timestamp = Date.now();
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}t=${timestamp}`;
   };
+
+  // Always use the image with a timestamp to prevent caching issues
+  const imageUrl = ensureTimestamp(product.image);
   
   return (
-    <div className="aspect-square relative overflow-hidden bg-gray-100">
+    <div className="aspect-square relative overflow-hidden">
       <img 
-        src={imageSrc} 
+        src={imageUrl} 
         alt={product.name} 
         className="object-cover w-full h-full transform transition-transform hover:scale-105 duration-500"
         loading="lazy"
-        key={imageKey}
-        onError={handleImageError}
+        key={product.id + Date.now()} // Force re-render of image when component updates
       />
       <div className="absolute top-2 right-2">
         <span className="inline-block bg-primary/90 text-white text-xs px-2 py-1 rounded-full">

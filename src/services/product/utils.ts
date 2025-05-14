@@ -20,40 +20,14 @@ export const initializeProducts = (options?: { forceRefresh?: boolean }) => {
     
     // Save to localStorage
     localStorage.setItem('products', JSON.stringify(productsWithTimestamp));
-    
-    // Also set in memory cache for faster initial loads
-    setProductsCache(productsWithTimestamp);
   } else {
     console.log('Products already exist in localStorage, skipping initialization');
-    
-    // Load from localStorage to memory cache for faster access
-    try {
-      const storedProducts = localStorage.getItem('products');
-      if (storedProducts) {
-        setProductsCache(JSON.parse(storedProducts));
-      }
-    } catch (error) {
-      console.error('Error loading products from localStorage to cache:', error);
-    }
   }
-};
-
-// In-memory cache for faster product access
-let productsCache = null;
-
-// Set the products cache
-export const setProductsCache = (products) => {
-  productsCache = products;
-};
-
-// Get products from cache
-export const getProductsFromCache = () => {
-  return productsCache;
 };
 
 // Add timestamp to image URL to prevent caching
 export const addTimestampToImage = (imageUrl: string): string => {
-  if (!imageUrl) return "";
+  if (!imageUrl) return imageUrl;
   
   // Remove any existing timestamp parameter if present
   let cleanUrl = imageUrl;
@@ -74,9 +48,6 @@ export const refreshProductData = async () => {
   // Clear existing product data from localStorage
   localStorage.removeItem('products');
   
-  // Clear the in-memory cache
-  productsCache = null;
-  
   // Re-initialize with fresh data
   initializeProducts({ forceRefresh: true });
   
@@ -88,17 +59,6 @@ export const refreshProductData = async () => {
 
 // Export a function to persist products to localStorage
 export const persistProducts = (products: any[]) => {
-  console.log('Persisting products to localStorage', products.length);
-  
-  // Make sure all products have timestamps in their image URLs
-  const productsWithTimestamps = products.map(product => ({
-    ...product,
-    image: addTimestampToImage(product.image)
-  }));
-  
-  // Update in-memory cache
-  setProductsCache(productsWithTimestamps);
-  
-  // Update localStorage
-  localStorage.setItem('products', JSON.stringify(productsWithTimestamps));
+  console.log('Persisting products to localStorage', products);
+  localStorage.setItem('products', JSON.stringify(products));
 };

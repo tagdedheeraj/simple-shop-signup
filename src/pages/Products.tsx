@@ -10,7 +10,6 @@ import ProductHeader from '@/components/products/ProductHeader';
 import SearchBar from '@/components/products/SearchBar';
 import CategoryFilter from '@/components/products/CategoryFilter';
 import SearchResults from '@/components/products/SearchResults';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -20,46 +19,19 @@ const Products: React.FC = () => {
   const [category, setCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const isMobile = useIsMobile();
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      // Add a timestamp query parameter to bypass cache
-      const timestamp = Date.now();
       const data = await getProducts();
-      
-      // Ensure each product has an updated timestamp in the image URL
-      const updatedData = data.map(product => ({
-        ...product,
-        image: addTimestampToImage(product.image)
-      }));
-      
-      setProducts(updatedData);
-      setFilteredProducts(updatedData);
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
-  };
-
-  // Function to add timestamp to image URLs
-  const addTimestampToImage = (imageUrl: string): string => {
-    if (!imageUrl) return '';
-    
-    // Remove any existing timestamp parameter if present
-    let cleanUrl = imageUrl;
-    if (imageUrl.includes('?t=')) {
-      cleanUrl = imageUrl.split('?t=')[0];
-    } else if (imageUrl.includes('&t=')) {
-      cleanUrl = imageUrl.replace(/&t=\d+/, '');
-    }
-    
-    // Add timestamp parameter
-    const separator = cleanUrl.includes('?') ? '&' : '?';
-    return `${cleanUrl}${separator}t=${Date.now()}`;
   };
 
   useEffect(() => {
@@ -142,11 +114,7 @@ const Products: React.FC = () => {
             clearFilters={clearFilters}
           />
           
-          <ProductGrid 
-            products={filteredProducts} 
-            loading={loading || refreshing} 
-            key={`products-grid-${isMobile ? 'mobile' : 'desktop'}-${Date.now()}`} 
-          />
+          <ProductGrid products={filteredProducts} loading={loading || refreshing} />
         </div>
       </motion.div>
     </Layout>

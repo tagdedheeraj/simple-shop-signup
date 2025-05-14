@@ -1,5 +1,6 @@
 
-// Re-export everything from the auth context directory
-// This file exists to maintain backward compatibility with existing imports
-export * from './auth/AuthContext';
-export { default } from './auth/AuthContext';
+// Barrel file to maintain backward compatibility
+import { AuthProvider, useAuth } from './auth/AuthContext';
+
+export { AuthProvider, useAuth };
+export default { AuthProvider, useAuth };
