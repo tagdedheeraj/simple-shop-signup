@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Product } from '@/types/product';
 import { 
   Table, 
@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, RefreshCw } from 'lucide-react';
+import { addTimestampToImage } from '@/services/product/utils';
 
 interface ProductsTableProps {
   products: Product[];
@@ -44,6 +45,16 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
 }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [imageKeys, setImageKeys] = useState<{[key: string]: string}>({});
+
+  // Generate unique keys for images to force re-render
+  useEffect(() => {
+    const keys: {[key: string]: string} = {};
+    filteredProducts.forEach(product => {
+      keys[product.id] = `${product.id}-${Date.now()}`;
+    });
+    setImageKeys(keys);
+  }, [filteredProducts]);
 
   const handleDeleteClick = (product: Product) => {
     setProductToDelete(product);
@@ -58,12 +69,13 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
     setProductToDelete(null);
   };
 
-  // Ensure image has a timestamp parameter to prevent caching
-  const ensureTimestamp = (url: string) => {
-    if (!url) return "";
-    const timestamp = Date.now();
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}t=${timestamp}`;
+  const handleImageError = (productId: string) => {
+    console.log('Image error for product', productId);
+    // Update the image key to force a reload
+    setImageKeys(prev => ({
+      ...prev,
+      [productId]: `${productId}-error-${Date.now()}`
+    }));
   };
 
   return (
@@ -104,13 +116,11 @@ const ProductsTable: React.FC<ProductsTableProps> = ({
                   <TableCell>
                     <div className="h-12 w-12 overflow-hidden rounded-md bg-gray-100">
                       <img 
-                        src={ensureTimestamp(product.image)} 
+                        src={addTimestampToImage(product.image)} 
                         alt={product.name} 
                         className="h-full w-full object-cover"
-                        key={product.id + Date.now()} // Force re-render on update
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = "/placeholder.svg";
-                        }}
+                        key={imageKeys[product.id] || `${product.id}-${Date.now()}`}
+                        onError={() => handleImageError(product.id)}
                       />
                     </div>
                   </TableCell>

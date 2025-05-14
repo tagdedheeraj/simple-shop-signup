@@ -27,7 +27,7 @@ export const initializeProducts = (options?: { forceRefresh?: boolean }) => {
 
 // Add timestamp to image URL to prevent caching
 export const addTimestampToImage = (imageUrl: string): string => {
-  if (!imageUrl) return imageUrl;
+  if (!imageUrl) return "";
   
   // Remove any existing timestamp parameter if present
   let cleanUrl = imageUrl;
@@ -59,6 +59,13 @@ export const refreshProductData = async () => {
 
 // Export a function to persist products to localStorage
 export const persistProducts = (products: any[]) => {
-  console.log('Persisting products to localStorage', products);
-  localStorage.setItem('products', JSON.stringify(products));
+  console.log('Persisting products to localStorage', products.length);
+  
+  // Make sure all products have timestamps in their image URLs
+  const productsWithTimestamps = products.map(product => ({
+    ...product,
+    image: addTimestampToImage(product.image)
+  }));
+  
+  localStorage.setItem('products', JSON.stringify(productsWithTimestamps));
 };

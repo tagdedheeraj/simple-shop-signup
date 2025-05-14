@@ -1,13 +1,24 @@
 
 import { Product } from '@/types/product';
-import { delay } from './utils';
+import { delay, addTimestampToImage } from './utils';
 import { products } from './data';
 
 // Get products from localStorage or fallback to imported data
 const getStoredProducts = (): Product[] => {
   const storedProducts = localStorage.getItem('products');
   if (storedProducts) {
-    return JSON.parse(storedProducts);
+    try {
+      const parsedProducts = JSON.parse(storedProducts);
+      
+      // Ensure all products have timestamp in images to prevent caching
+      return parsedProducts.map((product: Product) => ({
+        ...product,
+        image: addTimestampToImage(product.image)
+      }));
+    } catch (error) {
+      console.error('Error parsing stored products:', error);
+      return products;
+    }
   }
   // Fallback to imported data if localStorage is empty
   return products;
@@ -15,18 +26,35 @@ const getStoredProducts = (): Product[] => {
 
 // Base product retrieval functions
 export const getProducts = async (): Promise<Product[]> => {
-  await delay(800); // Simulate network delay
+  await delay(300); // Shorter delay for better mobile experience
+  console.log('Getting products with timestamp', Date.now());
   return getStoredProducts();
 };
 
 export const getProductById = async (id: string): Promise<Product | undefined> => {
-  await delay(500); // Simulate network delay
+  await delay(300); // Shorter delay for better mobile experience
   const products = getStoredProducts();
-  return products.find(product => product.id === id);
+  const product = products.find(product => product.id === id);
+  
+  if (product) {
+    // Ensure product image has timestamp
+    return {
+      ...product,
+      image: addTimestampToImage(product.image)
+    };
+  }
+  
+  return undefined;
 };
 
 export const getProductsByCategory = async (category: string): Promise<Product[]> => {
-  await delay(800); // Simulate network delay
+  await delay(300); // Shorter delay for better mobile experience
   const products = getStoredProducts();
-  return products.filter(product => product.category === category);
+  const filteredProducts = products.filter(product => product.category === category);
+  
+  // Ensure all product images have timestamps
+  return filteredProducts.map(product => ({
+    ...product,
+    image: addTimestampToImage(product.image)
+  }));
 };

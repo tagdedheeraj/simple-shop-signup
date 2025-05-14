@@ -1,6 +1,6 @@
 
 import { products } from './data';
-import { delay, initializeProducts, refreshProductData, persistProducts } from './utils';
+import { delay, initializeProducts, refreshProductData, persistProducts, addTimestampToImage } from './utils';
 import { getProducts, getProductById, getProductsByCategory } from './base';
 import { getRelatedProducts, getTrendingProducts } from './related';
 import { addReview } from './reviews';
@@ -19,5 +19,6 @@ export {
   addReview,
   initializeProducts,
   refreshProductData,
-  persistProducts
+  persistProducts,
+  addTimestampToImage
 };

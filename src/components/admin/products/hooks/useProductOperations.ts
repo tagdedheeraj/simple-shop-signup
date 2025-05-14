@@ -14,7 +14,19 @@ export const useProductOperations = () => {
     try {
       setLoading(true);
       const data = await getProducts();
-      setProducts(data);
+      
+      // Ensure all images have timestamps
+      const productsWithTimestamps = data.map(product => ({
+        ...product,
+        image: addTimestampToImage(product.image)
+      }));
+      
+      setProducts(productsWithTimestamps);
+      
+      // Also update localStorage to ensure consistency
+      persistProducts(productsWithTimestamps);
+      
+      console.log('Fetched products:', productsWithTimestamps.length);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
@@ -79,7 +91,7 @@ export const useProductOperations = () => {
       persistProducts(allProducts);
       
       // Refresh products list immediately
-      setTimeout(() => fetchProducts(), 100);
+      await fetchProducts();
       return true;
     } catch (error) {
       console.error('Error saving product:', error);
@@ -102,7 +114,7 @@ export const useProductOperations = () => {
       
       toast.success('Product deleted successfully');
       // Refresh products list
-      setTimeout(() => fetchProducts(), 100);
+      await fetchProducts();
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);

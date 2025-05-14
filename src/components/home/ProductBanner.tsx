@@ -1,21 +1,33 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Tag, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { getProducts } from '@/services/product';
+import { getProducts, addTimestampToImage } from '@/services/product';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Product } from '@/types/product';
 
 const ProductBanner: React.FC = () => {
+  const [imageKeys, setImageKeys] = useState<{[key: string]: string}>({});
+  
   // Fetch products for displaying in the banner with staleTime to prevent frequent refetching
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products-banner'],
+    queryKey: ['products-banner', Date.now()], // Add timestamp to ensure fresh data
     queryFn: getProducts,
     staleTime: 0, // Set to 0 to always fetch fresh data
   });
+
+  // Generate unique keys for images to force re-render
+  useEffect(() => {
+    const keys: {[key: string]: string} = {};
+    products.forEach(product => {
+      keys[product.id] = `${product.id}-${Date.now()}`;
+    });
+    setImageKeys(keys);
+  }, [products]);
 
   // Get two products to display (preferably wheat and rice products)
   const wheatProduct = products.find(p => p.category === 'wheat');
@@ -34,6 +46,12 @@ const ProductBanner: React.FC = () => {
       </div>
     );
   }
+
+  // Ensure images have timestamps
+  const getImageWithTimestamp = (product: Product | undefined) => {
+    if (!product) return "";
+    return addTimestampToImage(product.image);
+  };
 
   console.log('ProductBanner rendering with products:', { firstProduct, secondProduct });
 
@@ -98,10 +116,14 @@ const ProductBanner: React.FC = () => {
                 <CardContent className="p-0">
                   <AspectRatio ratio={4/3}>
                     <img 
-                      src={firstProduct.image} 
+                      src={getImageWithTimestamp(firstProduct)} 
                       alt={firstProduct.name}
                       className="w-full h-full object-cover"
-                      key={firstProduct.id + Date.now()}
+                      key={imageKeys[firstProduct.id] || `${firstProduct.id}-${Date.now()}`}
+                      onError={(e) => {
+                        console.log('Image error in banner', e);
+                        (e.target as HTMLImageElement).src = "/placeholder.svg";
+                      }}
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">
@@ -118,10 +140,14 @@ const ProductBanner: React.FC = () => {
                 <CardContent className="p-0">
                   <AspectRatio ratio={4/3}>
                     <img 
-                      src={secondProduct.image} 
+                      src={getImageWithTimestamp(secondProduct)} 
                       alt={secondProduct.name}
                       className="w-full h-full object-cover"
-                      key={secondProduct.id + Date.now()}
+                      key={imageKeys[secondProduct.id] || `${secondProduct.id}-${Date.now()}`}
+                      onError={(e) => {
+                        console.log('Image error in banner', e);
+                        (e.target as HTMLImageElement).src = "/placeholder.svg";
+                      }}
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">
