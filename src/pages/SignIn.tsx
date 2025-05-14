@@ -22,9 +22,14 @@ const SignIn: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const success = await login(email, password);
-      if (success) {
-        navigate('/');
+      const result = await login(email, password);
+      if (result.success) {
+        // If user is admin, redirect to admin panel, otherwise to home page
+        if (result.isAdmin) {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
       }
     } finally {
       setIsSubmitting(false);

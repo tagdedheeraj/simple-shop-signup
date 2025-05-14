@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
@@ -14,7 +13,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{success: boolean; isAdmin: boolean}>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   updateProfile: (data: Partial<Omit<User, 'id' | 'name'>>) => Promise<boolean>;
@@ -78,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (email: string, password: string): Promise<{success: boolean; isAdmin: boolean}> => {
     try {
       setLoading(true);
       
@@ -105,14 +104,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(userToSave);
         localStorage.setItem('user', JSON.stringify(userToSave));
         toast.success('Successfully logged in');
-        return true;
+        return {
+          success: true, 
+          isAdmin: foundUser.role === 'admin'
+        };
       } else {
         toast.error('Invalid email or password');
-        return false;
+        return {success: false, isAdmin: false};
       }
     } catch (error) {
       toast.error('Login failed');
-      return false;
+      return {success: false, isAdmin: false};
     } finally {
       setLoading(false);
     }
