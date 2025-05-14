@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -330,7 +331,7 @@ const UserProfile: React.FC = () => {
                       <div className="relative">
                         <div className="p-1 bg-white/20 backdrop-blur-md rounded-full">
                           <Avatar className="h-36 w-36 border-4 border-white/30 ring-2 ring-white/10 shadow-2xl">
-                            <AvatarImage src={previewImage || undefined} alt={user.name} className="object-cover" />
+                            <AvatarImage src={previewImage || undefined} alt={user.name || ''} className="object-cover" />
                             <AvatarFallback className="text-3xl bg-gradient-to-br from-indigo-400 to-purple-600 text-white">
                               {renderInitials()}
                             </AvatarFallback>
@@ -368,7 +369,7 @@ const UserProfile: React.FC = () => {
                       transition={{ delay: 0.3, duration: 0.4 }}
                       className="flex flex-wrap items-center gap-3 mb-2"
                     >
-                      <h1 className="text-4xl font-bold text-white tracking-tight">{user.name}</h1>
+                      <h1 className="text-4xl font-bold text-white tracking-tight">{user.name || "User"}</h1>
                       <Badge className="bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 font-medium py-1.5">
                         <Sparkles className="h-3.5 w-3.5 mr-1" /> Premium Member
                       </Badge>

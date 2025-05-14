@@ -33,7 +33,7 @@ const Header: React.FC = () => {
     if (user.photoUrl) {
       return (
         <Avatar className="h-8 w-8 border border-green-100">
-          <AvatarImage src={user.photoUrl} alt={user.name} />
+          <AvatarImage src={user.photoUrl} alt={user.name || ''} />
           <AvatarFallback className="bg-green-100 text-green-800 text-xs">
             {getUserInitials()}
           </AvatarFallback>
@@ -118,7 +118,7 @@ const Header: React.FC = () => {
                 <DropdownMenuContent className="w-56 mt-1 mr-1 glass-effect" align="end">
                   <DropdownMenuLabel>
                     <div className="font-normal text-sm text-muted-foreground">{t('signedInAs')}</div>
-                    <div className="font-medium">{user?.name}</div>
+                    <div className="font-medium">{user?.name || "User"}</div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/profile')}>

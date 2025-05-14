@@ -2,10 +2,11 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import useFirebase from '@/hooks/useFirebase';
-import { User } from 'firebase/auth';
+import { User as FirebaseUser } from 'firebase/auth';
+import { CustomUser, convertToCustomUser } from '@/types/user';
 
 interface AuthContextType {
-  user: User | null;
+  user: CustomUser | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{success: boolean; isAdmin: boolean}>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
@@ -36,6 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading: firebaseLoading 
   } = useFirebase();
   
+  const [user, setUser] = useState<CustomUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -44,13 +46,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (currentUser) {
         try {
           const userData = await getUserByUid(currentUser.uid);
+          const customUser = convertToCustomUser(currentUser, userData);
+          setUser(customUser);
           setIsAdmin(userData?.role === 'admin');
         } catch (error) {
           console.error("Error checking user role:", error);
           setIsAdmin(false);
+          setUser(convertToCustomUser(currentUser));
         }
       } else {
         setIsAdmin(false);
+        setUser(null);
       }
       
       setLoading(false);
@@ -66,13 +72,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       
       // Sign in with Firebase
-      await signIn(email, password);
+      const firebaseUser = await signIn(email, password);
       
       // Check if user is admin
-      if (currentUser) {
-        const userData = await getUserByUid(currentUser.uid);
+      if (firebaseUser) {
+        const userData = await getUserByUid(firebaseUser.uid);
         const userIsAdmin = userData?.role === 'admin';
         setIsAdmin(userIsAdmin);
+        setUser(convertToCustomUser(firebaseUser, userData));
         
         toast.success('Successfully logged in');
         return {
@@ -96,7 +103,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       
       // Create user with Firebase
-      await createUser(email, password, name);
+      const newUser = await createUser(email, password, name);
+      if (newUser) {
+        const userData = await getUserByUid(newUser.uid);
+        setUser(convertToCustomUser(newUser, userData));
+      }
       
       toast.success('Account created successfully');
       return true;
@@ -120,7 +131,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(true);
       
       // In a real implementation, you would update the user profile in Firebase
-      // For now, we'll just return true
+      if (user) {
+        setUser({...user, ...data});
+      }
       toast.success('Profile updated successfully');
       return true;
     } catch (error) {
@@ -149,14 +162,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     logOut();
+    setUser(null);
     setIsAdmin(false);
     toast.success('Logged out successfully');
   };
 
   return (
     <AuthContext.Provider value={{ 
-      user: currentUser, 
-      isAuthenticated: !!currentUser, 
+      user, 
+      isAuthenticated: !!user, 
       login, 
       register, 
       logout,

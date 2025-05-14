@@ -1,204 +1,145 @@
 
-import React, { useState, useEffect } from 'react';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
-} from '@/components/ui/table';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { MoreHorizontal, RefreshCw, Search } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { CalendarDays, Mail, User as UserIcon } from 'lucide-react';
 import useFirebase from '@/hooks/useFirebase';
 
-interface User {
+interface UserData {
   id: string;
-  email: string;
+  uid?: string;
+  email?: string;
   displayName?: string;
+  role?: string;
   createdAt?: string;
   lastLogin?: string;
-  role?: string;
-  phone?: string;
+  photoUrl?: string;
 }
 
 const AdminUsers: React.FC = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
   const { getAllUsers } = useFirebase();
-
+  
   useEffect(() => {
-    // Load users from Firebase
-    const loadUsers = async () => {
-      setLoading(true);
+    const fetchUsers = async () => {
       try {
-        const firebaseUsers = await getAllUsers();
-        setUsers(firebaseUsers as User[]);
+        setLoading(true);
+        const allUsers = await getAllUsers();
+        setUsers(allUsers as UserData[]);
       } catch (error) {
-        console.error('Failed to load users:', error);
+        console.error('Error fetching users:', error);
         toast.error('Failed to load users');
-        // Fall back to mock data if Firebase fails
-        setUsers([]);
       } finally {
         setLoading(false);
       }
     };
-
-    loadUsers();
-  }, [getAllUsers]);
-
-  const handleViewUser = (userId: string) => {
-    toast.info(`View user ${userId}`);
-  };
-
-  const handleEditUser = (userId: string) => {
-    toast.info(`Edit user ${userId}`);
-  };
-
-  const handleDeleteUser = (userId: string) => {
-    toast.success(`User ${userId} deleted`);
-    setUsers(users.filter(user => user.id !== userId));
-  };
-
-  const filteredUsers = users.filter(user =>
-    (user.displayName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
     
-    return new Date(dateString).toLocaleDateString('en-IN', {
+    fetchUsers();
+  }, [getAllUsers]);
+  
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
   };
-
-  const getUserName = (user: User) => {
-    return user.displayName || user.email?.split('@')[0] || 'Unknown User';
+  
+  const getUserInitials = (name?: string) => {
+    if (!name) return '?';
+    const nameParts = name.split(' ');
+    if (nameParts.length === 1) return nameParts[0].charAt(0).toUpperCase();
+    return `${nameParts[0].charAt(0)}${nameParts[nameParts.length - 1].charAt(0)}`.toUpperCase();
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Users</h1>
-        <p className="text-muted-foreground">
-          Manage user accounts and permissions.
-        </p>
-      </div>
-
       <div className="flex items-center justify-between">
-        <div className="relative max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="search"
-            placeholder="Search users..."
-            className="pl-8 w-full md:w-[300px]"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        <h1 className="text-2xl font-bold">User Management</h1>
       </div>
-
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead className="hidden md:table-cell">Email</TableHead>
-              <TableHead className="hidden md:table-cell">Phone</TableHead>
-              <TableHead className="hidden md:table-cell">Registered</TableHead>
-              <TableHead className="hidden md:table-cell">Last Active</TableHead>
-              <TableHead className="w-[80px]">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
-                  <div className="flex justify-center">
-                    <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
-                  </div>
-                  <div className="mt-2 text-sm text-muted-foreground">
-                    Loading users...
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : filteredUsers.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-8">
-                  <div className="text-muted-foreground">No users found</div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>
-                          {getUserName(user).split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{getUserName(user)}</div>
-                        <div className="text-xs text-muted-foreground md:hidden">
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Users</CardTitle>
+          <CardDescription>
+            Manage registered users in your system
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-700"></div>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[100px]">User</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Registered</TableHead>
+                    <TableHead>Last Login</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {users.length > 0 ? (
+                    users.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={user.photoUrl} alt={user.displayName} />
+                              <AvatarFallback className="bg-green-100 text-green-800">
+                                {getUserInitials(user.displayName)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span>{user.displayName || 'Unnamed User'}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-gray-500" />
                           {user.email}
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={`${
+                            user.role === 'admin' 
+                              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
+                              : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                          }`}>
+                            {user.role || 'user'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="flex items-center gap-2">
+                          <CalendarDays className="h-4 w-4 text-gray-500" />
+                          {formatDate(user.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(user.lastLogin)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center p-8 text-gray-500">
+                        <div className="flex flex-col items-center gap-2">
+                          <UserIcon className="h-10 w-10 text-gray-300" />
+                          <p>No users found</p>
                         </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">{user.email}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {user.phone || '-'}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {formatDate(user.createdAt)}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {formatDate(user.lastLogin)}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleViewUser(user.id)}>
-                          View
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleEditUser(user.id)}>
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          className="text-red-600" 
-                          onClick={() => handleDeleteUser(user.id)}
-                        >
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
