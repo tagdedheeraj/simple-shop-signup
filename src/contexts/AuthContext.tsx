@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import useFirebase from '@/hooks/useFirebase';
 import { User as FirebaseUser } from 'firebase/auth';
-import { CustomUser, convertToCustomUser } from '@/types/user';
+import { CustomUser, convertToCustomUser, UserData } from '@/types/user';
 
 interface AuthContextType {
   user: CustomUser | null;
@@ -102,9 +102,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       return {success: true, isAdmin: false};
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login error:', error);
-      toast.error('Invalid email or password');
+      
+      // Provide more specific error messages based on error code
+      if (error.code === 'auth/invalid-credential') {
+        toast.error('Invalid email or password. Please check your credentials and try again.');
+      } else if (error.code === 'auth/user-not-found') {
+        toast.error('User not found. Please check your email or register for an account.');
+      } else if (error.code === 'auth/wrong-password') {
+        toast.error('Incorrect password. Please try again.');
+      } else if (error.code === 'auth/too-many-requests') {
+        toast.error('Too many unsuccessful login attempts. Please try again later.');
+      } else {
+        toast.error('Login failed. Please try again.');
+      }
+      
       return {success: false, isAdmin: false};
     } finally {
       setLoading(false);
