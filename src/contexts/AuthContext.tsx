@@ -39,32 +39,62 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<CustomUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userDataFetched, setUserDataFetched] = useState(false);
 
+  // Improved auth state handling to prevent flicker and premature redirects
   useEffect(() => {
     const checkUserRole = async () => {
       if (currentUser) {
         try {
+          // Console log to debug
+          console.log("Checking user role for:", currentUser.uid);
+          
           const userData = await getUserByUid(currentUser.uid) as UserData;
+          console.log("User data from Firestore:", userData);
+          
           const customUser = convertToCustomUser(currentUser, userData);
           setUser(customUser);
-          setIsAdmin(userData?.role === 'admin');
+          
+          // Check if role is admin and set state
+          const userIsAdmin = userData?.role === 'admin';
+          console.log("Is admin?", userIsAdmin);
+          setIsAdmin(userIsAdmin);
+          
+          // Mark user data as fetched to prevent repeated checks
+          setUserDataFetched(true);
         } catch (error) {
           console.error("Error checking user role:", error);
           setIsAdmin(false);
           setUser(convertToCustomUser(currentUser));
+        } finally {
+          setLoading(false);
         }
       } else {
+        console.log("No current user");
         setIsAdmin(false);
         setUser(null);
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
     
-    if (!firebaseLoading) {
+    // Only check user role if Firebase loading is complete and we haven't fetched user data yet
+    if (!firebaseLoading && !userDataFetched) {
       checkUserRole();
+    } else if (!firebaseLoading && !currentUser) {
+      // If Firebase is done loading but there's no user, we're definitely not loading
+      setLoading(false);
     }
-  }, [currentUser, firebaseLoading, getUserByUid]);
+    
+  }, [currentUser, firebaseLoading, getUserByUid, userDataFetched]);
+
+  // Additional effect to reset state when user logs out
+  useEffect(() => {
+    if (!currentUser && userDataFetched) {
+      setUserDataFetched(false);
+      setIsAdmin(false);
+      setUser(null);
+    }
+  }, [currentUser, userDataFetched]);
 
   const login = async (email: string, password: string): Promise<{success: boolean; isAdmin: boolean}> => {
     try {
@@ -79,6 +109,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userIsAdmin = userData?.role === 'admin';
         setIsAdmin(userIsAdmin);
         setUser(convertToCustomUser(firebaseUser, userData));
+        setUserDataFetched(true);
         
         toast.success('Successfully logged in');
         return {
@@ -176,6 +207,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logOut();
     setUser(null);
     setIsAdmin(false);
+    setUserDataFetched(false);
     toast.success('Logged out successfully');
   };
 
