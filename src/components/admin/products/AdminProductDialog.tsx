@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { 
   Dialog, 
@@ -37,6 +36,9 @@ const productSchema = z.object({
   image: z.string().url({ message: 'Please enter a valid image URL' }),
 });
 
+// Define the type that matches our form data and schema
+type ProductFormData = z.infer<typeof productSchema>;
+
 const AdminProductDialog: React.FC<AdminProductDialogProps> = ({ 
   open, 
   onOpenChange, 
@@ -45,7 +47,7 @@ const AdminProductDialog: React.FC<AdminProductDialogProps> = ({
 }) => {
   const isEditing = !!product;
   
-  const form = useForm<z.infer<typeof productSchema>>({
+  const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       name: product?.name || '',
@@ -79,11 +81,22 @@ const AdminProductDialog: React.FC<AdminProductDialogProps> = ({
     }
   }, [product, form]);
 
-  const onSubmit = async (data: z.infer<typeof productSchema>) => {
+  const onSubmit = async (data: ProductFormData) => {
     try {
       // Send the form data to parent component for saving
       console.log('Saving product:', data);
-      const success = await onSave(data);
+      
+      // Create a properly typed object for the onSave function
+      const productData: Omit<Product, 'id'> = {
+        name: data.name,
+        description: data.description,
+        price: data.price,
+        stock: data.stock,
+        category: data.category,
+        image: data.image,
+      };
+      
+      const success = await onSave(productData);
       
       if (success) {
         onOpenChange(false);
