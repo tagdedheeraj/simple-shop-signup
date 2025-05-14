@@ -5,7 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthContext';
 import ProductReviews from '@/components/products/ProductReviews';
 import RelatedProducts from '@/components/products/RelatedProducts';
 import CustomerTestimonials from '@/components/products/CustomerTestimonials';

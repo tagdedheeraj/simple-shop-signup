@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Review } from '@/types/product';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthContext';
 import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
