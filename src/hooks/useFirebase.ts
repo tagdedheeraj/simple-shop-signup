@@ -20,7 +20,8 @@ import {
   setDoc, 
   getDocs,
   query,
-  where
+  where,
+  updateDoc
 } from 'firebase/firestore';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -130,7 +131,7 @@ export const useFirebase = () => {
   }, []);
 
   // Firebase Authentication methods
-  const createUser = useCallback(async (email: string, password: string, displayName?: string) => {
+  const createUser = useCallback(async (email: string, password: string, displayName?: string, role: string = 'user') => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
@@ -145,7 +146,7 @@ export const useFirebase = () => {
           email: userCredential.user.email,
           displayName: displayName,
           createdAt: new Date().toISOString(),
-          role: 'user', // Default role
+          role: role, // Set role from parameter
           lastLogin: new Date().toISOString()
         });
       }
@@ -223,6 +224,21 @@ export const useFirebase = () => {
     }
   }, []);
 
+  // New method to update user role
+  const updateUserRole = useCallback(async (uid: string, role: string) => {
+    try {
+      const userDocRef = doc(db, 'users', uid);
+      await updateDoc(userDocRef, {
+        role: role
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      throw error;
+    }
+  }, []);
+
   return {
     auth,
     db,
@@ -234,6 +250,7 @@ export const useFirebase = () => {
     getCurrentUser,
     getAllUsers,
     getUserByUid,
+    updateUserRole, // New method
     currentUser,
     loading
   };

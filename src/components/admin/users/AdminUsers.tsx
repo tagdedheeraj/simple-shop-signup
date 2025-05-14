@@ -5,24 +5,26 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { CalendarDays, Mail, User as UserIcon } from 'lucide-react';
+import { CalendarDays, Mail, MoreHorizontal, PlusCircle, User as UserIcon } from 'lucide-react';
 import useFirebase from '@/hooks/useFirebase';
-
-interface UserData {
-  id: string;
-  uid?: string;
-  email?: string;
-  displayName?: string;
-  role?: string;
-  createdAt?: string;
-  lastLogin?: string;
-  photoUrl?: string;
-}
+import { Button } from '@/components/ui/button';
+import { UserData } from '@/types/user';
+import EditUserDialog from './EditUserDialog';
+import CreateUserDialog from './CreateUserDialog';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<UserData[]>([]);
   const [loading, setLoading] = useState(true);
-  const { getAllUsers } = useFirebase();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserData | null>(null);
+  const { getAllUsers, updateUserRole } = useFirebase();
   
   useEffect(() => {
     const fetchUsers = async () => {
@@ -40,6 +42,36 @@ const AdminUsers: React.FC = () => {
     
     fetchUsers();
   }, [getAllUsers]);
+  
+  const handleEditUser = (user: UserData) => {
+    setCurrentUser(user);
+    setEditDialogOpen(true);
+  };
+  
+  const handleCreateUser = () => {
+    setCreateDialogOpen(true);
+  };
+  
+  const handleSaveUser = async (userData: Partial<UserData>) => {
+    try {
+      if (currentUser && userData.role && userData.role !== currentUser.role) {
+        await updateUserRole(currentUser.uid || '', userData.role);
+        
+        // Update user in the local state
+        setUsers(prev => prev.map(user => 
+          user.id === currentUser.id ? { ...user, ...userData } : user
+        ));
+        
+        toast.success('User updated successfully');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating user:', error);
+      toast.error('Failed to update user');
+      return false;
+    }
+  };
   
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'N/A';
@@ -61,6 +93,10 @@ const AdminUsers: React.FC = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">User Management</h1>
+        <Button onClick={handleCreateUser} className="flex items-center gap-2">
+          <PlusCircle className="h-4 w-4" />
+          <span>Add User</span>
+        </Button>
       </div>
       
       <Card>
@@ -85,6 +121,7 @@ const AdminUsers: React.FC = () => {
                     <TableHead>Role</TableHead>
                     <TableHead>Registered</TableHead>
                     <TableHead>Last Login</TableHead>
+                    <TableHead className="w-[70px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -122,11 +159,25 @@ const AdminUsers: React.FC = () => {
                         <TableCell>
                           {formatDate(user.lastLogin)}
                         </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleEditUser(user)}>
+                                Edit User
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center p-8 text-gray-500">
+                      <TableCell colSpan={6} className="text-center p-8 text-gray-500">
                         <div className="flex flex-col items-center gap-2">
                           <UserIcon className="h-10 w-10 text-gray-300" />
                           <p>No users found</p>
@@ -140,6 +191,22 @@ const AdminUsers: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit User Dialog */}
+      {currentUser && (
+        <EditUserDialog 
+          user={currentUser}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onSave={handleSaveUser}
+        />
+      )}
+
+      {/* Create User Dialog */}
+      <CreateUserDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
     </div>
   );
 };
