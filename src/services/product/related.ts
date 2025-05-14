@@ -1,22 +1,12 @@
 
 import { Product } from '@/types/product';
 import { delay } from './utils';
-
-// Get products from localStorage or fallback to imported data
-const getStoredProducts = (): Product[] => {
-  const storedProducts = localStorage.getItem('products');
-  if (storedProducts) {
-    return JSON.parse(storedProducts);
-  }
-  // Fallback to imported data if localStorage is empty
-  const { products } = require('./data');
-  return products;
-};
+import { getFirestoreProducts } from '../firebase/products';
 
 export const getRelatedProducts = async (productId: string, limit: number = 4): Promise<Product[]> => {
   await delay(600); // Simulate network delay
   
-  const products = getStoredProducts();
+  const products = await getFirestoreProducts();
   const currentProduct = products.find(p => p.id === productId);
   if (!currentProduct) return [];
   
@@ -44,7 +34,7 @@ export const getRelatedProducts = async (productId: string, limit: number = 4): 
 export const getTrendingProducts = async (limit: number = 4): Promise<Product[]> => {
   await delay(600); // Simulate network delay
   
-  const products = getStoredProducts();
+  const products = await getFirestoreProducts();
   
   // In a real app, this would be based on product popularity, reviews, etc.
   // For this demo, we'll just select random products and mark them as trending

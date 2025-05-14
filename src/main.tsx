@@ -5,7 +5,7 @@ import './index.css'
 import './services/firebase'; // Import Firebase initialization
 import { checkAppVersion, generateGlobalTimestamp } from './utils/version-checker';
 import { FORCE_REFRESH_ON_START } from './config/app-config';
-import { refreshProductData } from './services/product';
+import { refreshProductData, initializeProducts } from './services/product';
 
 // Generate a global timestamp for this session (used for image caching)
 generateGlobalTimestamp();
@@ -14,6 +14,9 @@ generateGlobalTimestamp();
 const initializeApp = async () => {
   // Check if app version has changed
   await checkAppVersion();
+  
+  // Initialize products
+  await initializeProducts();
   
   // Force refresh product data if configured
   if (FORCE_REFRESH_ON_START) {

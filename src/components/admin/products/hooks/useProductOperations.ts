@@ -3,7 +3,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { getProducts, refreshProductData } from '@/services/product';
 import { Product } from '@/types/product';
 import { toast } from 'sonner';
-import { addTimestampToImage, persistProducts } from '@/services/product/utils';
+import { addTimestampToImage } from '@/services/product/utils';
+import { saveFirestoreProduct, deleteFirestoreProduct } from '@/services/firebase/products';
 
 export const useProductOperations = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,10 +44,6 @@ export const useProductOperations = () => {
 
   const handleSaveProduct = useCallback(async (productData: Omit<Product, 'id'>, currentProductId: string | null) => {
     try {
-      // Get current products from localStorage
-      const storedProducts = localStorage.getItem('products');
-      let allProducts: Product[] = storedProducts ? JSON.parse(storedProducts) : [];
-      
       // Make sure image has a timestamp to prevent caching issues
       const updatedProductData = {
         ...productData,
@@ -55,15 +52,12 @@ export const useProductOperations = () => {
       
       if (currentProductId) {
         // Update existing product
-        allProducts = allProducts.map(product => {
-          if (product.id === currentProductId) {
-            return {
-              ...product,
-              ...updatedProductData,
-            };
-          }
-          return product;
-        });
+        const updatedProduct = {
+          id: currentProductId,
+          ...updatedProductData,
+        };
+        
+        await saveFirestoreProduct(updatedProduct);
         toast.success('Product updated successfully');
       } else {
         // Add new product
@@ -71,12 +65,10 @@ export const useProductOperations = () => {
           id: `product-${Date.now()}`,
           ...updatedProductData,
         };
-        allProducts.push(newProduct);
+        
+        await saveFirestoreProduct(newProduct);
         toast.success('Product added successfully');
       }
-      
-      // Save back to localStorage using the utility function
-      persistProducts(allProducts);
       
       // Refresh products list immediately
       setTimeout(() => fetchProducts(), 100);
@@ -90,16 +82,7 @@ export const useProductOperations = () => {
 
   const handleDeleteProduct = useCallback(async (productId: string) => {
     try {
-      // Get current products from localStorage
-      const storedProducts = localStorage.getItem('products');
-      let allProducts: Product[] = storedProducts ? JSON.parse(storedProducts) : [];
-      
-      // Filter out the product to delete
-      allProducts = allProducts.filter(product => product.id !== productId);
-      
-      // Save back to localStorage using the utility function
-      persistProducts(allProducts);
-      
+      await deleteFirestoreProduct(productId);
       toast.success('Product deleted successfully');
       // Refresh products list
       setTimeout(() => fetchProducts(), 100);
