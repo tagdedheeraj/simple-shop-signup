@@ -5,6 +5,7 @@ import { getRelatedProducts } from '@/services/product';
 import ProductCard from './ProductCard';
 import { Loader2, Link as LinkIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getProductById } from '@/services/product';
 
 interface RelatedProductsProps {
   productId: string;
@@ -18,10 +19,18 @@ const RelatedProducts: React.FC<RelatedProductsProps> = ({ productId }) => {
     const fetchRelatedProducts = async () => {
       try {
         setLoading(true);
-        const data = await getRelatedProducts(productId);
-        setProducts(data);
+        // First get the current product to know its category
+        const currentProduct = await getProductById(productId);
+        if (currentProduct) {
+          // Then get related products using both productId and category
+          const data = await getRelatedProducts(productId, currentProduct.category);
+          setProducts(data);
+        } else {
+          setProducts([]);
+        }
       } catch (error) {
         console.error('Error fetching related products:', error);
+        setProducts([]);
       } finally {
         setLoading(false);
       }
