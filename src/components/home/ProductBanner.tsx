@@ -10,10 +10,11 @@ import { getProducts } from '@/services/product';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const ProductBanner: React.FC = () => {
-  // Fetch products for displaying in the banner
-  const { data: products = [] } = useQuery({
+  // Fetch products for displaying in the banner with staleTime to prevent frequent refetching
+  const { data: products = [], isLoading } = useQuery({
     queryKey: ['products-banner'],
     queryFn: getProducts,
+    staleTime: 300000, // 5 minutes
   });
 
   // Get two products to display (preferably wheat and rice products)
@@ -22,7 +23,19 @@ const ProductBanner: React.FC = () => {
   
   // Fallback to any products if specific categories not found
   const firstProduct = wheatProduct || products[0];
-  const secondProduct = riceProduct || products[1];
+  const secondProduct = riceProduct || (products.length > 1 ? products[1] : products[0]);
+
+  if (isLoading || !products.length) {
+    return (
+      <div className="relative rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-gradient-to-r from-amber-800 to-amber-600 h-[450px] flex items-center justify-center">
+          <div className="text-white text-xl">Loading products...</div>
+        </div>
+      </div>
+    );
+  }
+
+  console.log('ProductBanner rendering with products:', { firstProduct, secondProduct });
 
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-xl">

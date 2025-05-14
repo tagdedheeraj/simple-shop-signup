@@ -1,9 +1,9 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { getProducts, refreshProductData } from '@/services/product';
 import { Product } from '@/types/product';
 import { toast } from 'sonner';
-import { addTimestampToImage } from '@/services/product/utils';
+import { addTimestampToImage, persistProducts } from '@/services/product/utils';
 
 export const useProductOperations = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -22,6 +22,11 @@ export const useProductOperations = () => {
       setLoading(false);
     }
   }, []);
+
+  // Ensure products are loaded on initial mount
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -70,8 +75,8 @@ export const useProductOperations = () => {
         toast.success('Product added successfully');
       }
       
-      // Save back to localStorage with stringified JSON to ensure proper serialization
-      localStorage.setItem('products', JSON.stringify(allProducts));
+      // Save back to localStorage using the utility function
+      persistProducts(allProducts);
       
       // Refresh products list
       await fetchProducts();
@@ -92,8 +97,8 @@ export const useProductOperations = () => {
       // Filter out the product to delete
       allProducts = allProducts.filter(product => product.id !== productId);
       
-      // Save back to localStorage
-      localStorage.setItem('products', JSON.stringify(allProducts));
+      // Save back to localStorage using the utility function
+      persistProducts(allProducts);
       
       toast.success('Product deleted successfully');
       // Refresh products list
