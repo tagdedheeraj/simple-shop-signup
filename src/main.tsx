@@ -5,7 +5,7 @@ import './index.css'
 import './services/firebase'; // Import Firebase initialization
 import { checkAppVersion, generateGlobalTimestamp } from './utils/version-checker';
 import { FORCE_REFRESH_ON_START } from './config/app-config';
-import { refreshProductData, initializeProducts } from './services/product';
+import { initializeProducts } from './services/product';
 
 // Generate a global timestamp for this session (used for image caching)
 generateGlobalTimestamp();
@@ -15,12 +15,15 @@ const initializeApp = async () => {
   // Check if app version has changed
   await checkAppVersion();
   
-  // Initialize products
+  // Initialize products - do this only once at app startup
+  console.log('Initializing products at app startup');
   await initializeProducts();
   
-  // Force refresh product data if configured
+  // Force refresh product data if configured - but don't delete existing products
   if (FORCE_REFRESH_ON_START) {
-    await refreshProductData();
+    console.log('Force refresh on start is enabled, checking for missing products');
+    // Note: We're NOT passing forceRefresh: true here to avoid deleting existing products
+    await initializeProducts();
   }
   
   // Create root and render app once initialization is complete

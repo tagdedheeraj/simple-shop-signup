@@ -1,9 +1,10 @@
 
 import { db } from './index';
-import { collection, getDocs, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, deleteDoc, getDoc, query, where } from 'firebase/firestore';
 import { Product } from '@/types/product';
 import { products as initialProducts } from '../product/data';
 import { toast } from 'sonner';
+import { queryClient } from '../query-client';
 
 // Firebase collection name for products
 const PRODUCTS_COLLECTION = 'products';
@@ -49,8 +50,8 @@ export const initializeFirestoreProducts = async () => {
 // Get all products from Firestore
 export const getFirestoreProducts = async (): Promise<Product[]> => {
   try {
-    // Ensure products are initialized
-    await initializeFirestoreProducts();
+    // We no longer call initializeFirestoreProducts() here as it can cause reinitialization issues
+    // It should only be called once at the app startup
     
     const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
     return productsSnapshot.docs.map(doc => doc.data() as Product);
@@ -81,10 +82,12 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
   try {
     // Remove any timestamp parameters that might be in the image URL
     let imageUrl = product.image;
-    if (imageUrl.includes('?t=')) {
-      imageUrl = imageUrl.split('?t=')[0];
-    } else if (imageUrl.includes('&t=')) {
-      imageUrl = imageUrl.replace(/&t=\d+/, '');
+    if (imageUrl && typeof imageUrl === 'string') {
+      if (imageUrl.includes('?t=')) {
+        imageUrl = imageUrl.split('?t=')[0];
+      } else if (imageUrl.includes('&t=')) {
+        imageUrl = imageUrl.replace(/&t=\d+/, '');
+      }
     }
     
     // Save the product with the cleaned image URL
@@ -94,6 +97,12 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
     };
     
     await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), cleanedProduct);
+    
+    // Invalidate the products query cache to ensure fresh data is fetched
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
+    queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+    
     return true;
   } catch (error) {
     console.error('Error saving product to Firestore:', error);
@@ -106,6 +115,12 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
 export const deleteFirestoreProduct = async (productId: string): Promise<boolean> => {
   try {
     await deleteDoc(doc(db, PRODUCTS_COLLECTION, productId));
+    
+    // Invalidate the products query cache to ensure fresh data is fetched
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
+    queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+    
     return true;
   } catch (error) {
     console.error('Error deleting product from Firestore:', error);
@@ -114,28 +129,66 @@ export const deleteFirestoreProduct = async (productId: string): Promise<boolean
   }
 };
 
-// Refresh product data (re-initialize from source data)
-export const refreshFirestoreProducts = async (): Promise<boolean> => {
+// Refresh product data - but only ADD missing products, don't delete existing ones
+export const refreshFirestoreProducts = async (options?: { forceReset?: boolean }): Promise<boolean> => {
   try {
-    // Reset the initialized flag
-    productsInitialized = false;
+    console.log('Refreshing Firestore products');
     
-    // Delete all existing products
-    const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+    // Only perform a complete reset if explicitly requested
+    if (options?.forceReset) {
+      console.log('Performing full reset of product data as requested');
+      
+      // Delete all existing products
+      const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+      await Promise.all(
+        productsSnapshot.docs.map(async (doc) => {
+          await deleteDoc(doc.ref);
+        })
+      );
+      
+      // Reset the initialized flag
+      productsInitialized = false;
+      
+      // Re-initialize with fresh data
+      await Promise.all(
+        initialProducts.map(async (product) => {
+          await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
+        })
+      );
+      
+      toast.success('Product data completely reset to defaults');
+    } else {
+      // Just add any missing products from the initial data, don't delete existing ones
+      console.log('Adding any missing default products');
+      
+      // Get existing product IDs
+      const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+      const existingProductIds = new Set(productsSnapshot.docs.map(doc => doc.id));
+      
+      // Find missing products
+      const missingProducts = initialProducts.filter(product => !existingProductIds.has(product.id));
+      
+      if (missingProducts.length > 0) {
+        console.log(`Adding ${missingProducts.length} missing products`);
+        
+        // Add missing products
+        await Promise.all(
+          missingProducts.map(async (product) => {
+            await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
+          })
+        );
+        
+        toast.success(`Added ${missingProducts.length} missing products`);
+      } else {
+        console.log('No missing products found');
+        toast.info('All default products are already available');
+      }
+    }
     
-    // Delete all existing products
-    await Promise.all(
-      productsSnapshot.docs.map(async (doc) => {
-        await deleteDoc(doc.ref);
-      })
-    );
-    
-    // Re-initialize with fresh data
-    await Promise.all(
-      initialProducts.map(async (product) => {
-        await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
-      })
-    );
+    // Invalidate the products query cache
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
+    queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
     
     return true;
   } catch (error) {

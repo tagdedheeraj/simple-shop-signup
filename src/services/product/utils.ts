@@ -11,9 +11,11 @@ export const initializeProducts = async (options?: { forceRefresh?: boolean }) =
   
   if (shouldRefresh) {
     console.log('Forcing product data refresh from source files');
-    await refreshFirestoreProducts();
+    // Call with forceReset: true only when explicitly requested
+    await refreshFirestoreProducts({ forceReset: true });
   } else {
     console.log('Initializing products from data files');
+    // This will only populate if collection is empty
     await initializeFirestoreProducts();
   }
 };
@@ -21,6 +23,11 @@ export const initializeProducts = async (options?: { forceRefresh?: boolean }) =
 // Add timestamp to image URL to prevent caching
 export const addTimestampToImage = (imageUrl: string): string => {
   if (!imageUrl) return imageUrl;
+  
+  // Skip data URLs and blob URLs
+  if (imageUrl.startsWith('data:') || imageUrl.startsWith('blob:')) {
+    return imageUrl;
+  }
   
   // Remove any existing timestamp parameter if present
   let cleanUrl = imageUrl;
@@ -40,13 +47,13 @@ export const addTimestampToImage = (imageUrl: string): string => {
 
 // Force refresh product data from source files
 export const refreshProductData = async () => {
-  console.log('Forcing product data refresh from source files');
+  console.log('Refreshing product data');
   
   // Generate a new global timestamp
   const newTimestamp = Date.now().toString();
   localStorage.setItem('global_timestamp', newTimestamp);
   
-  // Refresh products in Firebase
+  // Refresh products in Firebase - but don't delete existing ones by default
   await refreshFirestoreProducts();
   
   // Add a small delay to simulate API call

@@ -24,7 +24,7 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
     }
   };
   
-  // Use the global timestamp utility
+  // Use the global timestamp utility for consistent cache busting
   const imageUrl = getImageWithTimestamp(product.image);
   
   return (
@@ -34,6 +34,9 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
         alt={product.name} 
         className="object-cover w-full h-full transform transition-transform hover:scale-105 duration-500"
         loading="lazy"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = "/placeholder.svg";
+        }}
       />
       <div className="absolute top-2 right-2">
         <span className="inline-block bg-primary/90 text-white text-xs px-2 py-1 rounded-full">

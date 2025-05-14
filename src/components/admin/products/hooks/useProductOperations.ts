@@ -3,8 +3,8 @@ import { useState, useCallback } from 'react';
 import { getProducts, refreshProductData } from '@/services/product';
 import { Product } from '@/types/product';
 import { toast } from 'sonner';
-import { addTimestampToImage } from '@/services/product/utils';
 import { saveFirestoreProduct, deleteFirestoreProduct } from '@/services/firebase/products';
+import { queryClient } from '@/services/query-client';
 
 export const useProductOperations = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -30,6 +30,11 @@ export const useProductOperations = () => {
     try {
       await refreshProductData();
       await fetchProducts();
+      // Invalidate all product-related queries
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+      
       toast.success('Product data refreshed successfully');
     } catch (error) {
       toast.error('Failed to refresh products');
@@ -41,9 +46,13 @@ export const useProductOperations = () => {
 
   const handleSaveProduct = useCallback(async (productData: Omit<Product, 'id'>, currentProductId: string | null) => {
     try {
-      // We don't add timestamp to image here anymore - we'll display with timestamp but store clean URL
+      // We'll store clean image URLs without timestamps in Firebase
+      // The timestamp will be added when displayed
+      const cleanImageUrl = productData.image;
+      
       const updatedProductData = {
-        ...productData
+        ...productData,
+        image: cleanImageUrl
       };
       
       if (currentProductId) {
@@ -70,6 +79,12 @@ export const useProductOperations = () => {
       
       // Refresh products list immediately
       await fetchProducts();
+      
+      // Invalidate all product-related queries
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+      
       return true;
     } catch (error) {
       console.error('Error saving product:', error);
@@ -86,6 +101,12 @@ export const useProductOperations = () => {
       
       // Refresh products list immediately
       await fetchProducts();
+      
+      // Invalidate all product-related queries
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+      
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);

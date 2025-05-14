@@ -6,11 +6,13 @@ import { useProductOperations } from './hooks/useProductOperations';
 import ProductsHeader from './components/ProductsHeader';
 import ProductsToolbar from './components/ProductsToolbar';
 import ProductsTable from './components/ProductsTable';
+import { useQueryClient } from '@tanstack/react-query';
 
 const AdminProducts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+  const queryClient = useQueryClient();
 
   const {
     products,
@@ -24,7 +26,12 @@ const AdminProducts: React.FC = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [fetchProducts]);
+    
+    // On component mount, invalidate the product queries to ensure fresh data
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
+    queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+  }, [fetchProducts, queryClient]);
 
   const handleEditProduct = (product: Product) => {
     setCurrentProduct(product);
