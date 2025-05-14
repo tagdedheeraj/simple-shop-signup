@@ -23,6 +23,14 @@ import OrderSuccess from "./pages/OrderSuccess";
 import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
 
+// Admin Pages
+import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/Admin/Dashboard";
+import AdminProducts from "./pages/Admin/Products";
+import AdminUsers from "./pages/Admin/Users";
+import AdminSales from "./pages/Admin/Sales";
+import AdminSettings from "./pages/Admin/Settings";
+
 // Initialize services
 import { initializeProducts } from "./services/product";
 
@@ -108,6 +116,15 @@ function App() {
                           <UserProfile />
                         </ProtectedRoute>
                       } />
+                      
+                      {/* Admin routes */}
+                      <Route path="/admin" element={<Admin />}>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="products" element={<AdminProducts />} />
+                        <Route path="users" element={<AdminUsers />} />
+                        <Route path="sales" element={<AdminSales />} />
+                        <Route path="settings" element={<AdminSettings />} />
+                      </Route>
                       
                       {/* Catch-all route */}
                       <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
