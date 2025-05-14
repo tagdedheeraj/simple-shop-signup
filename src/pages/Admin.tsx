@@ -10,7 +10,7 @@ const Admin: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // Simplified effect to handle navigation only when necessary
+  // More efficient effect with improved dependencies tracking
   useEffect(() => {
     console.log("Admin page state:", { isAuthenticated, isAdmin, loading });
     
@@ -29,7 +29,7 @@ const Admin: React.FC = () => {
         return;
       }
     }
-  }, [isAuthenticated, isAdmin, loading]);
+  }, [isAuthenticated, isAdmin, loading, navigate, location]);
   
   // Show loading state to prevent flickering and premature redirects
   if (loading) {

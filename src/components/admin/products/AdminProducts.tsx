@@ -58,7 +58,7 @@ const AdminProducts: React.FC = () => {
       />
 
       <ProductsTable 
-        products={products}
+        products={filteredProducts}
         loading={loading}
         filteredProducts={filteredProducts}
         onEdit={handleEditProduct}
