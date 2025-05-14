@@ -1,7 +1,6 @@
 
 import { Product } from '@/types/product';
 import { delay } from './utils';
-import { products } from './data';
 import { 
   getFirestoreProducts, 
   getFirestoreProductById, 
@@ -20,14 +19,13 @@ export const initializeProducts = async (options?: { forceRefresh?: boolean }): 
   }
 };
 
-// Base product retrieval functions
+// Base product retrieval functions - always use Firebase directly
 export const getProducts = async (): Promise<Product[]> => {
   try {
     return await getFirestoreProducts();
   } catch (error) {
-    console.error('Error getting products from Firestore, falling back to local data:', error);
-    await delay(800); // Simulate network delay
-    return products; // Fallback to imported data
+    console.error('Error getting products from Firestore:', error);
+    throw error; // No fallback to local data anymore
   }
 };
 
@@ -35,9 +33,8 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
   try {
     return await getFirestoreProductById(id);
   } catch (error) {
-    console.error('Error getting product by ID from Firestore, falling back to local data:', error);
-    await delay(500); // Simulate network delay
-    return products.find(product => product.id === id); // Fallback to imported data
+    console.error('Error getting product by ID from Firestore:', error);
+    throw error; // No fallback to local data anymore
   }
 };
 
@@ -45,8 +42,7 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
   try {
     return await getFirestoreProductsByCategory(category);
   } catch (error) {
-    console.error('Error getting products by category from Firestore, falling back to local data:', error);
-    await delay(800); // Simulate network delay
-    return products.filter(product => product.category === category); // Fallback to imported data
+    console.error('Error getting products by category from Firestore:', error);
+    throw error; // No fallback to local data anymore
   }
 };

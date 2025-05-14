@@ -6,7 +6,8 @@ import { toast } from 'sonner';
 import { addTimestampToImage } from '@/services/product/utils';
 import { 
   saveFirestoreProduct, 
-  deleteFirestoreProduct 
+  deleteFirestoreProduct,
+  getFirestoreProducts
 } from '@/services/firebase/products';
 
 export const useProductOperations = () => {
@@ -17,7 +18,8 @@ export const useProductOperations = () => {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getProducts();
+      // Directly use Firestore to get products
+      const data = await getFirestoreProducts();
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -74,7 +76,7 @@ export const useProductOperations = () => {
       }
       
       // Refresh products list immediately
-      setTimeout(() => fetchProducts(), 100);
+      await fetchProducts();
       return true;
     } catch (error) {
       console.error('Error saving product:', error);
@@ -90,7 +92,7 @@ export const useProductOperations = () => {
       
       toast.success('Product deleted successfully');
       // Refresh products list
-      setTimeout(() => fetchProducts(), 100);
+      await fetchProducts();
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);

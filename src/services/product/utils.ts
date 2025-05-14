@@ -1,5 +1,4 @@
 
-import { products } from './data';
 import { getGlobalTimestamp } from '@/utils/version-checker';
 import { refreshFirestoreProductData } from '../firebase/products';
 
@@ -15,18 +14,7 @@ export const initializeProducts = async (options?: { forceRefresh?: boolean }) =
     await initializeFirestoreProducts(shouldRefresh);
   } catch (error) {
     console.error('Error initializing products:', error);
-    // In case of error, we can still use localStorage as fallback
-    if (shouldRefresh || !localStorage.getItem('products')) {
-      console.log('Falling back to initializing products from local data to localStorage');
-      // Add a timestamp to product images to prevent caching
-      const productsWithTimestamp = products.map(product => ({
-        ...product,
-        image: addTimestampToImage(product.image)
-      }));
-      
-      // Save to localStorage as fallback
-      localStorage.setItem('products', JSON.stringify(productsWithTimestamp));
-    }
+    throw error;
   }
 };
 
@@ -61,19 +49,10 @@ export const refreshProductData = async () => {
     const newTimestamp = Date.now().toString();
     localStorage.setItem('global_timestamp', newTimestamp);
     
-    // Add a small delay to simulate API call
-    await delay(300);
-    
     return true;
   } catch (error) {
-    console.error('Error refreshing products in Firestore, falling back to localStorage:', error);
-    
-    // Fallback to localStorage method
-    localStorage.removeItem('products');
-    const { initializeProducts } = await import('./base');
-    await initializeProducts({ forceRefresh: true });
-    
-    return true;
+    console.error('Error refreshing products in Firestore:', error);
+    throw error;
   }
 };
 
@@ -96,14 +75,7 @@ export const persistProducts = async (products: any[]) => {
     
     await Promise.all(savePromises);
   } catch (error) {
-    console.error('Error persisting products to Firestore, falling back to localStorage:', error);
-    
-    // Fallback to localStorage
-    const productsWithTimestamp = products.map(product => ({
-      ...product,
-      image: addTimestampToImage(product.image)
-    }));
-    
-    localStorage.setItem('products', JSON.stringify(productsWithTimestamp));
+    console.error('Error persisting products to Firestore:', error);
+    throw error;
   }
 };
