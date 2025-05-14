@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,19 +14,32 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { login, isAuthenticated, isAdmin } = useAuth();
+  const [redirectInProgress, setRedirectInProgress] = useState(false);
+  const { login, isAuthenticated, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   
-  // If user is already authenticated, redirect them
+  // If user is already authenticated, redirect them with a delay to ensure stable state
   useEffect(() => {
-    if (isAuthenticated) {
-      if (isAdmin) {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
+    if (isAuthenticated && !loading && !redirectInProgress) {
+      console.log("User is authenticated, redirecting...", { isAdmin });
+      
+      // Set flag to prevent multiple redirects
+      setRedirectInProgress(true);
+      
+      // Add a small delay before redirecting to ensure all state is properly updated
+      const redirectTimer = setTimeout(() => {
+        if (isAdmin) {
+          console.log("Redirecting to admin panel");
+          navigate('/admin');
+        } else {
+          console.log("Redirecting to home page");
+          navigate('/');
+        }
+      }, 100);
+      
+      return () => clearTimeout(redirectTimer);
     }
-  }, [isAuthenticated, isAdmin, navigate]);
+  }, [isAuthenticated, isAdmin, navigate, loading, redirectInProgress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,22 +54,41 @@ const SignIn: React.FC = () => {
       return;
     }
     
+    if (isSubmitting) {
+      console.log("Submit already in progress, ignoring");
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
+      console.log("Attempting login...");
       const result = await login(email, password);
+      console.log("Login result:", result);
+      
       if (result.success) {
-        // If user is admin, redirect to admin panel, otherwise to home page
-        if (result.isAdmin) {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
+        console.log("Login successful, redirect will be handled by useEffect");
+        // Redirect is handled by the useEffect above to ensure state is stable
       }
+    } catch (error) {
+      console.error("Login error in component:", error);
+      toast.error('An unexpected error occurred during login');
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  // If authentication is in progress, show loading state
+  if (loading && !isSubmitting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-t-emerald-500 border-emerald-200 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-emerald-700">Verifying your credentials...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">

@@ -1,8 +1,12 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import useFirebase from '@/hooks/useFirebase';
 import { User as FirebaseUser } from 'firebase/auth';
 import { CustomUser, convertToCustomUser, UserData } from '@/types/user';
+
+// Create a persistent key for local storage
+const AUTH_STATE_KEY = 'lakshmikrupa_auth_state';
 
 interface AuthContextType {
   user: CustomUser | null;
@@ -16,6 +20,12 @@ interface AuthContextType {
   isAdmin: boolean;
 }
 
+interface PersistentAuthState {
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+  uid: string | null;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -24,6 +34,28 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+};
+
+// Helper function to get persistent auth state
+const getPersistentAuthState = (): PersistentAuthState => {
+  try {
+    const storedState = localStorage.getItem(AUTH_STATE_KEY);
+    if (storedState) {
+      return JSON.parse(storedState);
+    }
+  } catch (error) {
+    console.error('Error reading auth state from localStorage:', error);
+  }
+  return { isAuthenticated: false, isAdmin: false, uid: null };
+};
+
+// Helper function to set persistent auth state
+const setPersistentAuthState = (state: PersistentAuthState) => {
+  try {
+    localStorage.setItem(AUTH_STATE_KEY, JSON.stringify(state));
+  } catch (error) {
+    console.error('Error storing auth state to localStorage:', error);
+  }
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -36,18 +68,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading: firebaseLoading 
   } = useFirebase();
   
+  // Initialize from localStorage for faster initial render
+  const persistedState = getPersistentAuthState();
+  
   const [user, setUser] = useState<CustomUser | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(persistedState.isAdmin);
   const [loading, setLoading] = useState(true);
   const [userDataFetched, setUserDataFetched] = useState(false);
+  const [lastAuthCheck, setLastAuthCheck] = useState<number>(0);
 
   // Improved auth state handling to prevent flicker and premature redirects
   useEffect(() => {
+    // Debounce auth checks to prevent multiple rapid checks
+    const now = Date.now();
+    if (now - lastAuthCheck < 1000 && lastAuthCheck !== 0) {
+      console.log("Skipping auth check - too soon since last check");
+      return;
+    }
+    
+    setLastAuthCheck(now);
+    
     const checkUserRole = async () => {
       if (currentUser) {
         try {
-          // Console log to debug
           console.log("Checking user role for:", currentUser.uid);
+          
+          // Cache check - if we already have the same user, don't refetch
+          if (user && user.uid === currentUser.uid && userDataFetched) {
+            console.log("User data already fetched, skipping");
+            setLoading(false);
+            return;
+          }
           
           const userData = await getUserByUid(currentUser.uid) as UserData;
           console.log("User data from Firestore:", userData);
@@ -60,12 +111,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.log("Is admin?", userIsAdmin);
           setIsAdmin(userIsAdmin);
           
+          // Update persistent state
+          setPersistentAuthState({
+            isAuthenticated: true,
+            isAdmin: userIsAdmin,
+            uid: currentUser.uid
+          });
+          
           // Mark user data as fetched to prevent repeated checks
           setUserDataFetched(true);
         } catch (error) {
           console.error("Error checking user role:", error);
           setIsAdmin(false);
           setUser(convertToCustomUser(currentUser));
+          
+          // Even on error, update persistent state
+          setPersistentAuthState({
+            isAuthenticated: true,
+            isAdmin: false,
+            uid: currentUser.uid
+          });
         } finally {
           setLoading(false);
         }
@@ -73,26 +138,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log("No current user");
         setIsAdmin(false);
         setUser(null);
+        
+        // Clear persistent state when no user
+        setPersistentAuthState({
+          isAuthenticated: false,
+          isAdmin: false,
+          uid: null
+        });
+        
         setLoading(false);
+        setUserDataFetched(false);
       }
     };
     
-    // Only check user role if Firebase loading is complete and we haven't fetched user data yet
-    if (!firebaseLoading && !userDataFetched) {
+    // Only check user role if Firebase loading is complete
+    if (!firebaseLoading) {
       checkUserRole();
-    } else if (!firebaseLoading && !currentUser) {
-      // If Firebase is done loading but there's no user, we're definitely not loading
-      setLoading(false);
     }
     
-  }, [currentUser, firebaseLoading, getUserByUid, userDataFetched]);
+  }, [currentUser, firebaseLoading, getUserByUid, user, userDataFetched, lastAuthCheck]);
 
   // Additional effect to reset state when user logs out
   useEffect(() => {
     if (!currentUser && userDataFetched) {
+      console.log("User logged out, resetting state");
       setUserDataFetched(false);
       setIsAdmin(false);
       setUser(null);
+      
+      // Clear persistent state on logout
+      setPersistentAuthState({
+        isAuthenticated: false,
+        isAdmin: false,
+        uid: null
+      });
     }
   }, [currentUser, userDataFetched]);
 
@@ -107,9 +186,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (firebaseUser) {
         const userData = await getUserByUid(firebaseUser.uid) as UserData;
         const userIsAdmin = userData?.role === 'admin';
+        
+        // Set state
         setIsAdmin(userIsAdmin);
         setUser(convertToCustomUser(firebaseUser, userData));
         setUserDataFetched(true);
+        
+        // Update persistent state
+        setPersistentAuthState({
+          isAuthenticated: true,
+          isAdmin: userIsAdmin,
+          uid: firebaseUser.uid
+        });
         
         toast.success('Successfully logged in');
         return {
@@ -134,6 +222,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         toast.error('Login failed. Please try again.');
       }
+      
+      // Clear persistent state on login failure
+      setPersistentAuthState({
+        isAuthenticated: false,
+        isAdmin: false,
+        uid: null
+      });
       
       return {success: false, isAdmin: false};
     } finally {
@@ -204,10 +299,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
+    console.log("Logging out user");
     logOut();
     setUser(null);
     setIsAdmin(false);
     setUserDataFetched(false);
+    
+    // Clear persistent state on logout
+    setPersistentAuthState({
+      isAuthenticated: false,
+      isAdmin: false,
+      uid: null
+    });
+    
     toast.success('Logged out successfully');
   };
 

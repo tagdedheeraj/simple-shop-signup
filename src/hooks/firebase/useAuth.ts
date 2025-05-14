@@ -19,19 +19,27 @@ export const useAuth = () => {
 
   // Set persistence to local on initialization
   useEffect(() => {
-    // Set persistence to LOCAL to keep user logged in
-    setPersistence(auth, browserLocalPersistence).catch(error => {
-      console.error("Error setting auth persistence:", error);
-    });
+    const initializeAuth = async () => {
+      try {
+        // Set persistence to LOCAL to keep user logged in
+        await setPersistence(auth, browserLocalPersistence);
+        console.log("Firebase persistence set to LOCAL");
+      } catch (error) {
+        console.error("Error setting auth persistence:", error);
+      }
 
-    // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setCurrentUser(user);
-      setLoading(false);
-    });
+      // Listen for auth state changes
+      const unsubscribe = onAuthStateChanged(auth, (user) => {
+        console.log("Firebase auth state changed:", user ? `User ${user.uid}` : "No user");
+        setCurrentUser(user);
+        setLoading(false);
+      });
 
-    // Cleanup subscription
-    return () => unsubscribe();
+      // Cleanup subscription
+      return () => unsubscribe();
+    };
+
+    initializeAuth();
   }, []);
 
   const createUser = useCallback(async (email: string, password: string, displayName?: string, role: string = 'user') => {
@@ -63,13 +71,21 @@ export const useAuth = () => {
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
+      console.log("Attempting Firebase signIn");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      console.log("Firebase signIn successful");
       
       // Update last login time in Firestore
-      const userDocRef = doc(db, 'users', userCredential.user.uid);
-      await setDoc(userDocRef, {
-        lastLogin: new Date().toISOString()
-      }, { merge: true });
+      try {
+        const userDocRef = doc(db, 'users', userCredential.user.uid);
+        await setDoc(userDocRef, {
+          lastLogin: new Date().toISOString()
+        }, { merge: true });
+        console.log("Updated last login time in Firestore");
+      } catch (firestoreError) {
+        console.error("Error updating login time in Firestore:", firestoreError);
+        // Continue even if Firestore update fails
+      }
       
       return userCredential.user;
     } catch (error) {
@@ -80,7 +96,9 @@ export const useAuth = () => {
 
   const logOut = useCallback(async () => {
     try {
+      console.log("Attempting Firebase signOut");
       await signOut(auth);
+      console.log("Firebase signOut successful");
       return true;
     } catch (error) {
       console.error('Error signing out:', error);
