@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
+import { Toaster as SonnerToaster } from "sonner";
 
 // Pages
 import Home from "./pages/Home";
@@ -49,7 +50,17 @@ function App() {
             <WishlistProvider>
               <LocalizationProvider>
                 <Toaster />
-                {/* Removed the Sonner toaster from here as it's now in Layout */}
+                {/* Sonner toaster with updated styles to prevent blocking UI */}
+                <SonnerToaster 
+                  closeButton
+                  position="top-right"
+                  toastOptions={{
+                    style: {
+                      pointerEvents: "auto",
+                      zIndex: 40,
+                    },
+                  }}
+                />
                 <BrowserRouter>
                   <AnimatePresence mode="wait">
                     <Routes>

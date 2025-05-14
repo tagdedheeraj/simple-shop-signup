@@ -25,8 +25,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-green-50/50 to-background">
       <Header />
-      {/* Added custom Sonner toaster with margin top to position below header */}
-      <Toaster className="!top-[4.5rem] md:!top-[5.5rem]" /> 
+      {/* Configure Sonner toaster to not block UI interactions */}
+      <Toaster 
+        className="!top-[4.5rem] md:!top-[5.5rem]"
+        closeButton={true}
+        toastOptions={{
+          style: { 
+            zIndex: 40,
+            pointerEvents: "auto",
+          },
+          className: "overflow-visible pointer-events-auto"
+        }}
+      /> 
       <main className="flex-1 container mx-auto px-4 py-8 pb-20 md:pb-8 max-w-7xl">
         {children}
       </main>

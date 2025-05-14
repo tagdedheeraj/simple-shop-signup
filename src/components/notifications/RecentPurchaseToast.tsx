@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ShoppingBag, CheckCircle2 } from 'lucide-react';
+import { ShoppingBag, CheckCircle2, X } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Product } from '@/types/product';
 
@@ -62,6 +62,10 @@ interface PurchaseNotification {
 const RecentPurchaseToast: React.FC = () => {
   const [isActive, setIsActive] = useState(true);
 
+  const toggleNotifications = () => {
+    setIsActive(!isActive);
+  };
+
   useEffect(() => {
     if (!isActive) return;
     
@@ -88,7 +92,7 @@ const RecentPurchaseToast: React.FC = () => {
   
   const showPurchaseNotification = (purchase: PurchaseNotification) => {
     toast(
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-3 pointer-events-auto">
         <Avatar className="h-9 w-9 border border-green-200 bg-green-50">
           <AvatarFallback className="bg-green-100 text-green-700">
             {purchase.customerName.slice(0, 2)}
@@ -104,11 +108,24 @@ const RecentPurchaseToast: React.FC = () => {
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">{purchase.timeAgo} ago</p>
         </div>
+        <button 
+          onClick={(e) => {
+            e.stopPropagation();
+            toast.dismiss(purchase.id);
+          }} 
+          className="p-1 hover:bg-gray-100 rounded-full"
+          aria-label="Close notification"
+        >
+          <X className="h-4 w-4 text-gray-500" />
+        </button>
       </div>,
       {
+        id: purchase.id,
         position: "top-right",
-        duration: 3000, // Changed from 4000 to 3000 milliseconds (3 seconds)
-        icon: <ShoppingBag className="h-5 w-5 text-green-600" />
+        duration: 3000,
+        icon: <ShoppingBag className="h-5 w-5 text-green-600" />,
+        style: { zIndex: 50 }, // Lower z-index to not block interactions
+        className: "pointer-events-auto" // Ensure the toast itself is clickable
       }
     );
   };
