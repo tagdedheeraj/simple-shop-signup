@@ -8,6 +8,7 @@ interface User {
   name: string;
   phone?: string;
   photoUrl?: string;
+  role?: string; // Added role field to identify admin users
 }
 
 interface AuthContextType {
@@ -19,6 +20,7 @@ interface AuthContextType {
   updateProfile: (data: Partial<Omit<User, 'id' | 'name'>>) => Promise<boolean>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   loading: boolean;
+  isAdmin: boolean; // Added to check if user is admin
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,8 +43,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     }
+    
+    // Initialize the admin user if it doesn't exist
+    initializeAdminUser();
+    
     setLoading(false);
   }, []);
+  
+  // Initialize admin user in the system
+  const initializeAdminUser = () => {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+    
+    // Check if admin user already exists
+    const adminExists = users.some((u: any) => u.email === 'admin@example.com');
+    
+    if (!adminExists) {
+      // Create admin user
+      const adminUser = {
+        id: crypto.randomUUID(),
+        name: 'Admin User',
+        email: 'admin@example.com',
+        password: 'admin123', // In a real app, this would be hashed
+        role: 'admin',
+        phone: '',
+        photoUrl: ''
+      };
+      
+      // Add admin to users array
+      users.push(adminUser);
+      
+      // Save updated users
+      localStorage.setItem('users', JSON.stringify(users));
+      console.log('Admin user created successfully');
+    }
+  };
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
@@ -64,7 +98,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           email: foundUser.email,
           name: foundUser.name,
           phone: foundUser.phone || '',
-          photoUrl: foundUser.photoUrl || ''
+          photoUrl: foundUser.photoUrl || '',
+          role: foundUser.role || 'user'
         };
         
         setUser(userToSave);
@@ -227,6 +262,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success('Logged out successfully');
   };
 
+  // Check if the current user has admin role
+  const isAdmin = user?.role === 'admin';
+
   return (
     <AuthContext.Provider value={{ 
       user, 
@@ -236,7 +274,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       logout,
       updateProfile,
       updatePassword,
-      loading
+      loading,
+      isAdmin
     }}>
       {children}
     </AuthContext.Provider>
