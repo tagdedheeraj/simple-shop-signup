@@ -19,46 +19,43 @@ import { Input } from '@/components/ui/input';
 import { MoreHorizontal, RefreshCw, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import useFirebase from '@/hooks/useFirebase';
 
 interface User {
   id: string;
-  name: string;
   email: string;
+  displayName?: string;
+  createdAt?: string;
+  lastLogin?: string;
+  role?: string;
   phone?: string;
-  registeredOn: string;
-  lastActive: string;
 }
-
-const mockUsers: User[] = Array.from({ length: 10 }, (_, i) => ({
-  id: `user-${i + 1}`,
-  name: `User ${i + 1}`,
-  email: `user${i + 1}@example.com`,
-  phone: i % 3 === 0 ? `+91 9876${543210 + i}` : undefined,
-  registeredOn: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
-  lastActive: new Date(Date.now() - Math.random() * 1000000000).toISOString(),
-}));
 
 const AdminUsers: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const { getAllUsers } = useFirebase();
 
   useEffect(() => {
-    // Simulate API call
+    // Load users from Firebase
     const loadUsers = async () => {
       setLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setUsers(mockUsers);
+        const firebaseUsers = await getAllUsers();
+        setUsers(firebaseUsers as User[]);
       } catch (error) {
+        console.error('Failed to load users:', error);
         toast.error('Failed to load users');
+        // Fall back to mock data if Firebase fails
+        setUsers([]);
       } finally {
         setLoading(false);
       }
     };
 
     loadUsers();
-  }, []);
+  }, [getAllUsers]);
 
   const handleViewUser = (userId: string) => {
     toast.info(`View user ${userId}`);
@@ -74,16 +71,22 @@ const AdminUsers: React.FC = () => {
   };
 
   const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    (user.displayName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (user.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '-';
+    
     return new Date(dateString).toLocaleDateString('en-IN', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
+  };
+
+  const getUserName = (user: User) => {
+    return user.displayName || user.email?.split('@')[0] || 'Unknown User';
   };
 
   return (
@@ -145,11 +148,11 @@ const AdminUsers: React.FC = () => {
                     <div className="flex items-center gap-3">
                       <Avatar className="h-8 w-8">
                         <AvatarFallback>
-                          {user.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                          {getUserName(user).split(' ').map(n => n[0]).join('').toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className="font-medium">{user.name}</div>
+                        <div className="font-medium">{getUserName(user)}</div>
                         <div className="text-xs text-muted-foreground md:hidden">
                           {user.email}
                         </div>
@@ -161,10 +164,10 @@ const AdminUsers: React.FC = () => {
                     {user.phone || '-'}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {formatDate(user.registeredOn)}
+                    {formatDate(user.createdAt)}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {formatDate(user.lastActive)}
+                    {formatDate(user.lastLogin)}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

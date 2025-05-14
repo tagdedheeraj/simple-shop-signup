@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { getProducts, refreshProductData } from '@/services/product';
 import { Product } from '@/types/product';
 import { toast } from 'sonner';
+import { addTimestampToImage } from '@/services/product/utils';
 
 export const useProductOperations = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -41,13 +42,19 @@ export const useProductOperations = () => {
       const storedProducts = localStorage.getItem('products');
       let allProducts: Product[] = storedProducts ? JSON.parse(storedProducts) : [];
       
+      // Add timestamp to image to prevent caching
+      const updatedProductData = {
+        ...productData,
+        image: addTimestampToImage(productData.image)
+      };
+      
       if (currentProductId) {
         // Update existing product
         allProducts = allProducts.map(product => {
           if (product.id === currentProductId) {
             return {
               ...product,
-              ...productData,
+              ...updatedProductData,
             };
           }
           return product;
@@ -57,7 +64,7 @@ export const useProductOperations = () => {
         // Add new product
         const newProduct = {
           id: `product-${Date.now()}`,
-          ...productData,
+          ...updatedProductData,
         };
         allProducts.push(newProduct);
         toast.success('Product added successfully');

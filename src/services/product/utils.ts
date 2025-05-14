@@ -9,9 +9,24 @@ export const initializeProducts = (options?: { forceRefresh?: boolean }) => {
   const shouldRefresh = options?.forceRefresh === true;
   
   if (shouldRefresh || !localStorage.getItem('products')) {
-    // Use the directly imported products instead of require
-    localStorage.setItem('products', JSON.stringify(products));
+    // Add a timestamp to product images to prevent caching
+    const productsWithTimestamp = products.map(product => ({
+      ...product,
+      image: addTimestampToImage(product.image)
+    }));
+    
+    // Save to localStorage
+    localStorage.setItem('products', JSON.stringify(productsWithTimestamp));
   }
+};
+
+// Add timestamp to image URL to prevent caching
+export const addTimestampToImage = (imageUrl: string): string => {
+  if (!imageUrl) return imageUrl;
+  
+  // Add or update timestamp parameter
+  const separator = imageUrl.includes('?') ? '&' : '?';
+  return `${imageUrl}${separator}t=${Date.now()}`;
 };
 
 // Force refresh product data from source files

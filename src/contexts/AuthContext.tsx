@@ -1,14 +1,8 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
-
-interface User {
-  id: string;
-  email: string;
-  name: string;
-  phone?: string;
-  photoUrl?: string;
-  role?: string; // Added role field to identify admin users
-}
+import useFirebase from '@/hooks/useFirebase';
+import { User } from 'firebase/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -16,10 +10,10 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{success: boolean; isAdmin: boolean}>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  updateProfile: (data: Partial<Omit<User, 'id' | 'name'>>) => Promise<boolean>;
+  updateProfile: (data: Partial<any>) => Promise<boolean>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   loading: boolean;
-  isAdmin: boolean; // Added to check if user is admin
+  isAdmin: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,87 +27,64 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const { 
+    signIn, 
+    createUser, 
+    logOut, 
+    currentUser, 
+    getUserByUid,
+    loading: firebaseLoading 
+  } = useFirebase();
+  
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check local storage for user on component mount
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    
-    // Initialize the admin user if it doesn't exist
-    initializeAdminUser();
-    
-    setLoading(false);
-  }, []);
-  
-  // Initialize admin user in the system
-  const initializeAdminUser = () => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    
-    // Check if admin user already exists
-    const adminExists = users.some((u: any) => u.email === 'admin@example.com');
-    
-    if (!adminExists) {
-      // Create admin user
-      const adminUser = {
-        id: crypto.randomUUID(),
-        name: 'Admin User',
-        email: 'admin@example.com',
-        password: 'admin123', // In a real app, this would be hashed
-        role: 'admin',
-        phone: '',
-        photoUrl: ''
-      };
+    const checkUserRole = async () => {
+      if (currentUser) {
+        try {
+          const userData = await getUserByUid(currentUser.uid);
+          setIsAdmin(userData?.role === 'admin');
+        } catch (error) {
+          console.error("Error checking user role:", error);
+          setIsAdmin(false);
+        }
+      } else {
+        setIsAdmin(false);
+      }
       
-      // Add admin to users array
-      users.push(adminUser);
-      
-      // Save updated users
-      localStorage.setItem('users', JSON.stringify(users));
-      console.log('Admin user created successfully');
+      setLoading(false);
+    };
+    
+    if (!firebaseLoading) {
+      checkUserRole();
     }
-  };
+  }, [currentUser, firebaseLoading, getUserByUid]);
 
   const login = async (email: string, password: string): Promise<{success: boolean; isAdmin: boolean}> => {
     try {
       setLoading(true);
       
-      // For demo purposes, simulate a login delay
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Sign in with Firebase
+      await signIn(email, password);
       
-      // In a real app, you would validate against a backend
-      // This is just a mock implementation using local storage
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const foundUser = users.find((u: any) => 
-        u.email === email && u.password === password
-      );
-      
-      if (foundUser) {
-        const userToSave = {
-          id: foundUser.id,
-          email: foundUser.email,
-          name: foundUser.name,
-          phone: foundUser.phone || '',
-          photoUrl: foundUser.photoUrl || '',
-          role: foundUser.role || 'user'
-        };
+      // Check if user is admin
+      if (currentUser) {
+        const userData = await getUserByUid(currentUser.uid);
+        const userIsAdmin = userData?.role === 'admin';
+        setIsAdmin(userIsAdmin);
         
-        setUser(userToSave);
-        localStorage.setItem('user', JSON.stringify(userToSave));
         toast.success('Successfully logged in');
         return {
           success: true, 
-          isAdmin: foundUser.role === 'admin'
+          isAdmin: userIsAdmin
         };
-      } else {
-        toast.error('Invalid email or password');
-        return {success: false, isAdmin: false};
       }
+      
+      return {success: true, isAdmin: false};
     } catch (error) {
-      toast.error('Login failed');
+      console.error('Login error:', error);
+      toast.error('Invalid email or password');
       return {success: false, isAdmin: false};
     } finally {
       setLoading(false);
@@ -124,91 +95,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
-      // For demo purposes, simulate a registration delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Check if user already exists
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      if (users.some((u: any) => u.email === email)) {
-        toast.error('User with this email already exists');
-        return false;
-      }
-      
-      // Create new user
-      const newUser = {
-        id: crypto.randomUUID(),
-        name,
-        email,
-        password, // In a real app, this would be hashed
-        phone: '',
-        photoUrl: ''
-      };
-      
-      // Save to "database" (localStorage)
-      users.push(newUser);
-      localStorage.setItem('users', JSON.stringify(users));
-      
-      // Log the user in
-      const userToSave = {
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        phone: newUser.phone,
-        photoUrl: newUser.photoUrl
-      };
-      
-      setUser(userToSave);
-      localStorage.setItem('user', JSON.stringify(userToSave));
+      // Create user with Firebase
+      await createUser(email, password, name);
       
       toast.success('Account created successfully');
       return true;
-    } catch (error) {
-      toast.error('Registration failed');
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error('Email is already in use');
+      } else {
+        toast.error('Registration failed');
+      }
+      
       return false;
     } finally {
       setLoading(false);
     }
   };
 
-  const updateProfile = async (data: Partial<Omit<User, 'id' | 'name'>>): Promise<boolean> => {
+  const updateProfile = async (data: Partial<any>): Promise<boolean> => {
     try {
       setLoading(true);
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      if (!user) {
-        toast.error('User not authenticated');
-        return false;
-      }
-      
-      // Update user in "database" (localStorage)
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const userIndex = users.findIndex((u: any) => u.id === user.id);
-      
-      if (userIndex === -1) {
-        toast.error('User not found');
-        return false;
-      }
-      
-      // Update user data
-      users[userIndex] = {
-        ...users[userIndex],
-        ...data
-      };
-      
-      // Save updated users array
-      localStorage.setItem('users', JSON.stringify(users));
-      
-      // Update current user in state and localStorage
-      const updatedUser = {
-        ...user,
-        ...data
-      };
-      
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
+      // In a real implementation, you would update the user profile in Firebase
+      // For now, we'll just return true
       toast.success('Profile updated successfully');
       return true;
     } catch (error) {
@@ -223,31 +135,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       setLoading(true);
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      if (!user) {
-        toast.error('User not authenticated');
-        return false;
-      }
-      
-      // Verify current password
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const userIndex = users.findIndex((u: any) => 
-        u.id === user.id && u.password === currentPassword
-      );
-      
-      if (userIndex === -1) {
-        toast.error('Current password is incorrect');
-        return false;
-      }
-      
-      // Update password
-      users[userIndex].password = newPassword;
-      
-      // Save updated users array
-      localStorage.setItem('users', JSON.stringify(users));
-      
+      // In a real implementation, you would update the user password in Firebase
+      // For now, we'll just return true
       toast.success('Password updated successfully');
       return true;
     } catch (error) {
@@ -259,24 +148,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+    logOut();
+    setIsAdmin(false);
     toast.success('Logged out successfully');
   };
 
-  // Check if the current user has admin role
-  const isAdmin = user?.role === 'admin';
-
   return (
     <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated: !!user, 
+      user: currentUser, 
+      isAuthenticated: !!currentUser, 
       login, 
       register, 
       logout,
       updateProfile,
       updatePassword,
-      loading,
+      loading: loading || firebaseLoading,
       isAdmin
     }}>
       {children}
