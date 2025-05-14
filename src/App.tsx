@@ -30,6 +30,7 @@ import AdminProducts from "./pages/Admin/Products";
 import AdminUsers from "./pages/Admin/Users";
 import AdminSales from "./pages/Admin/Sales";
 import AdminSettings from "./pages/Admin/Settings";
+import AdminHeroBanners from "./pages/Admin/HeroBanners"; // Add the new page
 
 // Initialize services
 import { initializeProducts } from "./services/product";
@@ -147,12 +148,13 @@ function App() {
                       } />
                       
                       {/* Admin routes */}
-                      <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>}>
+                      <Route path="/admin" element={<Admin />}>
                         <Route index element={<AdminDashboard />} />
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="users" element={<AdminUsers />} />
                         <Route path="sales" element={<AdminSales />} />
                         <Route path="settings" element={<AdminSettings />} />
+                        <Route path="hero-banners" element={<AdminHeroBanners />} />
                       </Route>
                       
                       {/* Catch-all route */}

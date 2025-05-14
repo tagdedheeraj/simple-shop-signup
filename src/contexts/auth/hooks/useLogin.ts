@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import useFirebase from '@/hooks/useFirebase';
 import { setPersistentAuthState } from '../helpers';
-import { convertToCustomUser, UserData } from '@/types/user';
+import { UserData } from '@/types/user';
 
 export const useLogin = () => {
   const { signIn, getUserByUid } = useFirebase();

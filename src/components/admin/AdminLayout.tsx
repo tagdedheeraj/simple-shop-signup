@@ -10,7 +10,7 @@ import {
   LogOut, 
   Menu, 
   X,
-  ChevronRight
+  Image
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -31,6 +31,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: 'Products', href: '/admin/products', icon: Package },
     { name: 'Users', href: '/admin/users', icon: Users },
     { name: 'Sales', href: '/admin/sales', icon: BarChart3 },
+    { name: 'Hero Banners', href: '/admin/hero-banners', icon: Image },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
