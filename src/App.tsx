@@ -50,14 +50,15 @@ function App() {
             <WishlistProvider>
               <LocalizationProvider>
                 <Toaster />
-                {/* Sonner toaster with updated styles to prevent blocking UI */}
+                {/* Sonner toaster with updated styles to ensure UI interactions */}
                 <SonnerToaster 
                   closeButton
                   position="top-right"
                   toastOptions={{
+                    duration: 2000, // 2 seconds auto-dismiss
                     style: {
-                      pointerEvents: "auto",
-                      zIndex: 40,
+                      pointerEvents: "auto", // This ensures clicks work on toasts
+                      zIndex: 40, // Lower z-index ensures it doesn't block other UI
                     },
                   }}
                 />

@@ -22,9 +22,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
           cancelButton:
             "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
         },
+        duration: 2000, // 2 seconds auto-dismiss
         style: {
-          zIndex: 40,
-          pointerEvents: "auto",
+          zIndex: 40, // Lower z-index
+          pointerEvents: "auto", // Enable interactions with UI elements
         },
         ...props.toastOptions,
       }}

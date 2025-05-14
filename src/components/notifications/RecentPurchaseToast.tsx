@@ -61,6 +61,7 @@ interface PurchaseNotification {
 // Component for showing random purchase notifications
 const RecentPurchaseToast: React.FC = () => {
   const [isActive, setIsActive] = useState(true);
+  const [activeToastId, setActiveToastId] = useState<string | null>(null);
 
   const toggleNotifications = () => {
     setIsActive(!isActive);
@@ -73,24 +74,37 @@ const RecentPurchaseToast: React.FC = () => {
     const intervalTime = Math.floor(Math.random() * (45000 - 25000) + 25000);
     
     const interval = setInterval(() => {
-      // Pick a random purchase from our sample data
-      const randomPurchase = DEMO_PURCHASES[Math.floor(Math.random() * DEMO_PURCHASES.length)];
-      showPurchaseNotification(randomPurchase);
+      // Only show a new notification if no active toast
+      if (!activeToastId) {
+        // Pick a random purchase from our sample data
+        const randomPurchase = DEMO_PURCHASES[Math.floor(Math.random() * DEMO_PURCHASES.length)];
+        showPurchaseNotification(randomPurchase);
+      }
     }, intervalTime);
     
     // Show first notification quickly (after 5 seconds)
     const initialTimer = setTimeout(() => {
-      const firstPurchase = DEMO_PURCHASES[0];
-      showPurchaseNotification(firstPurchase);
+      if (!activeToastId) {
+        const firstPurchase = DEMO_PURCHASES[0];
+        showPurchaseNotification(firstPurchase);
+      }
     }, 5000);
     
     return () => {
       clearInterval(interval);
       clearTimeout(initialTimer);
     };
-  }, [isActive]);
+  }, [isActive, activeToastId]);
   
   const showPurchaseNotification = (purchase: PurchaseNotification) => {
+    // First dismiss any existing notification
+    if (activeToastId) {
+      toast.dismiss(activeToastId);
+    }
+    
+    // Set the new active toast ID
+    setActiveToastId(purchase.id);
+    
     toast(
       <div className="flex items-start gap-3 pointer-events-auto">
         <Avatar className="h-9 w-9 border border-green-200 bg-green-50">
@@ -112,6 +126,7 @@ const RecentPurchaseToast: React.FC = () => {
           onClick={(e) => {
             e.stopPropagation();
             toast.dismiss(purchase.id);
+            setActiveToastId(null);
           }} 
           className="p-1 hover:bg-gray-100 rounded-full"
           aria-label="Close notification"
@@ -122,9 +137,10 @@ const RecentPurchaseToast: React.FC = () => {
       {
         id: purchase.id,
         position: "top-right",
-        duration: 3000,
+        duration: 2000, // Auto hide after 2 seconds
+        onDismiss: () => setActiveToastId(null), // Clear active toast ID when dismissed
         icon: <ShoppingBag className="h-5 w-5 text-green-600" />,
-        style: { zIndex: 50 }, // Lower z-index to not block interactions
+        style: { zIndex: 40 }, // Lower z-index to not block interactions
         className: "pointer-events-auto" // Ensure the toast itself is clickable
       }
     );
