@@ -10,19 +10,9 @@ export const useAuthState = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [userDataFetched, setUserDataFetched] = useState(false);
-  const [lastAuthCheck, setLastAuthCheck] = useState<number>(0);
 
-  // Improved auth state handling to prevent flicker and premature redirects
+  // Improved auth state handling
   useEffect(() => {
-    // Debounce auth checks to prevent multiple rapid checks
-    const now = Date.now();
-    if (now - lastAuthCheck < 1000 && lastAuthCheck !== 0) {
-      console.log("Skipping auth check - too soon since last check");
-      return;
-    }
-    
-    setLastAuthCheck(now);
-    
     const checkUserRole = async () => {
       if (currentUser) {
         try {
@@ -91,7 +81,7 @@ export const useAuthState = () => {
       checkUserRole();
     }
     
-  }, [currentUser, firebaseLoading, getUserByUid, user, userDataFetched, lastAuthCheck]);
+  }, [currentUser, firebaseLoading, getUserByUid, user, userDataFetched]);
 
   // Additional effect to reset state when user logs out
   useEffect(() => {

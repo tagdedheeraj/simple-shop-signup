@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/auth/AuthContext';
@@ -15,32 +14,23 @@ const SignIn: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [redirectInProgress, setRedirectInProgress] = useState(false);
   const { login, isAuthenticated, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   
-  // If user is already authenticated, redirect them with a delay to ensure stable state
+  // If user is already authenticated, redirect them immediately
   useEffect(() => {
-    if (isAuthenticated && !loading && !redirectInProgress) {
+    if (isAuthenticated && !loading) {
       console.log("User is authenticated, redirecting...", { isAdmin });
       
-      // Set flag to prevent multiple redirects
-      setRedirectInProgress(true);
-      
-      // Add a small delay before redirecting to ensure all state is properly updated
-      const redirectTimer = setTimeout(() => {
-        if (isAdmin) {
-          console.log("Redirecting to admin panel");
-          navigate('/admin');
-        } else {
-          console.log("Redirecting to home page");
-          navigate('/');
-        }
-      }, 100);
-      
-      return () => clearTimeout(redirectTimer);
+      if (isAdmin) {
+        console.log("Redirecting to admin panel");
+        navigate('/admin');
+      } else {
+        console.log("Redirecting to home page");
+        navigate('/');
+      }
     }
-  }, [isAuthenticated, isAdmin, navigate, loading, redirectInProgress]);
+  }, [isAuthenticated, isAdmin, navigate, loading]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,8 +58,13 @@ const SignIn: React.FC = () => {
       console.log("Login result:", result);
       
       if (result.success) {
-        console.log("Login successful, redirect will be handled by useEffect");
-        // Redirect is handled by the useEffect above to ensure state is stable
+        console.log("Login successful, redirecting...");
+        // Redirect based on user role
+        if (result.isAdmin) {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
       }
     } catch (error) {
       console.error("Login error in component:", error);

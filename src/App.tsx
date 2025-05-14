@@ -41,9 +41,38 @@ const queryClient = new QueryClient();
 
 // Route guard for authenticated routes
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+  
+  // Show loading while checking auth status
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-t-emerald-500 border-emerald-200 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
   
   if (!isAuthenticated) {
+    return <Navigate to="/signin" replace />;
+  }
+  
+  return <PageTransition>{children}</PageTransition>;
+};
+
+// Route guard for admin routes
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isAdmin, loading } = useAuth();
+  
+  // Show loading while checking auth status
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-16 h-16 border-4 border-t-emerald-500 border-emerald-200 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated || !isAdmin) {
     return <Navigate to="/signin" replace />;
   }
   
@@ -118,7 +147,7 @@ function App() {
                       } />
                       
                       {/* Admin routes */}
-                      <Route path="/admin" element={<Admin />}>
+                      <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>}>
                         <Route index element={<AdminDashboard />} />
                         <Route path="products" element={<AdminProducts />} />
                         <Route path="users" element={<AdminUsers />} />
