@@ -1,6 +1,5 @@
 
 import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
@@ -10,6 +9,7 @@ import { WishlistProvider } from "@/contexts/WishlistContext";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import { Toaster as SonnerToaster } from "sonner";
 import PageTransition from "@/components/layout/PageTransition";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 // Pages
 import Home from "./pages/Home";
@@ -53,11 +53,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <LocalizationProvider>
+      <AuthProvider>
+        <CartProvider>
+          <WishlistProvider>
+            <LocalizationProvider>
+              <TooltipProvider>
                 <Toaster />
                 {/* Sonner toaster with updated styles for normal notifications */}
                 <SonnerToaster 
@@ -131,11 +131,11 @@ function App() {
                     </Routes>
                   </AnimatePresence>
                 </BrowserRouter>
-              </LocalizationProvider>
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
-      </TooltipProvider>
+              </TooltipProvider>
+            </LocalizationProvider>
+          </WishlistProvider>
+        </CartProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
