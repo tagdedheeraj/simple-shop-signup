@@ -13,14 +13,18 @@ import { Product } from '@/types/product';
 const ProductBanner: React.FC = () => {
   const [imageKeys, setImageKeys] = useState<{[key: string]: string}>({});
   
-  // Fetch products for displaying in the banner with staleTime to prevent frequent refetching
+  // Fetch products with a shorter timeout and disable retry on error
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ['products-banner', Date.now()], // Add timestamp to ensure fresh data
+    queryKey: ['products-banner', Date.now()],
     queryFn: getProducts,
-    staleTime: 0, // Set to 0 to always fetch fresh data
+    staleTime: 0,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    cacheTime: 5 * 60 * 1000, // 5 minutes cache
   });
 
-  // Generate unique keys for images to force re-render
+  // Generate unique keys for images
   useEffect(() => {
     const keys: {[key: string]: string} = {};
     products.forEach(product => {
@@ -37,23 +41,47 @@ const ProductBanner: React.FC = () => {
   const firstProduct = wheatProduct || products[0];
   const secondProduct = riceProduct || (products.length > 1 ? products[1] : products[0]);
 
-  if (isLoading || !products.length) {
-    return (
-      <div className="relative rounded-2xl overflow-hidden shadow-xl">
-        <div className="bg-gradient-to-r from-amber-800 to-amber-600 h-[450px] flex items-center justify-center">
-          <div className="text-white text-xl">Loading products...</div>
-        </div>
-      </div>
-    );
-  }
-
-  // Ensure images have timestamps
+  // Ensuring images have timestamps
   const getImageWithTimestamp = (product: Product | undefined) => {
     if (!product) return "";
     return addTimestampToImage(product.image);
   };
 
-  console.log('ProductBanner rendering with products:', { firstProduct, secondProduct });
+  // Show a minimal loading state instead of a full-height loader
+  if (isLoading || !products.length) {
+    return (
+      <div className="relative rounded-2xl overflow-hidden shadow-xl">
+        <div className="bg-gradient-to-r from-amber-800 to-amber-600 h-[450px] flex items-center">
+          <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 px-4">
+            <motion.div
+              initial={{ opacity: 0.7 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+              className="text-white space-y-6 py-8 z-10"
+            >
+              <h1 className="text-4xl md:text-5xl font-bold leading-tight">
+                Premium Quality<br />Organic Products
+              </h1>
+              <p className="text-lg opacity-90 font-light max-w-md">
+                Discover our premium selection of organic products, freshly harvested and delivered to your doorstep.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+        
+        {/* Wave shape divider */}
+        <div className="absolute bottom-0 left-0 right-0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 120" className="w-full h-auto">
+            <path 
+              fill="#ffffff" 
+              fillOpacity="1" 
+              d="M0,96L80,80C160,64,320,32,480,32C640,32,800,64,960,69.3C1120,75,1280,53,1360,42.7L1440,32L1440,120L1360,120C1280,120,1120,120,960,120C800,120,640,120,480,120C320,120,160,120,80,120L0,120Z"
+            ></path>
+          </svg>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-xl">
@@ -124,6 +152,7 @@ const ProductBanner: React.FC = () => {
                         console.log('Image error in banner', e);
                         (e.target as HTMLImageElement).src = "/placeholder.svg";
                       }}
+                      loading="eager"
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">
@@ -148,6 +177,7 @@ const ProductBanner: React.FC = () => {
                         console.log('Image error in banner', e);
                         (e.target as HTMLImageElement).src = "/placeholder.svg";
                       }}
+                      loading="eager"
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">

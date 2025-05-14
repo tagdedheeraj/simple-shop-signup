@@ -20,9 +20,35 @@ export const initializeProducts = (options?: { forceRefresh?: boolean }) => {
     
     // Save to localStorage
     localStorage.setItem('products', JSON.stringify(productsWithTimestamp));
+    
+    // Also set in memory cache for faster initial loads
+    setProductsCache(productsWithTimestamp);
   } else {
     console.log('Products already exist in localStorage, skipping initialization');
+    
+    // Load from localStorage to memory cache for faster access
+    try {
+      const storedProducts = localStorage.getItem('products');
+      if (storedProducts) {
+        setProductsCache(JSON.parse(storedProducts));
+      }
+    } catch (error) {
+      console.error('Error loading products from localStorage to cache:', error);
+    }
   }
+};
+
+// In-memory cache for faster product access
+let productsCache = null;
+
+// Set the products cache
+export const setProductsCache = (products) => {
+  productsCache = products;
+};
+
+// Get products from cache
+export const getProductsFromCache = () => {
+  return productsCache;
 };
 
 // Add timestamp to image URL to prevent caching
@@ -48,6 +74,9 @@ export const refreshProductData = async () => {
   // Clear existing product data from localStorage
   localStorage.removeItem('products');
   
+  // Clear the in-memory cache
+  productsCache = null;
+  
   // Re-initialize with fresh data
   initializeProducts({ forceRefresh: true });
   
@@ -67,5 +96,9 @@ export const persistProducts = (products: any[]) => {
     image: addTimestampToImage(product.image)
   }));
   
+  // Update in-memory cache
+  setProductsCache(productsWithTimestamps);
+  
+  // Update localStorage
   localStorage.setItem('products', JSON.stringify(productsWithTimestamps));
 };

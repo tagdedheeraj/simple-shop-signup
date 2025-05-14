@@ -1,10 +1,17 @@
 
 import { Product } from '@/types/product';
-import { delay, addTimestampToImage } from './utils';
+import { delay, addTimestampToImage, getProductsFromCache } from './utils';
 import { products } from './data';
 
 // Get products from localStorage or fallback to imported data
 const getStoredProducts = (): Product[] => {
+  // First try to get from memory cache for fastest access
+  const cachedProducts = getProductsFromCache();
+  if (cachedProducts) {
+    return cachedProducts;
+  }
+  
+  // If not in cache, try localStorage
   const storedProducts = localStorage.getItem('products');
   if (storedProducts) {
     try {
@@ -26,7 +33,8 @@ const getStoredProducts = (): Product[] => {
 
 // Base product retrieval functions
 export const getProducts = async (): Promise<Product[]> => {
-  await delay(300); // Shorter delay for better mobile experience
+  // For the home page banner, reduce delay for faster loading
+  await delay(100); // Reduced from 300ms to 100ms for faster loading
   console.log('Getting products with timestamp', Date.now());
   return getStoredProducts();
 };
