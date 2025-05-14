@@ -2,7 +2,7 @@
 import React from 'react';
 import Header from './Header';
 import BottomBar from './BottomBar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/auth/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 interface LayoutProps {
