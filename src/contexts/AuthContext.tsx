@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import useFirebase from '@/hooks/useFirebase';
@@ -15,19 +14,6 @@ interface AuthContextType {
   updatePassword: (currentPassword: string, newPassword: string) => Promise<boolean>;
   loading: boolean;
   isAdmin: boolean;
-}
-
-// Define the user data interface
-interface UserData {
-  id?: string;
-  uid?: string;
-  email?: string;
-  displayName?: string;
-  role?: string;
-  createdAt?: string;
-  lastLogin?: string;
-  photoUrl?: string;
-  phone?: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
