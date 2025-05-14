@@ -5,8 +5,25 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, Tag, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { getProducts } from '@/services/product';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const ProductBanner: React.FC = () => {
+  // Fetch products for displaying in the banner
+  const { data: products = [] } = useQuery({
+    queryKey: ['products-banner'],
+    queryFn: getProducts,
+  });
+
+  // Get two products to display (preferably wheat and rice products)
+  const wheatProduct = products.find(p => p.category === 'wheat');
+  const riceProduct = products.find(p => p.category === 'rice');
+  
+  // Fallback to any products if specific categories not found
+  const firstProduct = wheatProduct || products[0];
+  const secondProduct = riceProduct || products[1];
+
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-xl">
       <div className="bg-gradient-to-r from-amber-800 to-amber-600 h-[450px] flex items-center">
@@ -63,35 +80,43 @@ const ProductBanner: React.FC = () => {
             <div className="absolute w-64 h-64 rounded-full bg-white/10 top-10 right-10"></div>
             <div className="absolute w-40 h-40 rounded-full bg-white/5 bottom-10 left-10"></div>
             
-            <Card className="rotate-6 shadow-xl w-80 overflow-hidden border-none">
-              <CardContent className="p-0">
-                <img 
-                  src="https://images.unsplash.com/photo-1586444248902-2f64eddc13df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
-                  alt="Premium Whole Wheat Flour"
-                  className="w-full h-auto object-cover aspect-[4/3]"
-                />
-                <div className="p-4 bg-white">
-                  <h3 className="font-medium text-lg">Premium Whole Wheat Flour</h3>
-                  <p className="text-muted-foreground text-sm">Organic stone-ground wheat flour</p>
-                  <div className="mt-2 font-bold text-amber-700">$5.99</div>
-                </div>
-              </CardContent>
-            </Card>
+            {firstProduct && (
+              <Card className="rotate-6 shadow-xl w-80 overflow-hidden border-none">
+                <CardContent className="p-0">
+                  <AspectRatio ratio={4/3}>
+                    <img 
+                      src={firstProduct.image} 
+                      alt={firstProduct.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </AspectRatio>
+                  <div className="p-4 bg-white">
+                    <h3 className="font-medium text-lg">{firstProduct.name}</h3>
+                    <p className="text-muted-foreground text-sm">{firstProduct.description.slice(0, 40)}...</p>
+                    <div className="mt-2 font-bold text-amber-700">${firstProduct.price.toFixed(2)}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
             
-            <Card className="-rotate-6 shadow-xl w-80 absolute -bottom-10 -right-5 overflow-hidden border-none">
-              <CardContent className="p-0">
-                <img 
-                  src="https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" 
-                  alt="Basmati Rice"
-                  className="w-full h-auto object-cover aspect-[4/3]"
-                />
-                <div className="p-4 bg-white">
-                  <h3 className="font-medium text-lg">Basmati Rice</h3>
-                  <p className="text-muted-foreground text-sm">Premium long-grain aromatic rice</p>
-                  <div className="mt-2 font-bold text-amber-700">$8.99</div>
-                </div>
-              </CardContent>
-            </Card>
+            {secondProduct && (
+              <Card className="-rotate-6 shadow-xl w-80 absolute -bottom-10 -right-5 overflow-hidden border-none">
+                <CardContent className="p-0">
+                  <AspectRatio ratio={4/3}>
+                    <img 
+                      src={secondProduct.image} 
+                      alt={secondProduct.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </AspectRatio>
+                  <div className="p-4 bg-white">
+                    <h3 className="font-medium text-lg">{secondProduct.name}</h3>
+                    <p className="text-muted-foreground text-sm">{secondProduct.description.slice(0, 40)}...</p>
+                    <div className="mt-2 font-bold text-amber-700">${secondProduct.price.toFixed(2)}</div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </motion.div>
         </div>
       </div>
