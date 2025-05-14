@@ -8,8 +8,21 @@ export interface CustomUser extends Omit<FirebaseUser, 'photoURL'> {
   role?: string;
 }
 
+// Define the user data interface that comes from Firestore
+export interface UserData {
+  id?: string;
+  uid?: string;
+  email?: string;
+  displayName?: string;
+  role?: string;
+  createdAt?: string;
+  lastLogin?: string;
+  photoUrl?: string;
+  phone?: string;
+}
+
 // Helper function to convert Firebase user to CustomUser
-export const convertToCustomUser = (firebaseUser: FirebaseUser | null, userData?: any): CustomUser | null => {
+export const convertToCustomUser = (firebaseUser: FirebaseUser | null, userData?: UserData | any): CustomUser | null => {
   if (!firebaseUser) return null;
   
   return {

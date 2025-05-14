@@ -17,6 +17,19 @@ interface AuthContextType {
   isAdmin: boolean;
 }
 
+// Define the user data interface
+interface UserData {
+  id?: string;
+  uid?: string;
+  email?: string;
+  displayName?: string;
+  role?: string;
+  createdAt?: string;
+  lastLogin?: string;
+  photoUrl?: string;
+  phone?: string;
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -45,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const checkUserRole = async () => {
       if (currentUser) {
         try {
-          const userData = await getUserByUid(currentUser.uid);
+          const userData = await getUserByUid(currentUser.uid) as UserData;
           const customUser = convertToCustomUser(currentUser, userData);
           setUser(customUser);
           setIsAdmin(userData?.role === 'admin');
@@ -76,7 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       // Check if user is admin
       if (firebaseUser) {
-        const userData = await getUserByUid(firebaseUser.uid);
+        const userData = await getUserByUid(firebaseUser.uid) as UserData;
         const userIsAdmin = userData?.role === 'admin';
         setIsAdmin(userIsAdmin);
         setUser(convertToCustomUser(firebaseUser, userData));
