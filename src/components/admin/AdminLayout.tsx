@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   Layers, 
@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -23,8 +24,21 @@ interface AdminLayoutProps {
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
   const location = useLocation();
+
+  // Close sidebar by default on mobile devices
+  useEffect(() => {
+    setSidebarOpen(!isMobile);
+  }, [isMobile]);
+
+  // Close sidebar when route changes on mobile
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  }, [location.pathname, isMobile]);
 
   const navigationItems = [
     { name: 'Dashboard', href: '/admin', icon: Layers },
@@ -43,25 +57,41 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         .toUpperCase()
     : 'U';
 
+  // Create overlay for mobile to close sidebar when clicking outside
+  const handleOverlayClick = () => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Mobile sidebar toggle */}
-      <div className="lg:hidden fixed top-4 left-4 z-50">
+      {/* Mobile sidebar toggle - moved to better position and made more visible */}
+      <div className="fixed top-4 left-4 z-50 lg:hidden">
         <Button
-          variant="outline"
+          variant="default"
           size="icon"
-          className="rounded-full"
+          className="rounded-full bg-primary text-primary-foreground shadow-md"
           onClick={() => setSidebarOpen(!sidebarOpen)}
         >
           {sidebarOpen ? <X size={18} /> : <Menu size={18} />}
         </Button>
       </div>
 
-      {/* Sidebar */}
+      {/* Overlay to close sidebar on mobile */}
+      {isMobile && sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30"
+          onClick={handleOverlayClick}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar with improved mobile styles */}
       <div
         className={cn(
-          "fixed inset-y-0 z-40 flex w-64 flex-col bg-card border-r transition-all duration-300",
-          sidebarOpen ? "left-0" : "-left-64"
+          "fixed inset-y-0 z-40 flex flex-col bg-card border-r shadow-lg transition-all duration-300 w-[85%] sm:w-72 lg:w-64",
+          sidebarOpen ? "left-0" : "-left-full lg:-left-64"
         )}
       >
         <div className="flex h-16 shrink-0 items-center border-b px-6">
@@ -76,6 +106,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
               <Link
                 key={item.name}
                 to={item.href}
+                onClick={() => isMobile && setSidebarOpen(false)}
                 className={cn(
                   "group flex items-center px-4 py-3 text-sm font-medium rounded-md transition-colors",
                   location.pathname === item.href
@@ -116,12 +147,16 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main content with improved mobile padding and spacing */}
       <div className={cn(
         "flex flex-1 flex-col transition-all duration-300",
         sidebarOpen ? "lg:pl-64" : "lg:pl-0"
       )}>
-        <div className="flex-1 h-full min-h-screen p-6">
+        {/* Header for mobile view */}
+        <div className="bg-card border-b shadow-sm h-16 flex items-center justify-center lg:hidden">
+          <h1 className="text-lg font-semibold">Admin Panel</h1>
+        </div>
+        <div className="flex-1 h-full min-h-screen p-4 pt-16 lg:pt-6 lg:p-6">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>
