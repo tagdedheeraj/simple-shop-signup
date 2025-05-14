@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   Dialog, 
   DialogContent, 
@@ -23,7 +23,7 @@ interface AdminProductDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product: Product | null;
-  onSave: () => void;
+  onSave: (data: Omit<Product, 'id'>) => Promise<boolean>;
 }
 
 const productSchema = z.object({
@@ -57,7 +57,7 @@ const AdminProductDialog: React.FC<AdminProductDialogProps> = ({
     },
   });
   
-  React.useEffect(() => {
+  useEffect(() => {
     if (product) {
       form.reset({
         name: product.name,
@@ -81,15 +81,13 @@ const AdminProductDialog: React.FC<AdminProductDialogProps> = ({
 
   const onSubmit = async (data: z.infer<typeof productSchema>) => {
     try {
-      // In a real app, we would send this to an API
+      // Send the form data to parent component for saving
       console.log('Saving product:', data);
+      const success = await onSave(data);
       
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      toast.success(isEditing ? 'Product updated successfully' : 'Product added successfully');
-      onOpenChange(false);
-      onSave();
+      if (success) {
+        onOpenChange(false);
+      }
     } catch (error) {
       toast.error('Failed to save product');
       console.error(error);
@@ -224,6 +222,7 @@ const AdminProductDialog: React.FC<AdminProductDialogProps> = ({
                       <div className="w-full h-full bg-muted/30 rounded flex items-center justify-center overflow-hidden">
                         {form.watch('image') ? (
                           <img 
+                            key={form.watch('image')} // Add key to force re-render when image changes
                             src={form.watch('image')} 
                             alt="Product preview" 
                             className="w-full h-full object-contain"

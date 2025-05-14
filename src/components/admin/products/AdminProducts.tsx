@@ -70,11 +70,66 @@ const AdminProducts: React.FC = () => {
     setDialogOpen(true);
   };
 
+  const handleSaveProduct = async (productData: Omit<Product, 'id'>) => {
+    try {
+      // Get current products from localStorage
+      const storedProducts = localStorage.getItem('products');
+      let allProducts: Product[] = storedProducts ? JSON.parse(storedProducts) : [];
+      
+      if (currentProduct) {
+        // Update existing product
+        allProducts = allProducts.map(product => {
+          if (product.id === currentProduct.id) {
+            return {
+              ...product,
+              ...productData,
+            };
+          }
+          return product;
+        });
+        toast.success('Product updated successfully');
+      } else {
+        // Add new product
+        const newProduct = {
+          id: `product-${Date.now()}`,
+          ...productData,
+        };
+        allProducts.push(newProduct);
+        toast.success('Product added successfully');
+      }
+      
+      // Save back to localStorage
+      localStorage.setItem('products', JSON.stringify(allProducts));
+      
+      // Refresh products list
+      await fetchProducts();
+      return true;
+    } catch (error) {
+      console.error('Error saving product:', error);
+      toast.error('Failed to save product');
+      return false;
+    }
+  };
+
   const handleDeleteProduct = (productId: string) => {
-    // In a real app, call an API to delete the product
-    toast.success('Product deleted successfully');
-    // Then refetch the products
-    fetchProducts();
+    try {
+      // Get current products from localStorage
+      const storedProducts = localStorage.getItem('products');
+      let allProducts: Product[] = storedProducts ? JSON.parse(storedProducts) : [];
+      
+      // Filter out the product to delete
+      allProducts = allProducts.filter(product => product.id !== productId);
+      
+      // Save back to localStorage
+      localStorage.setItem('products', JSON.stringify(allProducts));
+      
+      toast.success('Product deleted successfully');
+      // Refresh products list
+      fetchProducts();
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product');
+    }
   };
 
   const filteredProducts = products.filter(product =>
@@ -199,7 +254,7 @@ const AdminProducts: React.FC = () => {
         open={dialogOpen} 
         onOpenChange={setDialogOpen}
         product={currentProduct}
-        onSave={fetchProducts}
+        onSave={handleSaveProduct}
       />
     </div>
   );
