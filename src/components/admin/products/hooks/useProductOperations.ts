@@ -42,7 +42,7 @@ export const useProductOperations = () => {
       const storedProducts = localStorage.getItem('products');
       let allProducts: Product[] = storedProducts ? JSON.parse(storedProducts) : [];
       
-      // Add timestamp to image to prevent caching
+      // Make sure image has a timestamp to prevent caching issues
       const updatedProductData = {
         ...productData,
         image: addTimestampToImage(productData.image)
@@ -70,7 +70,7 @@ export const useProductOperations = () => {
         toast.success('Product added successfully');
       }
       
-      // Save back to localStorage
+      // Save back to localStorage with stringified JSON to ensure proper serialization
       localStorage.setItem('products', JSON.stringify(allProducts));
       
       // Refresh products list
