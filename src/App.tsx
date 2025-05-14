@@ -9,6 +9,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { WishlistProvider } from "@/contexts/WishlistContext";
 import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import { Toaster as SonnerToaster } from "sonner";
+import PageTransition from "@/components/layout/PageTransition";
 
 // Pages
 import Home from "./pages/Home";
@@ -38,7 +39,7 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/signin" replace />;
   }
   
-  return <>{children}</>;
+  return <PageTransition>{children}</PageTransition>;
 };
 
 function App() {
@@ -66,8 +67,8 @@ function App() {
                   <AnimatePresence mode="wait">
                     <Routes>
                       {/* Auth routes */}
-                      <Route path="/signin" element={<SignIn />} />
-                      <Route path="/signup" element={<SignUp />} />
+                      <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
+                      <Route path="/signup" element={<PageTransition><SignUp /></PageTransition>} />
                       
                       {/* Home route (landing page) */}
                       <Route path="/" element={
@@ -109,7 +110,7 @@ function App() {
                       } />
                       
                       {/* Catch-all route */}
-                      <Route path="*" element={<NotFound />} />
+                      <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
                     </Routes>
                   </AnimatePresence>
                 </BrowserRouter>

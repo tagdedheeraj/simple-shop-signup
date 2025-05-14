@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ShoppingBag, CheckCircle2, X } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Product } from '@/types/product';
 
 // Sample data for recent purchases
 const DEMO_PURCHASES = [
@@ -62,6 +61,7 @@ interface PurchaseNotification {
 const RecentPurchaseToast: React.FC = () => {
   const [isActive, setIsActive] = useState(true);
   const [activeToastId, setActiveToastId] = useState<string | null>(null);
+  const [notificationQueue, setNotificationQueue] = useState<PurchaseNotification[]>([]);
 
   const toggleNotifications = () => {
     setIsActive(!isActive);
@@ -70,31 +70,47 @@ const RecentPurchaseToast: React.FC = () => {
   useEffect(() => {
     if (!isActive) return;
     
-    // Random interval between 25-45 seconds for natural feeling
-    const intervalTime = Math.floor(Math.random() * (45000 - 25000) + 25000);
+    // Only show a notification if there isn't one currently active
+    const showNextNotification = () => {
+      if (activeToastId === null && notificationQueue.length > 0) {
+        const nextPurchase = notificationQueue[0];
+        showPurchaseNotification(nextPurchase);
+        
+        // Remove the shown notification from the queue
+        setNotificationQueue(prev => prev.slice(1));
+      }
+    };
+    
+    // Random interval between 30-60 seconds for natural feeling
+    const intervalTime = Math.floor(Math.random() * (60000 - 30000) + 30000);
     
     const interval = setInterval(() => {
-      // Only show a new notification if no active toast
-      if (!activeToastId) {
-        // Pick a random purchase from our sample data
-        const randomPurchase = DEMO_PURCHASES[Math.floor(Math.random() * DEMO_PURCHASES.length)];
-        showPurchaseNotification(randomPurchase);
-      }
+      // Add a random purchase to the queue
+      const randomPurchase = DEMO_PURCHASES[Math.floor(Math.random() * DEMO_PURCHASES.length)];
+      setNotificationQueue(prev => [...prev, randomPurchase]);
+      
+      // Try to show if no active notification
+      showNextNotification();
     }, intervalTime);
+    
+    // Check the queue every 3 seconds to show the next notification if possible
+    const queueCheckInterval = setInterval(showNextNotification, 3000);
     
     // Show first notification quickly (after 5 seconds)
     const initialTimer = setTimeout(() => {
-      if (!activeToastId) {
+      if (activeToastId === null) {
         const firstPurchase = DEMO_PURCHASES[0];
-        showPurchaseNotification(firstPurchase);
+        setNotificationQueue(prev => [...prev, firstPurchase]);
+        showNextNotification();
       }
     }, 5000);
     
     return () => {
       clearInterval(interval);
+      clearInterval(queueCheckInterval);
       clearTimeout(initialTimer);
     };
-  }, [isActive, activeToastId]);
+  }, [isActive, activeToastId, notificationQueue]);
   
   const showPurchaseNotification = (purchase: PurchaseNotification) => {
     // First dismiss any existing notification
@@ -140,7 +156,7 @@ const RecentPurchaseToast: React.FC = () => {
         duration: 2000, // Auto hide after 2 seconds
         onDismiss: () => setActiveToastId(null), // Clear active toast ID when dismissed
         icon: <ShoppingBag className="h-5 w-5 text-green-600" />,
-        style: { zIndex: 40 }, // Lower z-index to not block interactions
+        style: { zIndex: 40, pointerEvents: "auto" }, // Lower z-index and enable pointer events
         className: "pointer-events-auto" // Ensure the toast itself is clickable
       }
     );
