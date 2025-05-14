@@ -3,6 +3,7 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 import { Product } from '@/types/product';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { getImageWithTimestamp } from '@/lib/utils';
 
 interface ProductImageProps {
   product: Product;
@@ -23,16 +24,8 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
     }
   };
   
-  // Ensure image has a timestamp parameter to prevent caching
-  const ensureTimestamp = (url: string) => {
-    if (!url) return "";
-    const timestamp = Date.now();
-    const separator = url.includes('?') ? '&' : '?';
-    return `${url}${separator}t=${timestamp}`;
-  };
-
-  // Always use the image with a timestamp to prevent caching issues
-  const imageUrl = ensureTimestamp(product.image);
+  // Use the global timestamp utility
+  const imageUrl = getImageWithTimestamp(product.image);
   
   return (
     <div className="aspect-square relative overflow-hidden">
@@ -41,7 +34,6 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
         alt={product.name} 
         className="object-cover w-full h-full transform transition-transform hover:scale-105 duration-500"
         loading="lazy"
-        key={product.id + Date.now()} // Force re-render of image when component updates
       />
       <div className="absolute top-2 right-2">
         <span className="inline-block bg-primary/90 text-white text-xs px-2 py-1 rounded-full">

@@ -15,6 +15,7 @@ const ProductBanner: React.FC = () => {
     queryKey: ['products-banner'],
     queryFn: getProducts,
     staleTime: 0, // Set to 0 to always fetch fresh data
+    gcTime: 0, // Use gcTime instead of cacheTime (which is deprecated)
   });
 
   // Get two products to display (preferably wheat and rice products)

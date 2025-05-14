@@ -1,5 +1,6 @@
 
 import { products } from './data';
+import { getGlobalTimestamp } from '@/utils/version-checker';
 
 // Simulate API calls with a delay
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -37,9 +38,12 @@ export const addTimestampToImage = (imageUrl: string): string => {
     cleanUrl = imageUrl.replace(/&t=\d+/, '');
   }
   
+  // Use the global timestamp instead of Date.now() for consistency
+  const timestamp = getGlobalTimestamp();
+  
   // Add timestamp parameter
   const separator = cleanUrl.includes('?') ? '&' : '?';
-  return `${cleanUrl}${separator}t=${Date.now()}`;
+  return `${cleanUrl}${separator}t=${timestamp}`;
 };
 
 // Force refresh product data from source files
@@ -51,6 +55,10 @@ export const refreshProductData = async () => {
   // Re-initialize with fresh data
   initializeProducts({ forceRefresh: true });
   
+  // Generate a new global timestamp
+  const newTimestamp = Date.now().toString();
+  localStorage.setItem('global_timestamp', newTimestamp);
+  
   // Add a small delay to simulate API call
   await delay(300);
   
@@ -60,5 +68,12 @@ export const refreshProductData = async () => {
 // Export a function to persist products to localStorage
 export const persistProducts = (products: any[]) => {
   console.log('Persisting products to localStorage', products);
-  localStorage.setItem('products', JSON.stringify(products));
+  
+  // Add timestamps to all images
+  const productsWithTimestamp = products.map(product => ({
+    ...product,
+    image: addTimestampToImage(product.image)
+  }));
+  
+  localStorage.setItem('products', JSON.stringify(productsWithTimestamp));
 };

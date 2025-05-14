@@ -1,6 +1,5 @@
-
 import { Toaster } from "@/components/ui/toaster";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -10,6 +9,7 @@ import { LocalizationProvider } from "@/contexts/LocalizationContext";
 import { Toaster as SonnerToaster } from "sonner";
 import PageTransition from "@/components/layout/PageTransition";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { queryClient } from "./services/query-client";
 
 // Pages
 import Home from "./pages/Home";
@@ -37,8 +37,6 @@ import { initializeProducts } from "./services/product";
 
 // Initialize mock data
 initializeProducts({ forceRefresh: false });
-
-const queryClient = new QueryClient();
 
 // Route guard for authenticated routes
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
