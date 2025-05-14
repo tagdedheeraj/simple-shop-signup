@@ -23,7 +23,6 @@ const AdminProducts: React.FC = () => {
   } = useProductOperations();
 
   useEffect(() => {
-    // Ensure products are fetched when component mounts
     fetchProducts();
   }, [fetchProducts]);
 

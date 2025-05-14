@@ -1,20 +1,28 @@
 
+import { products } from './data';
 import { getGlobalTimestamp } from '@/utils/version-checker';
-import { refreshFirestoreProductData } from '../firebase/products';
 
 // Simulate API calls with a delay
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Initialize products in Firestore if they don't exist
-export const initializeProducts = async (options?: { forceRefresh?: boolean }) => {
-  const { initializeFirestoreProducts } = await import('../firebase/products');
+// Initialize products in localStorage if they don't exist
+export const initializeProducts = (options?: { forceRefresh?: boolean }) => {
   const shouldRefresh = options?.forceRefresh === true;
   
-  try {
-    await initializeFirestoreProducts(shouldRefresh);
-  } catch (error) {
-    console.error('Error initializing products:', error);
-    throw error;
+  // Only initialize products if localStorage is empty or force refresh is requested
+  // This ensures we don't overwrite user's custom products
+  if (shouldRefresh || !localStorage.getItem('products')) {
+    console.log('Initializing products from data files');
+    // Add a timestamp to product images to prevent caching
+    const productsWithTimestamp = products.map(product => ({
+      ...product,
+      image: addTimestampToImage(product.image)
+    }));
+    
+    // Save to localStorage
+    localStorage.setItem('products', JSON.stringify(productsWithTimestamp));
+  } else {
+    console.log('Products already exist in localStorage, skipping initialization');
   }
 };
 
@@ -38,44 +46,34 @@ export const addTimestampToImage = (imageUrl: string): string => {
   return `${cleanUrl}${separator}t=${timestamp}`;
 };
 
-// Force refresh product data
+// Force refresh product data from source files
 export const refreshProductData = async () => {
-  console.log('Forcing product data refresh');
-  try {
-    // Use Firebase to refresh product data
-    await refreshFirestoreProductData();
-    
-    // Generate a new global timestamp
-    const newTimestamp = Date.now().toString();
-    localStorage.setItem('global_timestamp', newTimestamp);
-    
-    return true;
-  } catch (error) {
-    console.error('Error refreshing products in Firestore:', error);
-    throw error;
-  }
+  console.log('Forcing product data refresh from source files');
+  // Clear existing product data from localStorage
+  localStorage.removeItem('products');
+  
+  // Re-initialize with fresh data
+  initializeProducts({ forceRefresh: true });
+  
+  // Generate a new global timestamp
+  const newTimestamp = Date.now().toString();
+  localStorage.setItem('global_timestamp', newTimestamp);
+  
+  // Add a small delay to simulate API call
+  await delay(300);
+  
+  return true;
 };
 
-// Export a function to persist products
-export const persistProducts = async (products: any[]) => {
-  console.log('Persisting products to Firestore', products);
+// Export a function to persist products to localStorage
+export const persistProducts = (products: any[]) => {
+  console.log('Persisting products to localStorage', products);
   
-  try {
-    // Import necessary functions from Firebase products service
-    const { saveFirestoreProduct } = await import('../firebase/products');
-    
-    // Add timestamps to all images and save each product
-    const savePromises = products.map(product => {
-      const productWithTimestamp = {
-        ...product,
-        image: addTimestampToImage(product.image)
-      };
-      return saveFirestoreProduct(productWithTimestamp);
-    });
-    
-    await Promise.all(savePromises);
-  } catch (error) {
-    console.error('Error persisting products to Firestore:', error);
-    throw error;
-  }
+  // Add timestamps to all images
+  const productsWithTimestamp = products.map(product => ({
+    ...product,
+    image: addTimestampToImage(product.image)
+  }));
+  
+  localStorage.setItem('products', JSON.stringify(productsWithTimestamp));
 };

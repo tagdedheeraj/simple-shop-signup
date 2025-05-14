@@ -3,12 +3,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { getProducts, refreshProductData } from '@/services/product';
 import { Product } from '@/types/product';
 import { toast } from 'sonner';
-import { addTimestampToImage } from '@/services/product/utils';
-import { 
-  saveFirestoreProduct, 
-  deleteFirestoreProduct,
-  getFirestoreProducts
-} from '@/services/firebase/products';
+import { addTimestampToImage, persistProducts } from '@/services/product/utils';
 
 export const useProductOperations = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -18,8 +13,7 @@ export const useProductOperations = () => {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      // Directly use Firestore to get products
-      const data = await getFirestoreProducts();
+      const data = await getProducts();
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -49,6 +43,10 @@ export const useProductOperations = () => {
 
   const handleSaveProduct = useCallback(async (productData: Omit<Product, 'id'>, currentProductId: string | null) => {
     try {
+      // Get current products from localStorage
+      const storedProducts = localStorage.getItem('products');
+      let allProducts: Product[] = storedProducts ? JSON.parse(storedProducts) : [];
+      
       // Make sure image has a timestamp to prevent caching issues
       const updatedProductData = {
         ...productData,
@@ -57,26 +55,31 @@ export const useProductOperations = () => {
       
       if (currentProductId) {
         // Update existing product
-        const updatedProduct: Product = {
-          id: currentProductId,
-          ...updatedProductData,
-        };
-        
-        await saveFirestoreProduct(updatedProduct);
+        allProducts = allProducts.map(product => {
+          if (product.id === currentProductId) {
+            return {
+              ...product,
+              ...updatedProductData,
+            };
+          }
+          return product;
+        });
         toast.success('Product updated successfully');
       } else {
         // Add new product
-        const newProduct: Product = {
+        const newProduct = {
           id: `product-${Date.now()}`,
           ...updatedProductData,
         };
-        
-        await saveFirestoreProduct(newProduct);
+        allProducts.push(newProduct);
         toast.success('Product added successfully');
       }
       
+      // Save back to localStorage using the utility function
+      persistProducts(allProducts);
+      
       // Refresh products list immediately
-      await fetchProducts();
+      setTimeout(() => fetchProducts(), 100);
       return true;
     } catch (error) {
       console.error('Error saving product:', error);
@@ -87,12 +90,19 @@ export const useProductOperations = () => {
 
   const handleDeleteProduct = useCallback(async (productId: string) => {
     try {
-      // Delete the product from Firestore
-      await deleteFirestoreProduct(productId);
+      // Get current products from localStorage
+      const storedProducts = localStorage.getItem('products');
+      let allProducts: Product[] = storedProducts ? JSON.parse(storedProducts) : [];
+      
+      // Filter out the product to delete
+      allProducts = allProducts.filter(product => product.id !== productId);
+      
+      // Save back to localStorage using the utility function
+      persistProducts(allProducts);
       
       toast.success('Product deleted successfully');
       // Refresh products list
-      await fetchProducts();
+      setTimeout(() => fetchProducts(), 100);
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);

@@ -1,13 +1,13 @@
 
-import { initializeProducts, refreshProductData, persistProducts } from './utils';
+import { products } from './data';
+import { delay, initializeProducts, refreshProductData, persistProducts } from './utils';
 import { getProducts, getProductById, getProductsByCategory } from './base';
 import { getRelatedProducts, getTrendingProducts } from './related';
 import { addReview } from './reviews';
 
-// Initialize Firebase products when importing this module
-initializeProducts().catch(error => {
-  console.error('Failed to initialize products:', error);
-});
+// Initialize products when importing this module, but only if they don't exist
+// This prevents resetting user's custom products
+initializeProducts();
 
 // Export all product service functions
 export {
