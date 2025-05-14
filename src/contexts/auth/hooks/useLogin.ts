@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import useFirebase from '@/hooks/useFirebase';
 import { setPersistentAuthState } from '../helpers';
-import { convertToCustomUser } from '@/types/user';
+import { convertToCustomUser, UserData } from '@/types/user';
 
 export const useLogin = () => {
   const { signIn, getUserByUid } = useFirebase();
@@ -18,7 +18,7 @@ export const useLogin = () => {
       
       // Check if user is admin
       if (firebaseUser) {
-        const userData = await getUserByUid(firebaseUser.uid);
+        const userData = await getUserByUid(firebaseUser.uid) as UserData;
         const userIsAdmin = userData?.role === 'admin';
         
         // Update persistent state
