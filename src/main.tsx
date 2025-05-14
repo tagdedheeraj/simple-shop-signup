@@ -19,11 +19,10 @@ const initializeApp = async () => {
   console.log('Initializing products at app startup');
   await initializeProducts();
   
-  // Force refresh product data if configured - but don't delete existing products
+  // Force refresh product data only if explicitly configured
   if (FORCE_REFRESH_ON_START) {
     console.log('Force refresh on start is enabled, checking for missing products');
-    // Note: We're NOT passing forceRefresh: true here to avoid deleting existing products
-    await initializeProducts();
+    // Note: This is now disabled by default in config
   }
   
   // Create root and render app once initialization is complete

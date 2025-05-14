@@ -5,12 +5,28 @@ import { Product } from '@/types/product';
 import { products as initialProducts } from '../product/data';
 import { toast } from 'sonner';
 import { queryClient } from '../query-client';
+import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
 // Firebase collection name for products
 const PRODUCTS_COLLECTION = 'products';
 
 // A flag to track if products have been initialized
 let productsInitialized = false;
+
+// Get deleted product IDs from localStorage
+const getDeletedProductIds = (): string[] => {
+  const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
+  return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+};
+
+// Store a deleted product ID in localStorage
+const addDeletedProductId = (productId: string): void => {
+  const deletedIds = getDeletedProductIds();
+  if (!deletedIds.includes(productId)) {
+    deletedIds.push(productId);
+    localStorage.setItem(DELETED_PRODUCTS_KEY, JSON.stringify(deletedIds));
+  }
+};
 
 // Initialize Firestore products collection with data if empty
 export const initializeFirestoreProducts = async () => {
@@ -27,9 +43,15 @@ export const initializeFirestoreProducts = async () => {
     if (productsSnapshot.empty) {
       console.log('Initializing Firestore products collection with default data');
       
-      // Batch operation would be better but for simplicity we'll use Promise.all
+      // Get list of deleted product IDs to avoid re-adding them
+      const deletedIds = getDeletedProductIds();
+      
+      // Filter out products that were previously deleted
+      const productsToAdd = initialProducts.filter(product => !deletedIds.includes(product.id));
+      
+      // Add remaining products
       await Promise.all(
-        initialProducts.map(async (product) => {
+        productsToAdd.map(async (product) => {
           await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
         })
       );
@@ -50,9 +72,6 @@ export const initializeFirestoreProducts = async () => {
 // Get all products from Firestore
 export const getFirestoreProducts = async (): Promise<Product[]> => {
   try {
-    // We no longer call initializeFirestoreProducts() here as it can cause reinitialization issues
-    // It should only be called once at the app startup
-    
     const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
     return productsSnapshot.docs.map(doc => doc.data() as Product);
   } catch (error) {
@@ -116,6 +135,9 @@ export const deleteFirestoreProduct = async (productId: string): Promise<boolean
   try {
     await deleteDoc(doc(db, PRODUCTS_COLLECTION, productId));
     
+    // Add to deleted products list to prevent re-initialization
+    addDeletedProductId(productId);
+    
     // Invalidate the products query cache to ensure fresh data is fetched
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
@@ -149,6 +171,9 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       // Reset the initialized flag
       productsInitialized = false;
       
+      // Clear deleted products list if doing a full reset
+      localStorage.removeItem(DELETED_PRODUCTS_KEY);
+      
       // Re-initialize with fresh data
       await Promise.all(
         initialProducts.map(async (product) => {
@@ -165,8 +190,13 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
       const existingProductIds = new Set(productsSnapshot.docs.map(doc => doc.id));
       
-      // Find missing products
-      const missingProducts = initialProducts.filter(product => !existingProductIds.has(product.id));
+      // Get deleted product IDs to respect user deletions
+      const deletedIds = getDeletedProductIds();
+      
+      // Find missing products that weren't explicitly deleted
+      const missingProducts = initialProducts.filter(
+        product => !existingProductIds.has(product.id) && !deletedIds.includes(product.id)
+      );
       
       if (missingProducts.length > 0) {
         console.log(`Adding ${missingProducts.length} missing products`);
