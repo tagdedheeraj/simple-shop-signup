@@ -1,43 +1,44 @@
 
 import { Product } from '@/types/product';
 import { delay } from './utils';
-import { getFirestoreProducts } from '../firebase/products';
+import { getProducts } from './base';
+import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
-export const getRelatedProducts = async (productId: string, limit: number = 4): Promise<Product[]> => {
-  await delay(600); // Simulate network delay
-  
-  const products = await getFirestoreProducts();
-  const currentProduct = products.find(p => p.id === productId);
-  if (!currentProduct) return [];
-  
-  // Find products in the same category, excluding the current product
-  let relatedProducts = products.filter(p => 
-    p.category === currentProduct.category && p.id !== currentProduct.id
-  );
-  
-  // If we don't have enough products in the same category, add some random products
-  if (relatedProducts.length < limit) {
-    const otherProducts = products.filter(p => 
-      p.category !== currentProduct.category && p.id !== currentProduct.id
-    );
-    
-    // Shuffle the array to get random products
-    const shuffled = [...otherProducts].sort(() => 0.5 - Math.random());
-    relatedProducts = [...relatedProducts, ...shuffled.slice(0, limit - relatedProducts.length)];
-  }
-  
-  // Return only the requested number of products
-  return relatedProducts.slice(0, limit);
+// Get deleted product IDs from localStorage
+const getDeletedProductIds = (): string[] => {
+  const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
+  return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
 };
 
-// Function to get trending products
-export const getTrendingProducts = async (limit: number = 4): Promise<Product[]> => {
-  await delay(600); // Simulate network delay
+// Filter out deleted products from any product list
+const filterDeletedProducts = (products: Product[]): Product[] => {
+  const deletedIds = getDeletedProductIds();
+  return products.filter(product => !deletedIds.includes(product.id));
+};
+
+// Get related products based on category
+export const getRelatedProducts = async (productId: string, category: string): Promise<Product[]> => {
+  await delay(500);
+  const allProducts = await getProducts();
   
-  const products = await getFirestoreProducts();
+  // Filter products by category and exclude the current product
+  const relatedProducts = allProducts
+    .filter(product => product.category === category && product.id !== productId)
+    .slice(0, 4); // Limit to 4 related products
   
-  // In a real app, this would be based on product popularity, reviews, etc.
-  // For this demo, we'll just select random products and mark them as trending
-  const shuffled = [...products].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, limit);
+  return filterDeletedProducts(relatedProducts);
+};
+
+// Get trending products
+export const getTrendingProducts = async (): Promise<Product[]> => {
+  await delay(500);
+  const allProducts = await getProducts();
+  
+  // For demo purposes, we're just showing a slice of products as "trending"
+  // In a real app, you might fetch this from analytics or user behavior data
+  const trendingProducts = allProducts
+    .sort(() => Math.random() - 0.5) // Randomize products
+    .slice(0, 5); // Get first 5
+  
+  return filterDeletedProducts(trendingProducts);
 };

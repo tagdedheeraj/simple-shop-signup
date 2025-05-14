@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,35 +7,51 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '@/services/product';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
 const ProductBanner: React.FC = () => {
-  // Fetch products for displaying in the banner with staleTime to prevent frequent refetching
+  // Fetch products for displaying in the banner
   const { data: products = [], isLoading } = useQuery({
     queryKey: ['products-banner'],
     queryFn: getProducts,
-    staleTime: 0, // Set to 0 to always fetch fresh data
-    gcTime: 0, // Use gcTime instead of cacheTime (which is deprecated)
+    // Don't cache products for banner to ensure we always get fresh data
+    staleTime: 0,
+    gcTime: 0,
   });
 
-  // Get two products to display (preferably wheat and rice products)
-  const wheatProduct = products.find(p => p.category === 'wheat');
-  const riceProduct = products.find(p => p.category === 'rice');
+  // Get deleted product IDs from localStorage
+  const getDeletedProductIds = (): string[] => {
+    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
+    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+  };
   
-  // Fallback to any products if specific categories not found
-  const firstProduct = wheatProduct || products[0];
-  const secondProduct = riceProduct || (products.length > 1 ? products[1] : products[0]);
+  // Filter out any deleted products
+  const availableProducts = products.filter(product => 
+    !getDeletedProductIds().includes(product.id)
+  );
+  
+  // Get two products to display (preferably wheat and rice products)
+  const wheatProduct = availableProducts.find(p => p.category === 'wheat');
+  const riceProduct = availableProducts.find(p => p.category === 'rice');
+  
+  // Fallback to any available products if specific categories not found
+  const firstProduct = wheatProduct || (availableProducts.length > 0 ? availableProducts[0] : null);
+  const secondProduct = riceProduct || (availableProducts.length > 1 ? availableProducts[1] : 
+    (availableProducts.length > 0 && availableProducts[0] !== firstProduct ? availableProducts[0] : null));
 
-  if (isLoading || !products.length) {
+  if (isLoading || availableProducts.length === 0) {
     return (
       <div className="relative rounded-2xl overflow-hidden shadow-xl">
         <div className="bg-gradient-to-r from-amber-800 to-amber-600 h-[450px] flex items-center justify-center">
-          <div className="text-white text-xl">Loading products...</div>
+          <div className="text-white text-xl">
+            {isLoading ? 'Loading products...' : 'No products available'}
+          </div>
         </div>
       </div>
     );
   }
 
-  console.log('ProductBanner rendering with products:', { firstProduct, secondProduct });
+  console.log('ProductBanner rendering with filtered products:', { firstProduct, secondProduct });
 
   return (
     <div className="relative rounded-2xl overflow-hidden shadow-xl">

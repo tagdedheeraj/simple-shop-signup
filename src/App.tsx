@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -35,7 +36,7 @@ import AdminHeroBanners from "./pages/Admin/HeroBanners"; // Add the new page
 // Initialize services
 import { initializeProducts } from "./services/product";
 
-// Initialize mock data
+// Initialize mock data WITHOUT forcing refresh - this prevents re-adding deleted products
 initializeProducts({ forceRefresh: false });
 
 // Route guard for authenticated routes

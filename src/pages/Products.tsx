@@ -10,6 +10,7 @@ import ProductHeader from '@/components/products/ProductHeader';
 import SearchBar from '@/components/products/SearchBar';
 import CategoryFilter from '@/components/products/CategoryFilter';
 import SearchResults from '@/components/products/SearchResults';
+import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -19,13 +20,25 @@ const Products: React.FC = () => {
   const [category, setCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  
+  // Get deleted product IDs from localStorage
+  const getDeletedProductIds = (): string[] => {
+    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
+    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+  };
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const data = await getProducts();
-      setProducts(data);
-      setFilteredProducts(data);
+      
+      // Filter out deleted products
+      const availableProducts = data.filter(product => 
+        !getDeletedProductIds().includes(product.id)
+      );
+      
+      setProducts(availableProducts);
+      setFilteredProducts(availableProducts);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');

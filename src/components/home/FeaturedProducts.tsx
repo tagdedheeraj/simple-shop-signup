@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useLocalization } from '@/contexts/LocalizationContext';
@@ -7,18 +8,29 @@ import { Loader2, ArrowRight, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getProducts } from '@/services/product';
+import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
 const FeaturedProducts: React.FC = () => {
   const { t } = useLocalization();
   
-  const { data: products, isLoading } = useQuery({
+  // Get deleted product IDs from localStorage
+  const getDeletedProductIds = (): string[] => {
+    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
+    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+  };
+  
+  const { data: allProducts, isLoading } = useQuery({
     queryKey: ['featuredProducts'],
     queryFn: async () => {
-      const allProducts = await getProducts();
-      // Filter to show only featured products, or just take the first 5 products
-      return allProducts.slice(0, 5);
+      const products = await getProducts();
+      return products.slice(0, 5);
     }
   });
+  
+  // Filter out deleted products
+  const products = allProducts?.filter(product => 
+    !getDeletedProductIds().includes(product.id)
+  ) || [];
   
   if (isLoading) {
     return (
