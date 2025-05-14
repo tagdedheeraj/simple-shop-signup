@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { getProducts, refreshProductData } from '@/services/product';
 import { Product } from '@/types/product';
 import { toast } from 'sonner';
@@ -15,6 +15,7 @@ export const useProductOperations = () => {
     try {
       setLoading(true);
       const data = await getProducts();
+      console.log('Fetched products:', data);
       setProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -24,11 +25,6 @@ export const useProductOperations = () => {
     }
   }, []);
 
-  // Ensure products are loaded on initial mount
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
@@ -37,6 +33,7 @@ export const useProductOperations = () => {
       toast.success('Product data refreshed successfully');
     } catch (error) {
       toast.error('Failed to refresh products');
+      console.error('Error refreshing products:', error);
     } finally {
       setRefreshing(false);
     }
@@ -44,10 +41,9 @@ export const useProductOperations = () => {
 
   const handleSaveProduct = useCallback(async (productData: Omit<Product, 'id'>, currentProductId: string | null) => {
     try {
-      // Make sure image has a timestamp to prevent caching issues
+      // We don't add timestamp to image here anymore - we'll display with timestamp but store clean URL
       const updatedProductData = {
-        ...productData,
-        image: addTimestampToImage(productData.image)
+        ...productData
       };
       
       if (currentProductId) {
@@ -57,6 +53,7 @@ export const useProductOperations = () => {
           ...updatedProductData,
         };
         
+        console.log('Saving updated product to Firebase:', updatedProduct);
         await saveFirestoreProduct(updatedProduct);
         toast.success('Product updated successfully');
       } else {
@@ -66,12 +63,13 @@ export const useProductOperations = () => {
           ...updatedProductData,
         };
         
+        console.log('Saving new product to Firebase:', newProduct);
         await saveFirestoreProduct(newProduct);
         toast.success('Product added successfully');
       }
       
       // Refresh products list immediately
-      setTimeout(() => fetchProducts(), 100);
+      await fetchProducts();
       return true;
     } catch (error) {
       console.error('Error saving product:', error);
@@ -82,10 +80,12 @@ export const useProductOperations = () => {
 
   const handleDeleteProduct = useCallback(async (productId: string) => {
     try {
+      console.log('Deleting product from Firebase:', productId);
       await deleteFirestoreProduct(productId);
       toast.success('Product deleted successfully');
-      // Refresh products list
-      setTimeout(() => fetchProducts(), 100);
+      
+      // Refresh products list immediately
+      await fetchProducts();
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);

@@ -8,9 +8,18 @@ import { toast } from 'sonner';
 // Firebase collection name for products
 const PRODUCTS_COLLECTION = 'products';
 
+// A flag to track if products have been initialized
+let productsInitialized = false;
+
 // Initialize Firestore products collection with data if empty
 export const initializeFirestoreProducts = async () => {
   try {
+    // Skip initialization if already done
+    if (productsInitialized) {
+      console.log('Products already initialized in this session, skipping');
+      return;
+    }
+
     // Check if products collection exists and has documents
     const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
     
@@ -28,6 +37,9 @@ export const initializeFirestoreProducts = async () => {
     } else {
       console.log('Firestore products collection already exists, skipping initialization');
     }
+    
+    // Mark as initialized
+    productsInitialized = true;
   } catch (error) {
     console.error('Error initializing Firestore products:', error);
     toast.error('Failed to initialize product data from Firebase');
@@ -37,6 +49,9 @@ export const initializeFirestoreProducts = async () => {
 // Get all products from Firestore
 export const getFirestoreProducts = async (): Promise<Product[]> => {
   try {
+    // Ensure products are initialized
+    await initializeFirestoreProducts();
+    
     const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
     return productsSnapshot.docs.map(doc => doc.data() as Product);
   } catch (error) {
@@ -64,7 +79,21 @@ export const getFirestoreProductById = async (id: string): Promise<Product | und
 // Update or add a product to Firestore
 export const saveFirestoreProduct = async (product: Product): Promise<boolean> => {
   try {
-    await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
+    // Remove any timestamp parameters that might be in the image URL
+    let imageUrl = product.image;
+    if (imageUrl.includes('?t=')) {
+      imageUrl = imageUrl.split('?t=')[0];
+    } else if (imageUrl.includes('&t=')) {
+      imageUrl = imageUrl.replace(/&t=\d+/, '');
+    }
+    
+    // Save the product with the cleaned image URL
+    const cleanedProduct = {
+      ...product,
+      image: imageUrl
+    };
+    
+    await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), cleanedProduct);
     return true;
   } catch (error) {
     console.error('Error saving product to Firestore:', error);
@@ -88,6 +117,9 @@ export const deleteFirestoreProduct = async (productId: string): Promise<boolean
 // Refresh product data (re-initialize from source data)
 export const refreshFirestoreProducts = async (): Promise<boolean> => {
   try {
+    // Reset the initialized flag
+    productsInitialized = false;
+    
     // Delete all existing products
     const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
     
