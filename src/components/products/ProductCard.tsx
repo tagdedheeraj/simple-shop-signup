@@ -8,6 +8,7 @@ import { useWishlist } from '@/contexts/WishlistContext';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { ShoppingCart, Eye, Star, Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { getImageWithTimestamp } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -34,6 +35,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
   };
   
+  // Use image with timestamp to prevent caching
+  const imageUrl = getImageWithTimestamp(product.image);
+  
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -45,7 +49,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/product/${product.id}`} className="block">
         <div className="aspect-square relative overflow-hidden">
           <img 
-            src={product.image} 
+            src={imageUrl} 
             alt={product.name} 
             className="object-cover w-full h-full transform transition-transform hover:scale-105 duration-500"
             loading="lazy"

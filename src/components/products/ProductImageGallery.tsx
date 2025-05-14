@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { BadgeCheck, Heart, Share } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useWishlist } from '@/contexts/WishlistContext';
+import { getImageWithTimestamp } from '@/lib/utils';
 import {
   Popover,
   PopoverContent,
@@ -36,17 +37,21 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
 }) => {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
+  // Use image with timestamp to prevent caching
+  const imageUrl = getImageWithTimestamp(image);
+
   const handleWishlistToggle = () => {
     if (isInWishlist(productId)) {
       removeFromWishlist(productId);
     } else {
       // We need the product object here, but we only pass the ID
       // In a real app, we might need to fetch the product or pass the whole product
-      const { products } = require('@/services/product/data');
-      const product = products.find((p: any) => p.id === productId);
-      if (product) {
-        addToWishlist(product);
-      }
+      import('@/services/product/data').then(module => {
+        const product = module.products.find((p: any) => p.id === productId);
+        if (product) {
+          addToWishlist(product);
+        }
+      });
     }
   };
 
@@ -65,7 +70,7 @@ const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       </div>
       
       <img 
-        src={image} 
+        src={imageUrl} 
         alt={name} 
         className="w-full h-auto object-cover aspect-square"
       />

@@ -7,7 +7,7 @@ export const wheatProducts: Product[] = [
     name: 'Premium Whole Wheat Flour',
     description: 'Organic stone-ground wheat flour, perfect for making healthy bread and pastries.',
     price: 5.99,
-    image: 'https://images.unsplash.com/photo-1586444248902-2f64eddc13df?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    image: '/lovable-uploads/2a6a68af-beec-4906-b6e9-5eb249505820.png',
     category: 'wheat',
     stock: 50,
     reviews: [
@@ -57,7 +57,7 @@ export const wheatProducts: Product[] = [
     name: 'Premium Semolina',
     description: 'Fine-ground durum wheat semolina, ideal for pasta making and desserts.',
     price: 3.99,
-    image: 'https://images.unsplash.com/photo-1563435059883-425331801a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    image: 'https://images.unsplash.com/photo-1608062368721-b3fdb9f985d0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
     category: 'wheat',
     stock: 65,
     reviews: []
