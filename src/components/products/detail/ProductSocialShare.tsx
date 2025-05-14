@@ -1,12 +1,11 @@
-
 import React from 'react';
 import { toast } from 'sonner';
 
-interface ProductSocialShareProps {
+interface UseProductSocialShareProps {
   productName: string;
 }
 
-const ProductSocialShare: React.FC<ProductSocialShareProps> = ({ productName }) => {
+export const useProductSocialShare = ({ productName }: UseProductSocialShareProps) => {
   // Social share links
   const socialShareLinks = {
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`,
@@ -39,6 +38,12 @@ const ProductSocialShare: React.FC<ProductSocialShareProps> = ({ productName }) 
     socialShareLinks,
     handleShareProduct
   };
+};
+
+// We'll keep the component interface for backwards compatibility
+const ProductSocialShare: React.FC<UseProductSocialShareProps> = ({ productName }) => {
+  // This empty component is left for compatibility but we'll use the hook instead
+  return null;
 };
 
 export default ProductSocialShare;

@@ -6,7 +6,7 @@ import ProductInfo from '@/components/products/ProductInfo';
 import ProductFeatures from '@/components/products/ProductFeatures';
 import PaymentTrustBadges from '@/components/products/PaymentTrustBadges';
 import ProductQuantitySelector from './ProductQuantitySelector';
-import ProductSocialShare from './ProductSocialShare';
+import { useProductSocialShare } from './ProductSocialShare';
 
 interface ProductContentProps {
   product: Product;
@@ -25,8 +25,8 @@ const ProductContent: React.FC<ProductContentProps> = ({
 }) => {
   const isOrganic = product.category === 'vegetable' || product.category === 'fruits';
   
-  // Get social share functionality
-  const { socialShareLinks, handleShareProduct } = ProductSocialShare({
+  // Use the social share hook instead of directly using the component
+  const { socialShareLinks, handleShareProduct } = useProductSocialShare({
     productName: product.name
   });
 
