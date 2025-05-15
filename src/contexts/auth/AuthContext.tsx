@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useEffect } from 'react';
 import useAuthProvider from './useAuthProvider';
 import { AuthContextType } from './types';
-import { getPersistentAuthState } from './helpers';
 
 // Create the auth context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

@@ -11,17 +11,24 @@ generateGlobalTimestamp();
 
 // Initialize app and check for version updates
 const initializeApp = async () => {
-  // Check if app version has changed
-  await checkAppVersion();
-  
-  // Initialize products - do this only once at app startup
-  // But don't refresh or reset products - this prevents re-adding deleted items
-  console.log('Initializing products at app startup without forced refresh');
-  await initializeProducts({ forceRefresh: false, respectDeletedItems: true });
-  
-  // Create root and render app once initialization is complete
-  const root = createRoot(document.getElementById("root")!);
-  root.render(<App />);
+  try {
+    // Check if app version has changed
+    await checkAppVersion();
+    
+    // Initialize products - do this only once at app startup
+    // But don't refresh or reset products - this prevents re-adding deleted items
+    console.log('Initializing products at app startup without forced refresh');
+    await initializeProducts({ forceRefresh: false, respectDeletedItems: true });
+    
+    // Create root and render app once initialization is complete
+    const root = createRoot(document.getElementById("root")!);
+    root.render(<App />);
+  } catch (error) {
+    console.error('Error during app initialization:', error);
+    // Render app even if initialization fails
+    const root = createRoot(document.getElementById("root")!);
+    root.render(<App />);
+  }
 };
 
 // Start initialization
