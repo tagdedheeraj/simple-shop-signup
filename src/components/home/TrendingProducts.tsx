@@ -7,26 +7,14 @@ import { Loader2, ArrowRight, TrendingUp } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getTrendingProducts } from '@/services/product';
-import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
 const TrendingProducts: React.FC = () => {
-  // Get deleted product IDs from localStorage
-  const getDeletedProductIds = (): string[] => {
-    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
-  };
-
-  const { data: allProducts, isLoading } = useQuery({
+  const { data: products, isLoading } = useQuery({
     queryKey: ['trendingProducts'],
     queryFn: async () => {
       return getTrendingProducts();
     }
   });
-  
-  // Filter out deleted products
-  const products = allProducts?.filter(product => 
-    !getDeletedProductIds().includes(product.id)
-  ) || [];
   
   if (isLoading) {
     return (

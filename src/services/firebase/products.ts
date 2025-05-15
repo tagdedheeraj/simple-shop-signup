@@ -7,31 +7,68 @@ import { toast } from 'sonner';
 import { queryClient } from '../query-client';
 import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
-// Firebase collection name for products
+// Firebase collection names
 const PRODUCTS_COLLECTION = 'products';
+const DELETED_PRODUCTS_COLLECTION = 'deletedProducts';
 
 // A flag to track if products have been initialized
 let productsInitialized = false;
 
-// Get deleted product IDs from localStorage
-const getDeletedProductIds = (): string[] => {
-  const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-  return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+// Get deleted product IDs from both localStorage and Firebase
+export const getDeletedProductIds = async (): Promise<string[]> => {
+  try {
+    // Get IDs from localStorage (legacy approach)
+    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
+    const localDeletedIds = deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+    
+    // Get IDs from Firestore
+    const deletedSnapshot = await getDocs(collection(db, DELETED_PRODUCTS_COLLECTION));
+    const firestoreDeletedIds = deletedSnapshot.docs.map(doc => doc.id);
+    
+    // Combine both sources
+    const allDeletedIds = [...new Set([...localDeletedIds, ...firestoreDeletedIds])];
+    
+    // Update localStorage with combined list for backward compatibility
+    localStorage.setItem(DELETED_PRODUCTS_KEY, JSON.stringify(allDeletedIds));
+    
+    return allDeletedIds;
+  } catch (error) {
+    console.error('Error getting deleted product IDs:', error);
+    
+    // Fallback to localStorage if Firebase fails
+    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
+    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+  }
 };
 
-// Store a deleted product ID in localStorage
-const addDeletedProductId = (productId: string): void => {
-  const deletedIds = getDeletedProductIds();
-  if (!deletedIds.includes(productId)) {
-    deletedIds.push(productId);
-    localStorage.setItem(DELETED_PRODUCTS_KEY, JSON.stringify(deletedIds));
+// Store a deleted product ID in both localStorage and Firebase
+const addDeletedProductId = async (productId: string): Promise<void> => {
+  try {
+    // Add to localStorage (legacy approach)
+    const deletedIds = localStorage.getItem(DELETED_PRODUCTS_KEY);
+    const parsedIds = deletedIds ? JSON.parse(deletedIds) : [];
+    if (!parsedIds.includes(productId)) {
+      parsedIds.push(productId);
+      localStorage.setItem(DELETED_PRODUCTS_KEY, JSON.stringify(parsedIds));
+    }
+    
+    // Add to Firestore deleted products collection
+    await setDoc(doc(db, DELETED_PRODUCTS_COLLECTION, productId), {
+      id: productId,
+      deletedAt: new Date().toISOString()
+    });
+    
+    console.log(`Product ${productId} marked as deleted in both localStorage and Firebase`);
+  } catch (error) {
+    console.error('Error adding product to deleted list:', error);
+    toast.error('Failed to track deleted product');
   }
 };
 
 // Initialize Firestore products collection with data if empty
 export const initializeFirestoreProducts = async () => {
   try {
-    // Skip initialization if already done
+    // Skip initialization if already done in this session
     if (productsInitialized) {
       console.log('Products already initialized in this session, skipping');
       return;
@@ -44,7 +81,7 @@ export const initializeFirestoreProducts = async () => {
       console.log('Initializing Firestore products collection with default data');
       
       // Get list of deleted product IDs to avoid re-adding them
-      const deletedIds = getDeletedProductIds();
+      const deletedIds = await getDeletedProductIds();
       
       // Filter out products that were previously deleted
       const productsToAdd = initialProducts.filter(product => !deletedIds.includes(product.id));
@@ -61,7 +98,7 @@ export const initializeFirestoreProducts = async () => {
       console.log('Firestore products collection already exists, skipping initialization');
     }
     
-    // Mark as initialized
+    // Mark as initialized for this session
     productsInitialized = true;
   } catch (error) {
     console.error('Error initializing Firestore products:', error);
@@ -69,11 +106,15 @@ export const initializeFirestoreProducts = async () => {
   }
 };
 
-// Get all products from Firestore
+// Get all products from Firestore, filtering out deleted ones
 export const getFirestoreProducts = async (): Promise<Product[]> => {
   try {
     const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
-    return productsSnapshot.docs.map(doc => doc.data() as Product);
+    const allProducts = productsSnapshot.docs.map(doc => doc.data() as Product);
+    
+    // Filter out deleted products
+    const deletedIds = await getDeletedProductIds();
+    return allProducts.filter(product => !deletedIds.includes(product.id));
   } catch (error) {
     console.error('Error getting products from Firestore:', error);
     toast.error('Failed to fetch products from Firebase');
@@ -84,6 +125,13 @@ export const getFirestoreProducts = async (): Promise<Product[]> => {
 // Get a single product by ID from Firestore
 export const getFirestoreProductById = async (id: string): Promise<Product | undefined> => {
   try {
+    // First check if product is deleted
+    const deletedIds = await getDeletedProductIds();
+    if (deletedIds.includes(id)) {
+      console.log(`Product ${id} is deleted, not fetching`);
+      return undefined;
+    }
+    
     const productDoc = await getDoc(doc(db, PRODUCTS_COLLECTION, id));
     if (productDoc.exists()) {
       return productDoc.data() as Product;
@@ -117,6 +165,16 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
     
     await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), cleanedProduct);
     
+    // If this product was previously deleted, remove it from deleted list
+    const deletedIds = await getDeletedProductIds();
+    if (deletedIds.includes(product.id)) {
+      await deleteDoc(doc(db, DELETED_PRODUCTS_COLLECTION, product.id));
+      
+      // Also update localStorage
+      const filteredIds = deletedIds.filter(id => id !== product.id);
+      localStorage.setItem(DELETED_PRODUCTS_KEY, JSON.stringify(filteredIds));
+    }
+    
     // Invalidate the products query cache to ensure fresh data is fetched
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
@@ -130,13 +188,14 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
   }
 };
 
-// Delete a product from Firestore
+// Delete a product from Firestore and mark as deleted
 export const deleteFirestoreProduct = async (productId: string): Promise<boolean> => {
   try {
+    // Remove from products collection
     await deleteDoc(doc(db, PRODUCTS_COLLECTION, productId));
     
-    // Add to deleted products list to prevent re-initialization
-    addDeletedProductId(productId);
+    // Add to deleted products tracking in both places
+    await addDeletedProductId(productId);
     
     // Invalidate the products query cache to ensure fresh data is fetched
     queryClient.invalidateQueries({ queryKey: ['products'] });
@@ -151,7 +210,7 @@ export const deleteFirestoreProduct = async (productId: string): Promise<boolean
   }
 };
 
-// Refresh product data - but only ADD missing products, don't delete existing ones
+// Refresh product data - but only ADD missing products, don't add deleted ones
 export const refreshFirestoreProducts = async (options?: { forceReset?: boolean }): Promise<boolean> => {
   try {
     console.log('Refreshing Firestore products');
@@ -164,6 +223,14 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
       await Promise.all(
         productsSnapshot.docs.map(async (doc) => {
+          await deleteDoc(doc.ref);
+        })
+      );
+      
+      // Clear the deleted products collection (important!)
+      const deletedSnapshot = await getDocs(collection(db, DELETED_PRODUCTS_COLLECTION));
+      await Promise.all(
+        deletedSnapshot.docs.map(async (doc) => {
           await deleteDoc(doc.ref);
         })
       );
@@ -191,7 +258,7 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       const existingProductIds = new Set(productsSnapshot.docs.map(doc => doc.id));
       
       // Get deleted product IDs to respect user deletions
-      const deletedIds = getDeletedProductIds();
+      const deletedIds = await getDeletedProductIds();
       
       // Find missing products that weren't explicitly deleted
       const missingProducts = initialProducts.filter(

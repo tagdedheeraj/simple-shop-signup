@@ -8,16 +8,9 @@ import { Loader2, ArrowRight, BadgeCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { getProducts } from '@/services/product';
-import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
 const FeaturedProducts: React.FC = () => {
   const { t } = useLocalization();
-  
-  // Get deleted product IDs from localStorage
-  const getDeletedProductIds = (): string[] => {
-    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
-  };
   
   const { data: allProducts, isLoading } = useQuery({
     queryKey: ['featuredProducts'],
@@ -26,11 +19,6 @@ const FeaturedProducts: React.FC = () => {
       return products.slice(0, 5);
     }
   });
-  
-  // Filter out deleted products
-  const products = allProducts?.filter(product => 
-    !getDeletedProductIds().includes(product.id)
-  ) || [];
   
   if (isLoading) {
     return (
@@ -62,7 +50,7 @@ const FeaturedProducts: React.FC = () => {
         </p>
       </motion.div>
       
-      {products && <ProductGrid products={products} />}
+      {allProducts && <ProductGrid products={allProducts} />}
       
       <motion.div 
         className="text-center mt-12"

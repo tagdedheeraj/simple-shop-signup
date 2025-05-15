@@ -2,17 +2,11 @@
 import { Product } from '@/types/product';
 import { delay } from './utils';
 import { getProducts } from './base';
-import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
-
-// Get deleted product IDs from localStorage
-const getDeletedProductIds = (): string[] => {
-  const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-  return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
-};
+import { getDeletedProductIds } from '../firebase/products';
 
 // Filter out deleted products from any product list
-const filterDeletedProducts = (products: Product[]): Product[] => {
-  const deletedIds = getDeletedProductIds();
+const filterDeletedProducts = async (products: Product[]): Promise<Product[]> => {
+  const deletedIds = await getDeletedProductIds();
   return products.filter(product => !deletedIds.includes(product.id));
 };
 
@@ -26,7 +20,7 @@ export const getRelatedProducts = async (productId: string, category: string): P
     .filter(product => product.category === category && product.id !== productId)
     .slice(0, 4); // Limit to 4 related products
   
-  return filterDeletedProducts(relatedProducts);
+  return relatedProducts; // getProducts already filters deleted products
 };
 
 // Get trending products
@@ -40,5 +34,5 @@ export const getTrendingProducts = async (): Promise<Product[]> => {
     .sort(() => Math.random() - 0.5) // Randomize products
     .slice(0, 5); // Get first 5
   
-  return filterDeletedProducts(trendingProducts);
+  return trendingProducts; // getProducts already filters deleted products
 };

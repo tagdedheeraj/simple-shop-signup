@@ -6,15 +6,16 @@ import { initializeFirestoreProducts, refreshFirestoreProducts } from '../fireba
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Initialize products in Firebase if they don't exist
-export const initializeProducts = async (options?: { forceRefresh?: boolean }) => {
+export const initializeProducts = async (options?: { forceRefresh?: boolean; respectDeletedItems?: boolean }) => {
   const shouldRefresh = options?.forceRefresh === true;
+  const respectDeleted = options?.respectDeletedItems !== false; // Default to true
   
   if (shouldRefresh) {
     console.log('Forcing product data refresh from source files');
     // Call with forceReset: true only when explicitly requested
     await refreshFirestoreProducts({ forceReset: true });
   } else {
-    console.log('Initializing products from data files');
+    console.log('Initializing products from data files with respectDeletedItems:', respectDeleted);
     // This will only populate if collection is empty
     await initializeFirestoreProducts();
   }

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
@@ -7,28 +8,16 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '@/services/product';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
 const ProductBanner: React.FC = () => {
   // Fetch products for displaying in the banner
-  const { data: products = [], isLoading } = useQuery({
+  const { data: availableProducts = [], isLoading } = useQuery({
     queryKey: ['products-banner'],
     queryFn: getProducts,
     // Don't cache products for banner to ensure we always get fresh data
     staleTime: 0,
     gcTime: 0,
   });
-
-  // Get deleted product IDs from localStorage
-  const getDeletedProductIds = (): string[] => {
-    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
-  };
-  
-  // Filter out any deleted products
-  const availableProducts = products.filter(product => 
-    !getDeletedProductIds().includes(product.id)
-  );
   
   // Get two products to display (preferably wheat and rice products)
   const wheatProduct = availableProducts.find(p => p.category === 'wheat');

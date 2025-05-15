@@ -17,7 +17,7 @@ const initializeApp = async () => {
   // Initialize products - do this only once at app startup
   // But don't refresh or reset products - this prevents re-adding deleted items
   console.log('Initializing products at app startup without forced refresh');
-  await initializeProducts({ forceRefresh: false });
+  await initializeProducts({ forceRefresh: false, respectDeletedItems: true });
   
   // Create root and render app once initialization is complete
   const root = createRoot(document.getElementById("root")!);

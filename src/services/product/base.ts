@@ -2,16 +2,10 @@ import { Product } from '@/types/product';
 import { delay } from './utils';
 import { 
   getFirestoreProducts, 
-  getFirestoreProductById 
+  getFirestoreProductById,
+  getDeletedProductIds
 } from '../firebase/products';
 import { queryClient } from '@/services/query-client';
-import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
-
-// Get deleted product IDs from localStorage
-const getDeletedProductIds = (): string[] => {
-  const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-  return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
-};
 
 // Base product retrieval functions
 export const getProducts = async (): Promise<Product[]> => {
@@ -22,7 +16,7 @@ export const getProducts = async (): Promise<Product[]> => {
   if (cachedProducts) {
     console.log('Using cached products', cachedProducts.length);
     // Filter out deleted products even from cache
-    const deletedIds = getDeletedProductIds();
+    const deletedIds = await getDeletedProductIds();
     return cachedProducts.filter(product => !deletedIds.includes(product.id));
   }
   
@@ -30,21 +24,17 @@ export const getProducts = async (): Promise<Product[]> => {
   console.log('Fetching products from Firestore');
   const products = await getFirestoreProducts();
   
-  // Filter out deleted products
-  const deletedIds = getDeletedProductIds();
-  const filteredProducts = products.filter(product => !deletedIds.includes(product.id));
+  // Cache the products (already filtered by getFirestoreProducts)
+  queryClient.setQueryData(['products'], products);
   
-  // Cache the filtered products
-  queryClient.setQueryData(['products'], filteredProducts);
-  
-  return filteredProducts;
+  return products;
 };
 
 export const getProductById = async (id: string): Promise<Product | undefined> => {
   await delay(300); // Reduced delay for better UX
   
   // Check if product is deleted
-  const deletedIds = getDeletedProductIds();
+  const deletedIds = await getDeletedProductIds();
   if (deletedIds.includes(id)) {
     console.log('Product is deleted', id);
     return undefined;
