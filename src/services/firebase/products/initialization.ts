@@ -1,4 +1,3 @@
-
 import { db } from '../index';
 import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { products as initialProducts } from '@/services/product/data';
@@ -6,6 +5,7 @@ import { PRODUCTS_COLLECTION, DELETED_PRODUCTS_COLLECTION, productsInitialized }
 import { getDeletedProductIds } from './deleted-products';
 import { toast } from 'sonner';
 import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
+import { queryClient } from '@/services/query-client';
 
 // Initialize Firestore products collection with data if empty
 export const initializeFirestoreProducts = async () => {

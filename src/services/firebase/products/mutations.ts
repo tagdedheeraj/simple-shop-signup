@@ -2,7 +2,7 @@
 import { db } from '../index';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { Product } from '@/types/product';
-import { PRODUCTS_COLLECTION } from './constants';
+import { PRODUCTS_COLLECTION, DELETED_PRODUCTS_COLLECTION } from './constants';
 import { addDeletedProductId, getDeletedProductIds } from './deleted-products';
 import { queryClient } from '@/services/query-client';
 import { toast } from 'sonner';

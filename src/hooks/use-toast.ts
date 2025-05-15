@@ -1,7 +1,10 @@
 
-import { useToast as useToastHook, toast as toastFunction } from '@/components/ui/use-toast';
+// Import from the toast component
+import { type ToastProps } from '@/components/ui/toast';
+import { useToast as useToastOriginal, toast as toastOriginal } from 'sonner';
 
-export const useToast = useToastHook;
-export const toast = toastFunction;
+// Re-export with our app's configuration
+export const useToast = useToastOriginal;
+export const toast = toastOriginal;
 
-export type { ToastProps } from '@/components/ui/toast';
+export type { ToastProps };
