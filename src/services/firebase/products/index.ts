@@ -3,7 +3,7 @@
 import { initializeFirestoreProducts, refreshFirestoreProducts } from './initialization';
 import { getFirestoreProducts, getFirestoreProductById } from './getters';
 import { saveFirestoreProduct, deleteFirestoreProduct } from './mutations';
-import { getDeletedProductIds } from './deleted-products';
+import { getDeletedProductIds, clearAllDeletedProductIds } from './deleted-products';
 
 export {
   // Initialization
@@ -18,4 +18,5 @@ export {
   // Mutations
   saveFirestoreProduct,
   deleteFirestoreProduct,
+  clearAllDeletedProductIds,
 };

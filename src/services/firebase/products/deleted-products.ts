@@ -3,7 +3,7 @@ import { db } from '../index';
 import { collection, getDocs, doc, setDoc, deleteDoc, query, limit } from 'firebase/firestore';
 import { DELETED_PRODUCTS_COLLECTION } from './constants';
 import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 // Get deleted product IDs from both localStorage and Firebase
 export const getDeletedProductIds = async (): Promise<string[]> => {
@@ -57,10 +57,7 @@ export const addDeletedProductId = async (productId: string): Promise<void> => {
     console.log(`Product ${productId} marked as deleted in both localStorage and Firebase`);
   } catch (error) {
     console.error('Error adding product to deleted list:', error);
-    toast({
-      title: "Error",
-      description: "Failed to track deleted product"
-    });
+    toast.error("Failed to track deleted product");
   }
 };
 
@@ -83,15 +80,9 @@ export const clearAllDeletedProductIds = async (): Promise<void> => {
       console.log(`Cleared ${deletedSnapshot.docs.length} deleted product records`);
     }
     
-    toast({
-      title: "Success",
-      description: "Deleted product tracking has been reset"
-    });
+    toast.success("Deleted product tracking has been reset");
   } catch (error) {
     console.error('Error clearing deleted products list:', error);
-    toast({
-      title: "Error",
-      description: "Failed to clear deleted products tracking"
-    });
+    toast.error("Failed to clear deleted products tracking");
   }
 };

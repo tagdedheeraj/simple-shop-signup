@@ -4,7 +4,7 @@ import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { Product } from '@/types/product';
 import { PRODUCTS_COLLECTION } from './constants';
 import { getDeletedProductIds } from './deleted-products';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 // Get all products from Firestore, filtering out deleted ones
 export const getFirestoreProducts = async (): Promise<Product[]> => {
@@ -29,10 +29,7 @@ export const getFirestoreProducts = async (): Promise<Product[]> => {
     return filteredProducts;
   } catch (error) {
     console.error('Error getting products from Firestore:', error);
-    toast({
-      title: "Error",
-      description: "Failed to fetch products from Firebase"
-    });
+    toast.error("Failed to fetch products from Firebase");
     return [];
   }
 };
@@ -54,10 +51,7 @@ export const getFirestoreProductById = async (id: string): Promise<Product | und
     return undefined;
   } catch (error) {
     console.error('Error getting product by ID from Firestore:', error);
-    toast({
-      title: "Error",
-      description: "Failed to fetch product details from Firebase"
-    });
+    toast.error("Failed to fetch product details from Firebase");
     return undefined;
   }
 };
