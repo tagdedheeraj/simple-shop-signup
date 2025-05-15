@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
@@ -41,9 +40,8 @@ const PromotionBanner: React.FC = () => {
   const copyCode = () => {
     navigator.clipboard.writeText('ORGANIC20');
     setCopied(true);
-    toast({
-      title: "Code copied!",
-      description: "Discount code copied to clipboard",
+    toast("Code copied!", {
+      description: "Discount code copied to clipboard"
     });
     setTimeout(() => setCopied(false), 2000);
   };
