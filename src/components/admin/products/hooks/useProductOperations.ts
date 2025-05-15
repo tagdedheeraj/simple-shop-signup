@@ -1,9 +1,9 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { getProducts, refreshProductData } from '@/services/product';
 import { Product } from '@/types/product';
-import { toast } from 'sonner';
-import { saveFirestoreProduct, deleteFirestoreProduct } from '@/services/firebase/products';
+import { toast } from '@/components/ui/use-toast';
+import { saveFirestoreProduct, deleteFirestoreProduct, getFirestoreProducts, clearAllDeletedProductIds } from '@/services/firebase/products';
 import { queryClient } from '@/services/query-client';
 
 export const useProductOperations = () => {
@@ -14,12 +14,19 @@ export const useProductOperations = () => {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getProducts();
-      console.log('Fetched products:', data);
+      // Get products directly from Firebase to ensure we have the latest data
+      const data = await getFirestoreProducts();
+      console.log('Fetched products directly from Firebase:', data);
       setProducts(data);
+      
+      // Update the query cache as well
+      queryClient.setQueryData(['products'], data);
     } catch (error) {
       console.error('Error fetching products:', error);
-      toast.error('Failed to load products');
+      toast({
+        title: "Error",
+        description: "Failed to load products"
+      });
     } finally {
       setLoading(false);
     }
@@ -35,10 +42,37 @@ export const useProductOperations = () => {
       queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
       queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
       
-      toast.success('Product data refreshed successfully');
+      toast({
+        title: "Success",
+        description: "Product data refreshed successfully"
+      });
     } catch (error) {
-      toast.error('Failed to refresh products');
+      toast({
+        title: "Error",
+        description: "Failed to refresh products"
+      });
       console.error('Error refreshing products:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchProducts]);
+
+  const resetDeletedProducts = useCallback(async () => {
+    try {
+      setRefreshing(true);
+      await clearAllDeletedProductIds();
+      await fetchProducts();
+      
+      toast({
+        title: "Success",
+        description: "Deleted products tracking has been reset"
+      });
+    } catch (error) {
+      console.error('Error resetting deleted products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset deleted products tracking"
+      });
     } finally {
       setRefreshing(false);
     }
@@ -64,7 +98,10 @@ export const useProductOperations = () => {
         
         console.log('Saving updated product to Firebase:', updatedProduct);
         await saveFirestoreProduct(updatedProduct);
-        toast.success('Product updated successfully');
+        toast({
+          title: "Success",
+          description: "Product updated successfully"
+        });
       } else {
         // Add new product
         const newProduct = {
@@ -74,7 +111,10 @@ export const useProductOperations = () => {
         
         console.log('Saving new product to Firebase:', newProduct);
         await saveFirestoreProduct(newProduct);
-        toast.success('Product added successfully');
+        toast({
+          title: "Success",
+          description: "Product added successfully"
+        });
       }
       
       // Refresh products list immediately
@@ -88,7 +128,10 @@ export const useProductOperations = () => {
       return true;
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error('Failed to save product');
+      toast({
+        title: "Error",
+        description: "Failed to save product"
+      });
       return false;
     }
   }, [fetchProducts]);
@@ -97,7 +140,10 @@ export const useProductOperations = () => {
     try {
       console.log('Deleting product from Firebase:', productId);
       await deleteFirestoreProduct(productId);
-      toast.success('Product deleted successfully');
+      toast({
+        title: "Success",
+        description: "Product deleted successfully"
+      });
       
       // Refresh products list immediately
       await fetchProducts();
@@ -110,7 +156,10 @@ export const useProductOperations = () => {
       return true;
     } catch (error) {
       console.error('Error deleting product:', error);
-      toast.error('Failed to delete product');
+      toast({
+        title: "Error",
+        description: "Failed to delete product"
+      });
       return false;
     }
   }, [fetchProducts]);
@@ -122,6 +171,7 @@ export const useProductOperations = () => {
     fetchProducts,
     handleRefresh,
     handleSaveProduct,
-    handleDeleteProduct
+    handleDeleteProduct,
+    resetDeletedProducts
   };
 };

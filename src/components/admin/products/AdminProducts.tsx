@@ -7,6 +7,8 @@ import ProductsHeader from './components/ProductsHeader';
 import ProductsToolbar from './components/ProductsToolbar';
 import ProductsTable from './components/ProductsTable';
 import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
 
 const AdminProducts: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -21,7 +23,8 @@ const AdminProducts: React.FC = () => {
     fetchProducts,
     handleRefresh,
     handleSaveProduct,
-    handleDeleteProduct
+    handleDeleteProduct,
+    resetDeletedProducts
   } = useProductOperations();
 
   useEffect(() => {
@@ -57,12 +60,25 @@ const AdminProducts: React.FC = () => {
     <div className="space-y-6">
       <ProductsHeader onNewProduct={handleNewProduct} />
       
-      <ProductsToolbar 
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        refreshing={refreshing}
-        onRefresh={handleRefresh}
-      />
+      <div className="flex justify-between items-center">
+        <ProductsToolbar 
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          refreshing={refreshing}
+          onRefresh={handleRefresh}
+        />
+        
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          onClick={resetDeletedProducts}
+          disabled={refreshing}
+          className="flex items-center gap-2"
+        >
+          <Trash2 className="h-4 w-4" />
+          Reset Deleted Products
+        </Button>
+      </div>
 
       <ProductsTable 
         products={filteredProducts}

@@ -1,9 +1,9 @@
 
 import { db } from '../index';
-import { collection, getDocs, doc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, deleteDoc, query, limit } from 'firebase/firestore';
 import { DELETED_PRODUCTS_COLLECTION } from './constants';
 import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 
 // Get deleted product IDs from both localStorage and Firebase
 export const getDeletedProductIds = async (): Promise<string[]> => {
@@ -12,12 +12,17 @@ export const getDeletedProductIds = async (): Promise<string[]> => {
     const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
     const localDeletedIds = deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
     
-    // Get IDs from Firestore
+    // Get IDs from Firestore - ensure we get ALL deleted products
     const deletedSnapshot = await getDocs(collection(db, DELETED_PRODUCTS_COLLECTION));
     const firestoreDeletedIds = deletedSnapshot.docs.map(doc => doc.id);
     
+    console.log('Local deleted IDs:', localDeletedIds);
+    console.log('Firestore deleted IDs:', firestoreDeletedIds);
+    
     // Combine both sources
     const allDeletedIds = [...new Set([...localDeletedIds, ...firestoreDeletedIds])];
+    
+    console.log('Combined deleted IDs:', allDeletedIds);
     
     // Update localStorage with combined list for backward compatibility
     localStorage.setItem(DELETED_PRODUCTS_KEY, JSON.stringify(allDeletedIds));
@@ -52,6 +57,41 @@ export const addDeletedProductId = async (productId: string): Promise<void> => {
     console.log(`Product ${productId} marked as deleted in both localStorage and Firebase`);
   } catch (error) {
     console.error('Error adding product to deleted list:', error);
-    toast.error('Failed to track deleted product');
+    toast({
+      title: "Error",
+      description: "Failed to track deleted product"
+    });
+  }
+};
+
+// Clear all deleted products IDs - useful for troubleshooting
+export const clearAllDeletedProductIds = async (): Promise<void> => {
+  try {
+    // Clear localStorage
+    localStorage.removeItem(DELETED_PRODUCTS_KEY);
+    
+    // Clear all documents from the deletedProducts collection
+    const deletedSnapshot = await getDocs(collection(db, DELETED_PRODUCTS_COLLECTION));
+    
+    if (!deletedSnapshot.empty) {
+      // Delete each document in the collection
+      const deletePromises = deletedSnapshot.docs.map(doc => 
+        deleteDoc(doc.ref)
+      );
+      
+      await Promise.all(deletePromises);
+      console.log(`Cleared ${deletedSnapshot.docs.length} deleted product records`);
+    }
+    
+    toast({
+      title: "Success",
+      description: "Deleted product tracking has been reset"
+    });
+  } catch (error) {
+    console.error('Error clearing deleted products list:', error);
+    toast({
+      title: "Error",
+      description: "Failed to clear deleted products tracking"
+    });
   }
 };
