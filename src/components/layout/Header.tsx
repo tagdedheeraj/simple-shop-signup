@@ -127,6 +127,9 @@ const Header: React.FC = () => {
                   <DropdownMenuItem onClick={() => navigate('/products')}>
                     {t('products')}
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/certificates')}>
+                    Certificates
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate('/wishlist')}>
                     {t('wishlist')}
                   </DropdownMenuItem>

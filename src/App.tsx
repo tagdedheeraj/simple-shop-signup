@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
@@ -24,6 +23,9 @@ import OrderSuccess from "./pages/OrderSuccess";
 import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
 import Certificates from "./pages/Certificates";
+import RefundPolicy from "./pages/RefundPolicy";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsOfService from "./pages/TermsOfService";
 
 // Admin Pages
 import Admin from "./pages/Admin";
@@ -149,6 +151,23 @@ function App() {
                       <Route path="/certificates" element={
                         <ProtectedRoute>
                           <Certificates />
+                        </ProtectedRoute>
+                      } />
+                      
+                      {/* Policy pages */}
+                      <Route path="/refund-policy" element={
+                        <ProtectedRoute>
+                          <RefundPolicy />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/privacy-policy" element={
+                        <ProtectedRoute>
+                          <PrivacyPolicy />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/terms-of-service" element={
+                        <ProtectedRoute>
+                          <TermsOfService />
                         </ProtectedRoute>
                       } />
                       

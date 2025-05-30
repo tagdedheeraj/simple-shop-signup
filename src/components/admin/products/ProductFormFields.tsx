@@ -17,6 +17,7 @@ interface ProductFormFieldsProps {
 const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
   const [uploadMethod, setUploadMethod] = useState<'url' | 'upload'>('url');
   const [uploading, setUploading] = useState(false);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -40,8 +41,15 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
       // Create a blob URL for immediate preview
       const imageUrl = URL.createObjectURL(file);
       
-      // For now, we'll use the blob URL. In a real app, you'd upload to a service
+      // Store the uploaded image URL separately
+      setUploadedImageUrl(imageUrl);
+      
+      // Set the form value
       form.setValue('image', imageUrl);
+      
+      // Force form to re-render and show the updated image
+      form.trigger('image');
+      
       toast.success('Image uploaded successfully');
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -49,6 +57,12 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
     } finally {
       setUploading(false);
     }
+  };
+
+  // Get the current image URL (either from form or uploaded)
+  const getCurrentImageUrl = () => {
+    const formImageUrl = form.watch('image');
+    return uploadMethod === 'upload' && uploadedImageUrl ? uploadedImageUrl : formImageUrl;
   };
 
   return (
@@ -150,7 +164,10 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
               type="button"
               variant={uploadMethod === 'url' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setUploadMethod('url')}
+              onClick={() => {
+                setUploadMethod('url');
+                setUploadedImageUrl('');
+              }}
               className="flex items-center gap-2"
             >
               <Link className="h-4 w-4" />
@@ -175,7 +192,14 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field} />
+                    <Input 
+                      placeholder="https://example.com/image.jpg" 
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setUploadedImageUrl(''); // Clear uploaded image when URL is changed
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -204,14 +228,18 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
           <div className="p-2 bg-background/50">
             <AspectRatio ratio={3/2}>
               <div className="w-full h-full bg-muted/30 rounded flex items-center justify-center overflow-hidden">
-                {form.watch('image') ? (
+                {getCurrentImageUrl() ? (
                   <img 
-                    key={form.watch('image')} // Add key to force re-render when image changes
-                    src={form.watch('image')} 
+                    key={`${getCurrentImageUrl()}-${Date.now()}`} // Force re-render with timestamp
+                    src={getCurrentImageUrl()} 
                     alt="Product preview" 
                     className="w-full h-full object-contain"
                     onError={(e) => {
+                      console.error('Image load error:', getCurrentImageUrl());
                       (e.target as HTMLImageElement).src = "/placeholder.svg";
+                    }}
+                    onLoad={() => {
+                      console.log('Image loaded successfully:', getCurrentImageUrl());
                     }}
                   />
                 ) : (
