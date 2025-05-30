@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { convertGoogleDriveUrl, preloadVideo } from '@/utils/videoUtils';
+import { convertGoogleDriveUrl } from '@/utils/videoUtils';
 
 interface VideoPlayerProps {
   video: {
@@ -22,19 +22,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, isVertical = false, on
 
   useEffect(() => {
     // Track video load time for performance monitoring
-    const handleLoad = () => {
-      const loadTime = Date.now() - loadStartTime;
-      console.log(`📊 Video loaded in ${loadTime}ms:`, video.title);
-      setIsLoading(false);
-    };
-
-    const handleError = () => {
-      console.error('❌ Video failed to load:', video.title);
-      setHasError(true);
-      setIsLoading(false);
-    };
-
-    // Set up load monitoring
     const timer = setTimeout(() => {
       if (isLoading) {
         console.warn('⏰ Video taking longer than expected to load:', video.title);
@@ -44,29 +31,57 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, isVertical = false, on
     return () => clearTimeout(timer);
   }, [video.id, loadStartTime, isLoading, video.title]);
 
-  const getOptimizedEmbedUrl = () => {
+  const getEmbedUrl = () => {
+    console.log('🎥 Getting embed URL for video:', video.title);
+    
+    // If we have a direct embedUrl, use it
     if (video.embedUrl) {
-      // Add performance optimization parameters
-      const url = new URL(video.embedUrl);
-      url.searchParams.set('autoplay', '1');
-      url.searchParams.set('modestbranding', '1');
-      url.searchParams.set('rel', '0');
-      url.searchParams.set('showinfo', '0');
-      url.searchParams.set('controls', '1');
-      return url.toString();
+      console.log('📺 Using embedUrl:', video.embedUrl);
+      return video.embedUrl;
     }
     
+    // If we have googleDriveUrl, convert it to proper embed format
     if (video.googleDriveUrl) {
       const convertedUrl = convertGoogleDriveUrl(video.googleDriveUrl);
-      const url = new URL(convertedUrl);
-      url.searchParams.set('autoplay', '1');
-      return url.toString();
+      console.log('🔄 Converted Google Drive URL:', convertedUrl);
+      return convertedUrl;
     }
     
-    return video.videoUrl;
+    // Fallback to videoUrl
+    if (video.videoUrl) {
+      console.log('📹 Using videoUrl:', video.videoUrl);
+      return video.videoUrl;
+    }
+    
+    console.warn('❌ No video URL found for:', video.title);
+    return null;
   };
 
-  const embedUrl = getOptimizedEmbedUrl();
+  const embedUrl = getEmbedUrl();
+
+  const handleIframeLoad = () => {
+    const loadTime = Date.now() - loadStartTime;
+    console.log(`📊 Video iframe loaded in ${loadTime}ms:`, video.title);
+    setIsLoading(false);
+  };
+
+  const handleIframeError = () => {
+    console.error('❌ Video iframe failed to load:', video.title);
+    setHasError(true);
+    setIsLoading(false);
+  };
+
+  const handleVideoLoad = () => {
+    const loadTime = Date.now() - loadStartTime;
+    console.log(`📊 Video element loaded in ${loadTime}ms:`, video.title);
+    setIsLoading(false);
+  };
+
+  const handleVideoError = () => {
+    console.error('❌ Video element failed to load:', video.title);
+    setHasError(true);
+    setIsLoading(false);
+  };
 
   if (hasError) {
     return (
@@ -75,6 +90,17 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, isVertical = false, on
           <div className="text-red-500 text-4xl mb-4">⚠️</div>
           <p className="text-gray-600">Failed to load video</p>
           <p className="text-sm text-gray-400 mt-2">Please try again later</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!embedUrl) {
+    return (
+      <div className={`${isVertical ? 'w-full aspect-[9/16]' : 'md:w-2/3 aspect-video'} relative bg-gray-100 flex items-center justify-center`}>
+        <div className="text-center p-8">
+          <div className="text-gray-500 text-4xl mb-4">📹</div>
+          <p className="text-gray-600">No video source available</p>
         </div>
       </div>
     );
@@ -95,38 +121,34 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, isVertical = false, on
         </div>
       )}
 
-      {/* Video Player */}
-      {embedUrl && video.embedUrl ? (
+      {/* Video Player - Check if it's a Google Drive embed URL */}
+      {embedUrl.includes('drive.google.com') ? (
         <iframe
           src={embedUrl}
           width="100%"
           height="100%"
           frameBorder="0"
-          allow="autoplay; encrypted-media; fullscreen"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
           className="w-full h-full"
           title={video.title}
           loading="lazy"
-          onLoad={() => setIsLoading(false)}
-          onError={() => setHasError(true)}
+          onLoad={handleIframeLoad}
+          onError={handleIframeError}
         />
-      ) : embedUrl && video.videoUrl ? (
+      ) : (
         <video
           className="w-full h-full object-cover"
           controls
           autoPlay
           onEnded={onEnded}
-          onLoadedData={() => setIsLoading(false)}
-          onError={() => setHasError(true)}
+          onLoadedData={handleVideoLoad}
+          onError={handleVideoError}
           preload="metadata"
         >
           <source src={embedUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center bg-gray-200">
-          <p className="text-gray-600">No video source available</p>
-        </div>
       )}
     </div>
   );

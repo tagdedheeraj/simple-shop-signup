@@ -33,9 +33,9 @@ export const convertGoogleDriveUrl = (url: string): string => {
   }
   
   if (fileId) {
-    // Use optimized embed URL with performance parameters
-    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview?usp=sharing&modestbranding=1`;
-    console.log('✅ Converted to optimized embed URL:', embedUrl);
+    // Use direct playback URL instead of preview
+    const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+    console.log('✅ Converted to playable embed URL:', embedUrl);
     return embedUrl;
   }
   
