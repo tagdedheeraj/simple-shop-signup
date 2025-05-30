@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { saveUploadedFile } from '@/utils/file-storage';
@@ -26,122 +25,141 @@ const VideoManager: React.FC = () => {
   }, []);
 
   const loadVideos = () => {
-    console.log('Loading videos from localStorage...');
-    const storedVideos = localStorage.getItem('admin-videos');
-    if (storedVideos) {
-      const parsedVideos = JSON.parse(storedVideos);
-      console.log('Videos loaded:', parsedVideos);
-      setVideos(parsedVideos);
-    } else {
-      console.log('No videos found in localStorage');
+    console.log('🔄 Loading videos from localStorage...');
+    try {
+      const storedVideos = localStorage.getItem('admin-videos');
+      if (storedVideos) {
+        const parsedVideos = JSON.parse(storedVideos);
+        console.log('✅ Videos loaded successfully:', parsedVideos.length, 'videos found');
+        setVideos(parsedVideos);
+      } else {
+        console.log('ℹ️ No videos found in localStorage');
+        setVideos([]);
+      }
+    } catch (error) {
+      console.error('❌ Error loading videos:', error);
       setVideos([]);
     }
   };
 
   const saveVideos = (newVideos: Video[]) => {
-    console.log('Saving videos to localStorage:', newVideos);
-    localStorage.setItem('admin-videos', JSON.stringify(newVideos));
-    setVideos(newVideos);
-    toast.success('Videos updated successfully');
+    console.log('💾 Saving videos to localStorage:', newVideos.length, 'videos');
+    try {
+      localStorage.setItem('admin-videos', JSON.stringify(newVideos));
+      setVideos(newVideos);
+      console.log('✅ Videos saved successfully');
+      toast.success('Videos updated successfully');
+    } catch (error) {
+      console.error('❌ Error saving videos:', error);
+      toast.error('Failed to save videos');
+    }
   };
 
   const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🚀 Video upload process started');
     const file = event.target.files?.[0];
-    console.log('Video upload started, file:', file);
     
     if (!file) {
-      console.log('No file selected');
+      console.log('⚠️ No file selected');
       return;
     }
 
-    console.log('File details:', {
+    console.log('📁 File selected:', {
       name: file.name,
       type: file.type,
-      size: file.size
+      size: file.size,
+      sizeInMB: (file.size / (1024 * 1024)).toFixed(2) + ' MB'
     });
 
-    // Check if it's a video file
-    const isVideoFile = file.type.startsWith('video/') || 
-                       /\.(mp4|webm|ogg|avi|mov|mkv|flv|wmv)$/i.test(file.name);
+    // Enhanced file type validation
+    const videoExtensions = /\.(mp4|webm|ogg|avi|mov|mkv|flv|wmv|m4v|3gp)$/i;
+    const isVideoFile = file.type.startsWith('video/') || videoExtensions.test(file.name);
 
     if (!isVideoFile) {
-      console.log('Invalid file type:', file.type);
-      toast.error('Please select a valid video file (MP4, WebM, OGG, AVI, MOV, etc.)');
+      console.log('❌ Invalid file type:', file.type);
+      toast.error('कृपया एक valid video file select करें (MP4, WebM, AVI, MOV, etc.)');
       return;
     }
 
-    // Check file size (200MB limit)
-    if (file.size > 200 * 1024 * 1024) {
-      console.log('File too large:', file.size);
-      toast.error('Video size should be less than 200MB');
+    // File size check (200MB limit)
+    const maxSizeInBytes = 200 * 1024 * 1024; // 200MB
+    if (file.size > maxSizeInBytes) {
+      console.log('❌ File too large:', file.size, 'bytes, limit:', maxSizeInBytes);
+      toast.error(`Video का size 200MB से कम होना चाहिए। Current size: ${(file.size / (1024 * 1024)).toFixed(2)}MB`);
       return;
     }
 
     setUploading(true);
-    toast.info('Uploading video... This may take a few minutes');
+    console.log('⏳ Starting upload process...');
+    toast.info('Video upload हो रहा है... कृपया wait करें');
     
     try {
-      console.log('Starting file upload...');
+      console.log('📤 Calling saveUploadedFile...');
       const videoUrl = await saveUploadedFile(file);
-      console.log('Video uploaded successfully, URL:', videoUrl);
+      console.log('✅ Video uploaded successfully, URL:', videoUrl);
       
-      // Generate a thumbnail placeholder
-      const thumbnailUrl = '/placeholder.svg';
+      // Generate a unique ID and filename
+      const videoId = `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const videoTitle = file.name.replace(/\.[^/.]+$/, ""); // Remove file extension
       
       const newVideo: Video = {
-        id: `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
-        description: 'Newly uploaded video - Please update description and category',
+        id: videoId,
+        title: videoTitle,
+        description: 'नया upload किया गया video - कृपया description और category update करें',
         videoUrl,
-        thumbnail: thumbnailUrl,
+        thumbnail: '/placeholder.svg', // Default thumbnail
         category: 'wheat' // Default category
       };
 
-      console.log('Creating new video object:', newVideo);
+      console.log('🎬 Creating new video object:', newVideo);
       const updatedVideos = [...videos, newVideo];
       saveVideos(updatedVideos);
       
-      toast.success('Video uploaded successfully! You can now edit its details.');
+      toast.success('✅ Video successfully upload हो गया! अब आप इसकी details edit कर सकते हैं।');
       
-      // Clear the input
+      // Clear the input to allow uploading the same file again if needed
       event.target.value = '';
+      
     } catch (error) {
-      console.error('Video upload failed:', error);
-      toast.error(`Failed to upload video: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('❌ Video upload failed with error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      console.error('Error details:', errorMessage);
+      toast.error(`Video upload failed: ${errorMessage}`);
     } finally {
       setUploading(false);
+      console.log('🏁 Upload process completed');
     }
   };
 
   const handleThumbnailUpload = async (event: React.ChangeEvent<HTMLInputElement>, videoId: string) => {
     const file = event.target.files?.[0];
-    console.log('Thumbnail upload for video:', videoId, 'file:', file);
+    console.log('🖼️ Thumbnail upload for video:', videoId, 'file:', file);
     
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Please select an image file');
+      toast.error('कृपया एक image file select करें');
       return;
     }
 
     try {
-      console.log('Uploading thumbnail...');
+      console.log('📤 Uploading thumbnail...');
       const thumbnailUrl = await saveUploadedFile(file);
-      console.log('Thumbnail uploaded:', thumbnailUrl);
+      console.log('✅ Thumbnail uploaded:', thumbnailUrl);
       
       const updatedVideos = videos.map(video => 
         video.id === videoId ? { ...video, thumbnail: thumbnailUrl } : video
       );
       saveVideos(updatedVideos);
-      toast.success('Thumbnail updated');
+      toast.success('Thumbnail update हो गया');
     } catch (error) {
-      console.error('Thumbnail upload failed:', error);
-      toast.error('Failed to upload thumbnail');
+      console.error('❌ Thumbnail upload failed:', error);
+      toast.error('Thumbnail upload नहीं हो सका');
     }
   };
 
   const updateVideo = (videoId: string, updates: Partial<Video>) => {
-    console.log('Updating video:', videoId, 'with:', updates);
+    console.log('📝 Updating video:', videoId, 'with:', updates);
     const updatedVideos = videos.map(video => 
       video.id === videoId ? { ...video, ...updates } : video
     );
@@ -149,16 +167,16 @@ const VideoManager: React.FC = () => {
   };
 
   const deleteVideo = (videoId: string) => {
-    console.log('Deleting video:', videoId);
+    console.log('🗑️ Deleting video:', videoId);
     const updatedVideos = videos.filter(video => video.id !== videoId);
     saveVideos(updatedVideos);
-    toast.success('Video deleted');
+    toast.success('Video delete हो गया');
   };
 
   const handleSaveEdit = (video: Video) => {
     updateVideo(video.id, video);
     setEditingVideo(null);
-    toast.success('Video updated');
+    toast.success('Video update हो गया');
   };
 
   const handleCategoryChange = (videoId: string, category: 'wheat' | 'rice') => {
@@ -175,7 +193,16 @@ const VideoManager: React.FC = () => {
         />
       </div>
 
-      {videos.length === 0 && (
+      {uploading && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            <span className="text-blue-800">Video upload हो रहा है... कृपया wait करें</span>
+          </div>
+        </div>
+      )}
+
+      {videos.length === 0 && !uploading && (
         <EmptyVideoState onVideoUpload={handleVideoUpload} />
       )}
 
