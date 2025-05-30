@@ -10,9 +10,12 @@ export const initializeProducts = async (options?: { forceRefresh?: boolean; res
   const shouldRefresh = options?.forceRefresh === true;
   const respectDeleted = options?.respectDeletedItems !== false; // Default to true
   
-  if (shouldRefresh) {
-    console.log('Forcing product data refresh from source files');
-    // Call with forceReset: true only when explicitly requested
+  // For mobile builds, always force refresh to ensure latest data
+  const isCapacitor = !!(window as any).Capacitor;
+  
+  if (shouldRefresh || isCapacitor) {
+    console.log('🔄 Force refreshing product data for mobile build or explicit request');
+    // Call with forceReset: true for mobile or when explicitly requested
     await refreshFirestoreProducts({ forceReset: true });
   } else {
     console.log('Initializing products from data files with respectDeletedItems:', respectDeleted);
@@ -48,14 +51,22 @@ export const addTimestampToImage = (imageUrl: string): string => {
 
 // Force refresh product data from source files
 export const refreshProductData = async () => {
-  console.log('Refreshing product data');
+  console.log('🔄 Refreshing product data');
   
-  // Generate a new global timestamp
+  // Generate a new global timestamp for mobile
   const newTimestamp = Date.now().toString();
   localStorage.setItem('global_timestamp', newTimestamp);
   
-  // Refresh products in Firebase - but don't delete existing ones by default
-  await refreshFirestoreProducts();
+  // Clear product caches for mobile builds
+  const isCapacitor = !!(window as any).Capacitor;
+  if (isCapacitor) {
+    console.log('📱 Clearing mobile caches...');
+    localStorage.removeItem('products-cache');
+    localStorage.removeItem('deleted-products');
+  }
+  
+  // Refresh products in Firebase - force reset for mobile
+  await refreshFirestoreProducts({ forceReset: isCapacitor });
   
   // Add a small delay to simulate API call
   await delay(300);

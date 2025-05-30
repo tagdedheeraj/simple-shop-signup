@@ -22,6 +22,24 @@ export const checkAppVersion = async (): Promise<void> => {
         duration: 2000,
       });
       
+      // Clear all cached data for mobile builds
+      if (typeof window !== 'undefined') {
+        // Clear product cache
+        localStorage.removeItem('products-cache');
+        localStorage.removeItem('deleted-products');
+        
+        // Clear video cache  
+        localStorage.removeItem('admin-videos');
+        localStorage.removeItem('video-cache');
+        
+        // Clear other app caches
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('app-') || key.startsWith('cache-')) {
+            localStorage.removeItem(key);
+          }
+        });
+      }
+      
       // Force refresh product data
       await refreshProductData();
       
@@ -34,6 +52,34 @@ export const checkAppVersion = async (): Promise<void> => {
     }
   } catch (error) {
     console.error('Error checking app version:', error);
+  }
+};
+
+/**
+ * Force clear all app data - useful for mobile builds
+ */
+export const forceRefreshAppData = async (): Promise<void> => {
+  try {
+    console.log('🔄 Force refreshing all app data for mobile build...');
+    
+    if (typeof window !== 'undefined') {
+      // Clear everything except auth data
+      const authKeys = ['firebase:authUser', 'firebase:host', 'persist:auth'];
+      const allKeys = Object.keys(localStorage);
+      
+      allKeys.forEach(key => {
+        if (!authKeys.some(authKey => key.includes(authKey))) {
+          localStorage.removeItem(key);
+        }
+      });
+    }
+    
+    // Force refresh product data
+    await refreshProductData();
+    
+    console.log('✅ App data force refreshed successfully');
+  } catch (error) {
+    console.error('❌ Error force refreshing app data:', error);
   }
 };
 

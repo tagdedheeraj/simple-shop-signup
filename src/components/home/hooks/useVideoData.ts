@@ -21,18 +21,26 @@ export const useVideoData = () => {
 
   const loadVideos = () => {
     try {
+      console.log('🎬 Loading videos for mobile app...');
       const storedVideos = localStorage.getItem('admin-videos');
+      
       if (storedVideos) {
         const adminVideos = JSON.parse(storedVideos);
-        console.log('📺 Loaded admin videos:', adminVideos);
+        console.log('📺 Loaded admin videos:', adminVideos.length, 'videos found');
         
         // Ensure all videos have required properties and safe URL handling
         const safeVideos = adminVideos.filter((video: any) => {
-          return video && 
-                 typeof video === 'object' && 
-                 video.id && 
-                 video.title && 
-                 video.category;
+          const isValid = video && 
+                         typeof video === 'object' && 
+                         video.id && 
+                         video.title && 
+                         video.category;
+          
+          if (!isValid) {
+            console.warn('⚠️ Invalid video found:', video);
+          }
+          
+          return isValid;
         }).map((video: any) => ({
           ...video,
           // Ensure URL properties are strings or undefined
@@ -42,30 +50,51 @@ export const useVideoData = () => {
           thumbnail: typeof video.thumbnail === 'string' ? video.thumbnail : undefined
         }));
         
+        console.log('✅ Safe videos processed:', safeVideos.length);
         setVideos(safeVideos);
       } else {
-        // Fallback placeholder videos if no admin videos are found
-        setVideos([
+        console.log('📱 No admin videos found, loading default mobile videos...');
+        // Enhanced fallback videos for mobile
+        const defaultVideos = [
           {
-            id: 'wheat-processing-1',
-            title: 'Premium Wheat Processing',
-            description: 'Traditional wheat processing methods ensuring quality and purity',
-            thumbnail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+            id: 'lakshmikrupa-main',
+            title: 'Lakshmikrupa Agriculture',
+            description: 'Main company introduction and facilities overview',
+            thumbnail: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+            videoUrl: '/videos/lakshmikrupa-main.mp4',
+            category: 'wheat'
+          },
+          {
+            id: 'wheat-processing-mobile',
+            title: 'Wheat Processing',
+            description: 'Advanced wheat processing techniques and quality control',
+            thumbnail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
             videoUrl: '/videos/wheat-processing.mp4',
             category: 'wheat'
           },
           {
-            id: 'rice-processing-1',
-            title: 'Rice Milling Excellence',
-            description: 'Modern rice processing techniques for superior grain quality',
-            thumbnail: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+            id: 'rice-processing-mobile',
+            title: 'Rice Processing',
+            description: 'Modern rice milling and processing methods',
+            thumbnail: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
             videoUrl: '/videos/rice-processing.mp4',
             category: 'rice'
+          },
+          {
+            id: 'quality-control-mobile',
+            title: 'Quality Control',
+            description: 'Our strict quality control and testing procedures',
+            thumbnail: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+            videoUrl: '/videos/quality-control.mp4',
+            category: 'wheat'
           }
-        ]);
+        ];
+        
+        setVideos(defaultVideos);
+        console.log('✅ Default mobile videos loaded:', defaultVideos.length);
       }
     } catch (error) {
-      console.error('Error loading videos:', error);
+      console.error('❌ Error loading videos:', error);
       setVideos([]);
     }
   };
@@ -76,22 +105,31 @@ export const useVideoData = () => {
     const title = video.title.toLowerCase();
     return title.includes('wheat processing') || 
            title.includes('wheat') || 
-           title.includes('processing');
+           title.includes('processing') ||
+           title.includes('quality control');
   };
 
   // Function to check if video is Lakshmikrupa Agriculture
   const isLakshmikrupaVideo = (video: Video) => {
     if (!video || !video.title) return false;
-    return video.title.toLowerCase().includes('lakshmikrupa agriculture');
+    return video.title.toLowerCase().includes('lakshmikrupa agriculture') ||
+           video.title.toLowerCase().includes('lakshmikrupa');
   };
 
   // Separate videos into categories with safe filtering
   const verticalVideos = videos.filter(video => 
     video && isVerticalVideo(video) && !isLakshmikrupaVideo(video)
   );
+  
   const horizontalVideos = videos.filter(video => 
     video && isLakshmikrupaVideo(video)
   );
+
+  console.log('📊 Video categorization:', {
+    total: videos.length,
+    vertical: verticalVideos.length, 
+    horizontal: horizontalVideos.length
+  });
 
   return {
     videos,
