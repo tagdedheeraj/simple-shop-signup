@@ -12,30 +12,44 @@ export const useLogin = () => {
   const login = useCallback(async (email: string, password: string): Promise<{success: boolean; isAdmin: boolean}> => {
     try {
       setLoading(true);
+      console.log("Starting login process...");
       
       // Sign in with Firebase
       const firebaseUser = await signIn(email, password);
+      console.log("Firebase sign in successful:", firebaseUser?.uid);
       
-      // Check if user is admin
+      // Wait for user role to be fetched
       if (firebaseUser) {
+        console.log("Fetching user data from Firestore...");
         const userData = await getUserByUid(firebaseUser.uid) as UserData;
-        const userIsAdmin = userData?.role === 'admin';
+        console.log("User data fetched:", userData);
         
-        // Update persistent state
+        const userIsAdmin = userData?.role === 'admin';
+        console.log("User is admin:", userIsAdmin);
+        
+        // Update persistent state with role information
         setPersistentAuthState({
           isAuthenticated: true,
           isAdmin: userIsAdmin,
           uid: firebaseUser.uid
         });
         
+        console.log("Persistent auth state updated");
+        
+        // Add a small delay to ensure state is properly set
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
         toast.success('Successfully logged in');
+        console.log("Login completed, returning success with admin status:", userIsAdmin);
+        
         return {
           success: true, 
           isAdmin: userIsAdmin
         };
       }
       
-      return {success: true, isAdmin: false};
+      console.log("No Firebase user returned");
+      return {success: false, isAdmin: false};
     } catch (error: any) {
       console.error('Login error:', error);
       

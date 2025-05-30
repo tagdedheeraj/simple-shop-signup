@@ -10,29 +10,49 @@ const Admin: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  // More efficient effect with improved dependencies tracking
+  console.log("Admin page render - Auth state:", { 
+    isAuthenticated, 
+    isAdmin, 
+    loading, 
+    userUid: user?.uid 
+  });
+  
+  // Improved effect with better dependency tracking and delayed redirects
   useEffect(() => {
-    console.log("Admin page state:", { isAuthenticated, isAdmin, loading });
+    // Don't do anything while still loading
+    if (loading) {
+      console.log("Admin page: Still loading, waiting...");
+      return;
+    }
     
-    // Only redirect if fully loaded and conditions aren't met
-    if (!loading) {
-      if (!isAuthenticated) {
-        console.log("Not authenticated, redirecting to signin");
-        navigate('/signin', { state: { from: location }, replace: true });
-        return;
-      }
+    console.log("Admin page: Loading complete, checking auth state");
+    
+    // Handle unauthenticated users
+    if (!isAuthenticated) {
+      console.log("Admin page: Not authenticated, redirecting to signin");
+      navigate('/signin', { state: { from: location }, replace: true });
+      return;
+    }
+    
+    // Handle authenticated but non-admin users with delay to ensure state is loaded
+    if (isAuthenticated && !isAdmin) {
+      console.log("Admin page: Authenticated but not admin, will redirect to home");
       
-      if (!isAdmin) {
-        console.log("Not admin, redirecting to home");
+      // Add a small delay to ensure the role has been properly loaded
+      setTimeout(() => {
+        console.log("Admin page: Executing delayed redirect to home");
         toast.error('You do not have permission to access the admin panel');
         navigate('/', { replace: true });
-        return;
-      }
+      }, 200);
+      return;
     }
+    
+    console.log("Admin page: User is authenticated and admin, staying on admin page");
   }, [isAuthenticated, isAdmin, loading, navigate, location]);
   
   // Show loading state to prevent flickering and premature redirects
   if (loading) {
+    console.log("Admin page: Showing loading spinner");
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center space-y-4">
@@ -43,9 +63,9 @@ const Admin: React.FC = () => {
     );
   }
   
-  // If authenticated and admin, directly render the layout without conditional redirects
+  // If authenticated and admin, directly render the layout
   if (isAuthenticated && isAdmin) {
-    console.log("Rendering admin layout");
+    console.log("Admin page: Rendering admin layout");
     return (
       <AdminLayout>
         <Outlet />
@@ -54,6 +74,7 @@ const Admin: React.FC = () => {
   }
   
   // Return a loading state while redirects are happening (prevents flashing)
+  console.log("Admin page: Showing permission checking state");
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center space-y-4">

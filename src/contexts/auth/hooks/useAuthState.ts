@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import useFirebase from '@/hooks/useFirebase';
 import { CustomUser, convertToCustomUser, UserData } from '@/types/user';
-import { setPersistentAuthState } from '../helpers';
+import { setPersistentAuthState, getPersistentAuthState } from '../helpers';
 
 export const useAuthState = () => {
   const { currentUser, getUserByUid, loading: firebaseLoading } = useFirebase();
@@ -11,9 +11,22 @@ export const useAuthState = () => {
   const [loading, setLoading] = useState(true);
   const [userDataFetched, setUserDataFetched] = useState(false);
 
+  // Initialize from persistent state
+  useEffect(() => {
+    const persistentState = getPersistentAuthState();
+    console.log("Initializing from persistent state:", persistentState);
+    
+    if (persistentState.isAuthenticated && persistentState.isAdmin) {
+      setIsAdmin(persistentState.isAdmin);
+      console.log("Set admin status from persistent state:", persistentState.isAdmin);
+    }
+  }, []);
+
   // Improved auth state handling
   useEffect(() => {
     const checkUserRole = async () => {
+      console.log("Checking user role, currentUser:", currentUser?.uid, "firebaseLoading:", firebaseLoading);
+      
       if (currentUser) {
         try {
           console.log("Checking user role for:", currentUser.uid);
@@ -25,6 +38,7 @@ export const useAuthState = () => {
             return;
           }
           
+          console.log("Fetching user data from Firestore...");
           const userData = await getUserByUid(currentUser.uid) as UserData;
           console.log("User data from Firestore:", userData);
           
@@ -33,7 +47,7 @@ export const useAuthState = () => {
           
           // Check if role is admin and set state
           const userIsAdmin = userData?.role === 'admin';
-          console.log("Is admin?", userIsAdmin);
+          console.log("Setting admin status:", userIsAdmin);
           setIsAdmin(userIsAdmin);
           
           // Update persistent state
@@ -42,6 +56,8 @@ export const useAuthState = () => {
             isAdmin: userIsAdmin,
             uid: currentUser.uid
           });
+          
+          console.log("Updated persistent state with admin status:", userIsAdmin);
           
           // Mark user data as fetched to prevent repeated checks
           setUserDataFetched(true);
@@ -57,10 +73,11 @@ export const useAuthState = () => {
             uid: currentUser.uid
           });
         } finally {
+          console.log("Setting loading to false");
           setLoading(false);
         }
       } else {
-        console.log("No current user");
+        console.log("No current user, clearing state");
         setIsAdmin(false);
         setUser(null);
         
@@ -99,6 +116,12 @@ export const useAuthState = () => {
       });
     }
   }, [currentUser, userDataFetched]);
+
+  console.log("Auth state hook returning:", { 
+    user: user?.uid, 
+    isAdmin, 
+    loading: loading || firebaseLoading 
+  });
 
   return {
     user,

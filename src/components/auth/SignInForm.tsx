@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -39,21 +38,26 @@ const SignInForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      console.log("Attempting login...");
+      console.log("SignInForm: Attempting login...");
       const result = await login(email, password);
-      console.log("Login result:", result);
+      console.log("SignInForm: Login result:", result);
       
       if (result.success) {
-        console.log("Login successful, redirecting...");
-        // Redirect based on user role
-        if (result.isAdmin) {
-          navigate('/admin');
-        } else {
-          navigate('/');
-        }
+        console.log("SignInForm: Login successful, isAdmin:", result.isAdmin);
+        
+        // Add delay to ensure state is properly set before navigation
+        setTimeout(() => {
+          if (result.isAdmin) {
+            console.log("SignInForm: Redirecting to admin panel");
+            navigate('/admin');
+          } else {
+            console.log("SignInForm: Redirecting to home");
+            navigate('/');
+          }
+        }, 100);
       }
     } catch (error) {
-      console.error("Login error in component:", error);
+      console.error("SignInForm: Login error:", error);
       toast.error('An unexpected error occurred during login');
     } finally {
       setIsSubmitting(false);
