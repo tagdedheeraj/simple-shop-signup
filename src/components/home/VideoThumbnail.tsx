@@ -34,9 +34,9 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ video, onPlay, isVertic
     }
 
     // Try to get Google Drive thumbnail
-    if (video.googleDriveUrl || video.embedUrl) {
-      const driveUrl = video.googleDriveUrl || video.embedUrl;
-      const driveThumbnail = getGoogleDriveThumbnail(driveUrl!);
+    const driveUrl = video.googleDriveUrl || video.embedUrl;
+    if (driveUrl && driveUrl.trim() !== '') {
+      const driveThumbnail = getGoogleDriveThumbnail(driveUrl);
       if (driveThumbnail) {
         // Cache the thumbnail URL
         cacheVideoMetadata(video.id, { thumbnail: driveThumbnail });

@@ -2,9 +2,9 @@
 export const convertGoogleDriveUrl = (url: string): string => {
   console.log('🔄 Converting Google Drive URL:', url);
   
-  // Don't modify if empty
+  // Don't modify if empty or undefined
   if (!url || url.trim() === '') {
-    return url;
+    return url || '';
   }
   
   // Handle different Google Drive URL formats
@@ -44,6 +44,11 @@ export const convertGoogleDriveUrl = (url: string): string => {
 };
 
 export const getGoogleDriveThumbnail = (url: string): string => {
+  // Handle undefined or empty URLs
+  if (!url || url.trim() === '') {
+    return '';
+  }
+  
   const fileId = extractFileId(url);
   if (fileId) {
     // Generate thumbnail URL from Google Drive
@@ -53,7 +58,10 @@ export const getGoogleDriveThumbnail = (url: string): string => {
 };
 
 export const extractFileId = (url: string): string => {
-  if (!url) return '';
+  // Handle undefined or empty URLs
+  if (!url || url.trim() === '') {
+    return '';
+  }
   
   const patterns = [
     /\/file\/d\/([a-zA-Z0-9-_]+)/,
