@@ -1,3 +1,4 @@
+
 // App Configuration Settings
 
 // App version - increment this when pushing app updates that require data refreshing
@@ -17,3 +18,6 @@ export const FORCE_REFRESH_ON_START = false;
 
 // Storage key for deleted products tracking
 export const DELETED_PRODUCTS_KEY = 'deleted-products';
+
+// Company Address
+export const COMPANY_ADDRESS = '84/2/A/P/56 Samarjitsingh nagar, Yashwantnagar, Malshiras, Solapur - 413118 Maharashtra';
