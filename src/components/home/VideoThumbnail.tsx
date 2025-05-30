@@ -35,8 +35,9 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ video, onPlay, isVertic
       // Check Google Drive URLs with proper validation
       const driveUrl = video.googleDriveUrl || video.embedUrl;
       if (driveUrl && typeof driveUrl === 'string' && driveUrl.trim()) {
-        // Simple validation for Google Drive URLs
-        if (driveUrl.includes('drive.google.com') || driveUrl.includes('docs.google.com')) {
+        // Simple validation for Google Drive URLs - add null checks before calling string methods
+        if (driveUrl.includes && driveUrl.includes('drive.google.com') || 
+            driveUrl.includes && driveUrl.includes('docs.google.com')) {
           // Extract file ID safely
           const fileIdMatch = driveUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/) ||
                              driveUrl.match(/[?&]id=([a-zA-Z0-9-_]+)/) ||
