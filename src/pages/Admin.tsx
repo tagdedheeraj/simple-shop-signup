@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/admin/AdminLayout';
@@ -9,6 +9,7 @@ const Admin: React.FC = () => {
   const { user, isAuthenticated, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [initialCheck, setInitialCheck] = useState(false);
   
   console.log("=== ADMIN PAGE RENDER ===", { 
     isAuthenticated, 
@@ -16,7 +17,8 @@ const Admin: React.FC = () => {
     loading, 
     userUid: user?.uid,
     userRole: user?.role,
-    pathname: location.pathname
+    pathname: location.pathname,
+    initialCheck
   });
 
   useEffect(() => {
@@ -24,11 +26,14 @@ const Admin: React.FC = () => {
       loading,
       isAuthenticated,
       isAdmin,
-      pathname: location.pathname
+      pathname: location.pathname,
+      initialCheck
     });
     
-    // Only redirect if we're sure about the authentication state
-    if (!loading) {
+    // Wait for initial auth check to complete
+    if (!loading && !initialCheck) {
+      setInitialCheck(true);
+      
       if (!isAuthenticated) {
         console.log("Admin page: Not authenticated, redirecting to signin");
         navigate('/signin', { state: { from: location }, replace: true });
@@ -41,11 +46,14 @@ const Admin: React.FC = () => {
         navigate('/', { replace: true });
         return;
       }
+      
+      // If we reach here, user is authenticated and admin
+      console.log("Admin page: User is authenticated admin, staying on admin page");
     }
-  }, [isAuthenticated, isAdmin, loading, navigate, location]);
+  }, [isAuthenticated, isAdmin, loading, navigate, location, initialCheck]);
   
   // Show loading state while checking authentication
-  if (loading) {
+  if (loading || !initialCheck) {
     console.log("Admin page: Showing loading spinner");
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -67,8 +75,8 @@ const Admin: React.FC = () => {
     );
   }
   
-  // Show access denied state
-  console.log("Admin page: Access denied");
+  // This should not be reached due to redirects above, but kept as fallback
+  console.log("Admin page: Access denied fallback");
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center space-y-4">

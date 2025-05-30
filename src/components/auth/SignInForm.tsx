@@ -45,7 +45,7 @@ const SignInForm: React.FC = () => {
       if (result.success) {
         console.log("=== SIGNIN FORM: LOGIN SUCCESSFUL ===", { isAdmin: result.isAdmin });
         
-        // Longer delay to ensure state is completely set
+        // Small delay to ensure state is set
         setTimeout(() => {
           if (result.isAdmin) {
             console.log("SignInForm: Redirecting admin to admin panel");
@@ -54,7 +54,7 @@ const SignInForm: React.FC = () => {
             console.log("SignInForm: Redirecting regular user to home");
             navigate('/', { replace: true });
           }
-        }, 500); // Increased delay to 500ms
+        }, 200);
       } else {
         console.log("SignInForm: Login failed");
       }
