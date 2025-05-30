@@ -12,7 +12,9 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
   try {
     // Remove any timestamp parameters that might be in the image URL
     let imageUrl = product.image;
-    if (imageUrl && typeof imageUrl === 'string') {
+    
+    // Only clean timestamp parameters from regular URLs
+    if (imageUrl && typeof imageUrl === 'string' && !imageUrl.startsWith('local-storage://')) {
       if (imageUrl.includes('?t=')) {
         imageUrl = imageUrl.split('?t=')[0];
       } else if (imageUrl.includes('&t=')) {
@@ -20,13 +22,15 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
       }
     }
     
-    // Save the product with the cleaned image URL
-    const cleanedProduct = {
+    // Save the product with the processed image URL
+    const productToSave = {
       ...product,
       image: imageUrl
     };
     
-    await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), cleanedProduct);
+    console.log('Saving product to Firebase:', productToSave);
+    
+    await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), productToSave);
     
     // If this product was previously deleted, remove it from deleted list
     const deletedIds = await getDeletedProductIds();

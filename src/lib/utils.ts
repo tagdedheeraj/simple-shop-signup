@@ -2,6 +2,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { getGlobalTimestamp } from '@/utils/version-checker';
+import { getUploadedFileUrl } from '@/utils/file-storage';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -9,6 +10,11 @@ export function cn(...inputs: ClassValue[]) {
 
 // Function to force browser to reload images by appending a timestamp query parameter
 export function getImageWithTimestamp(imageUrl: string): string {
+  // Handle our custom local storage URLs
+  if (imageUrl && imageUrl.startsWith('local-storage://')) {
+    return getUploadedFileUrl(imageUrl);
+  }
+  
   // Only add timestamp to URLs that don't already have query parameters
   // and are not data URLs or blob URLs
   if (

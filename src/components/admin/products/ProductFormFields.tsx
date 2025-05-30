@@ -9,6 +9,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Button } from '@/components/ui/button';
 import { Upload, Link } from 'lucide-react';
 import { toast } from 'sonner';
+import { saveUploadedFile, getUploadedFileUrl } from '@/utils/file-storage';
 
 interface ProductFormFieldsProps {
   form: UseFormReturn<ProductFormData>;
@@ -17,7 +18,6 @@ interface ProductFormFieldsProps {
 const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
   const [uploadMethod, setUploadMethod] = useState<'url' | 'upload'>('url');
   const [uploading, setUploading] = useState(false);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string>('');
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -38,14 +38,15 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
     setUploading(true);
     
     try {
-      // Create a blob URL for immediate preview
-      const imageUrl = URL.createObjectURL(file);
+      console.log('Uploading file:', file.name);
       
-      // Store the uploaded image URL separately
-      setUploadedImageUrl(imageUrl);
+      // Save the file permanently using our storage system
+      const permanentUrl = await saveUploadedFile(file);
       
-      // Set the form value
-      form.setValue('image', imageUrl);
+      console.log('File saved with URL:', permanentUrl);
+      
+      // Set the form value with the permanent URL
+      form.setValue('image', permanentUrl);
       
       // Force form to re-render and show the updated image
       form.trigger('image');
@@ -59,10 +60,17 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
     }
   };
 
-  // Get the current image URL (either from form or uploaded)
+  // Get the current image URL for preview
   const getCurrentImageUrl = () => {
     const formImageUrl = form.watch('image');
-    return uploadMethod === 'upload' && uploadedImageUrl ? uploadedImageUrl : formImageUrl;
+    if (!formImageUrl) return '';
+    
+    // If it's our custom local storage URL, convert it to displayable format
+    if (formImageUrl.startsWith('local-storage://')) {
+      return getUploadedFileUrl(formImageUrl);
+    }
+    
+    return formImageUrl;
   };
 
   return (
@@ -164,10 +172,7 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
               type="button"
               variant={uploadMethod === 'url' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => {
-                setUploadMethod('url');
-                setUploadedImageUrl('');
-              }}
+              onClick={() => setUploadMethod('url')}
               className="flex items-center gap-2"
             >
               <Link className="h-4 w-4" />
@@ -195,10 +200,6 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
                     <Input 
                       placeholder="https://example.com/image.jpg" 
                       {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        setUploadedImageUrl(''); // Clear uploaded image when URL is changed
-                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -230,7 +231,6 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
               <div className="w-full h-full bg-muted/30 rounded flex items-center justify-center overflow-hidden">
                 {getCurrentImageUrl() ? (
                   <img 
-                    key={`${getCurrentImageUrl()}-${Date.now()}`} // Force re-render with timestamp
                     src={getCurrentImageUrl()} 
                     alt="Product preview" 
                     className="w-full h-full object-contain"
