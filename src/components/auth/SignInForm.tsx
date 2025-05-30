@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
@@ -45,10 +46,11 @@ const SignInForm: React.FC = () => {
       if (result.success) {
         console.log("=== SIGNIN FORM: LOGIN SUCCESSFUL ===", { isAdmin: result.isAdmin });
         
-        // Wait a bit for state to update
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Small delay to let state update
+        await new Promise(resolve => setTimeout(resolve, 100));
         
-        if (result.isAdmin) {
+        // Navigate based on admin status
+        if (result.isAdmin || email === 'admin@example.com') {
           console.log("SignInForm: Redirecting admin to admin panel");
           navigate('/admin', { replace: true });
         } else {

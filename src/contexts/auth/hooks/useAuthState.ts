@@ -1,8 +1,8 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import useFirebase from '@/hooks/useFirebase';
 import { CustomUser, convertToCustomUser, UserData } from '@/types/user';
-import { setPersistentAuthState, getPersistentAuthState } from '../helpers';
+import { setPersistentAuthState } from '../helpers';
 
 export const useAuthState = () => {
   const { currentUser, getUserByUid, loading: firebaseLoading } = useFirebase();
@@ -14,7 +14,8 @@ export const useAuthState = () => {
     currentUserUid: currentUser?.uid, 
     firebaseLoading,
     userState: user?.uid,
-    isAdmin
+    isAdmin,
+    loading
   });
 
   useEffect(() => {
@@ -24,6 +25,7 @@ export const useAuthState = () => {
         firebaseLoading
       });
       
+      // Wait for Firebase to finish loading
       if (firebaseLoading) {
         console.log("Firebase still loading, waiting...");
         return;
@@ -37,13 +39,15 @@ export const useAuthState = () => {
           const userData = await getUserByUid(currentUser.uid) as UserData;
           console.log("=== FIRESTORE USER DATA ===", userData);
           
+          // Convert to custom user
           const customUser = convertToCustomUser(currentUser, userData);
           setUser(customUser);
           
-          // Check admin status
-          const userIsAdmin = userData?.role === 'admin';
+          // Check admin status - specifically check for admin@example.com
+          const userIsAdmin = userData?.role === 'admin' || currentUser.email === 'admin@example.com';
           console.log("=== SETTING ADMIN STATUS ===", { 
             role: userData?.role, 
+            email: currentUser.email,
             isAdmin: userIsAdmin 
           });
           
@@ -59,19 +63,23 @@ export const useAuthState = () => {
           console.log("=== AUTH STATE UPDATED ===", {
             isAuthenticated: true,
             isAdmin: userIsAdmin,
-            uid: currentUser.uid
+            uid: currentUser.uid,
+            email: currentUser.email
           });
           
         } catch (error) {
           console.error("Error fetching user data:", error);
-          // Set defaults on error
-          const customUser = convertToCustomUser(currentUser);
+          
+          // For admin@example.com, set admin even if Firestore fails
+          const userIsAdmin = currentUser.email === 'admin@example.com';
+          const customUser = convertToCustomUser(currentUser, { role: userIsAdmin ? 'admin' : 'user' });
+          
           setUser(customUser);
-          setIsAdmin(false);
+          setIsAdmin(userIsAdmin);
           
           setPersistentAuthState({
             isAuthenticated: true,
-            isAdmin: false,
+            isAdmin: userIsAdmin,
             uid: currentUser.uid
           });
         }
@@ -92,12 +100,6 @@ export const useAuthState = () => {
     
     handleAuthStateChange();
   }, [currentUser, firebaseLoading, getUserByUid]);
-
-  console.log("=== AUTH STATE HOOK RETURNING ===", { 
-    userUid: user?.uid, 
-    isAdmin, 
-    loading: loading || firebaseLoading
-  });
 
   return {
     user,

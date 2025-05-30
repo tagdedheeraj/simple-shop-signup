@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { toast } from 'sonner';
@@ -8,52 +8,39 @@ import { toast } from 'sonner';
 const Admin: React.FC = () => {
   const { user, isAuthenticated, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
-  console.log("=== ADMIN PAGE DEBUG ===", { 
+  console.log("=== ADMIN PAGE ===", { 
     isAuthenticated, 
     isAdmin, 
     loading, 
-    userUid: user?.uid,
-    userRole: user?.role,
-    pathname: location.pathname,
-    hasCheckedAuth
+    userEmail: user?.email,
+    userRole: user?.role
   });
 
   useEffect(() => {
-    console.log("=== ADMIN PAGE AUTH CHECK ===", {
-      loading,
-      isAuthenticated,
-      isAdmin,
-      hasCheckedAuth
-    });
+    // Wait for auth to finish loading
+    if (loading) return;
     
-    if (!loading && !hasCheckedAuth) {
-      setHasCheckedAuth(true);
-      
-      console.log("Performing auth check...", { isAuthenticated, isAdmin });
-      
-      if (!isAuthenticated) {
-        console.log("User not authenticated, redirecting to signin");
-        navigate('/signin', { replace: true });
-        return;
-      }
-      
-      if (!isAdmin) {
-        console.log("User not admin, redirecting to home");
-        toast.error('आपको admin panel access करने की permission नहीं है');
-        navigate('/', { replace: true });
-        return;
-      }
-      
-      console.log("User is authenticated admin, staying on admin page");
+    // Check authentication
+    if (!isAuthenticated) {
+      console.log("Not authenticated, redirecting to signin");
+      navigate('/signin', { replace: true });
+      return;
     }
-  }, [loading, isAuthenticated, isAdmin, navigate, hasCheckedAuth]);
+    
+    // Check admin role
+    if (!isAdmin) {
+      console.log("Not admin, redirecting to home");
+      toast.error('आपको admin panel access करने की permission नहीं है');
+      navigate('/', { replace: true });
+      return;
+    }
+    
+    console.log("Admin authenticated successfully");
+  }, [loading, isAuthenticated, isAdmin, navigate]);
   
   // Show loading while checking auth
-  if (loading || !hasCheckedAuth) {
-    console.log("Showing loading state");
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center space-y-4">
@@ -64,25 +51,23 @@ const Admin: React.FC = () => {
     );
   }
   
-  // Only render if authenticated and admin
-  if (isAuthenticated && isAdmin) {
-    console.log("Rendering admin layout");
+  // Show access denied if not authenticated or not admin
+  if (!isAuthenticated || !isAdmin) {
     return (
-      <AdminLayout>
-        <Outlet />
-      </AdminLayout>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+          <p className="text-muted-foreground">आपको admin panel access करने की permission नहीं है।</p>
+        </div>
+      </div>
     );
   }
   
-  // Fallback - should not reach here due to redirects
-  console.log("Access denied fallback");
+  // Render admin layout if everything is good
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
-        <p className="text-muted-foreground">आपको admin panel access करने की permission नहीं है।</p>
-      </div>
-    </div>
+    <AdminLayout>
+      <Outlet />
+    </AdminLayout>
   );
 };
 
