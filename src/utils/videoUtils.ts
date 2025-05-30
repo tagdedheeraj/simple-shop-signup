@@ -1,4 +1,3 @@
-
 export const convertGoogleDriveUrl = (url: string): string => {
   console.log('🔄 Converting Google Drive URL:', url);
   
@@ -45,40 +44,59 @@ export const convertGoogleDriveUrl = (url: string): string => {
 };
 
 export const getGoogleDriveThumbnail = (url: string): string => {
-  // Handle undefined or empty URLs
+  console.log('🖼️ Getting Google Drive thumbnail for URL:', url);
+  
+  // Handle undefined, null, or empty URLs
   if (!url || typeof url !== 'string' || url.trim() === '') {
     console.log('⚠️ Invalid URL provided to getGoogleDriveThumbnail:', url);
     return '';
   }
   
-  const fileId = extractFileId(url);
-  if (fileId) {
-    // Generate thumbnail URL from Google Drive
-    return `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h300`;
+  // Additional safety check before calling extractFileId
+  try {
+    const fileId = extractFileId(url);
+    if (fileId && fileId.trim() !== '') {
+      const thumbnailUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w400-h300`;
+      console.log('✅ Generated thumbnail URL:', thumbnailUrl);
+      return thumbnailUrl;
+    }
+  } catch (error) {
+    console.error('❌ Error extracting file ID:', error);
   }
+  
+  console.log('⚠️ Could not generate thumbnail URL');
   return '';
 };
 
 export const extractFileId = (url: string): string => {
-  // Handle undefined or empty URLs
+  console.log('🔍 Extracting file ID from URL:', url);
+  
+  // Handle undefined, null, or empty URLs
   if (!url || typeof url !== 'string' || url.trim() === '') {
     console.log('⚠️ Invalid URL provided to extractFileId:', url);
     return '';
   }
   
-  const patterns = [
-    /\/file\/d\/([a-zA-Z0-9-_]+)/,
-    /[?&]id=([a-zA-Z0-9-_]+)/,
-    /docs\.google\.com\/file\/d\/([a-zA-Z0-9-_]+)/
-  ];
-  
-  for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match) {
-      return match[1];
+  // Safety check before using string methods
+  try {
+    const patterns = [
+      /\/file\/d\/([a-zA-Z0-9-_]+)/,
+      /[?&]id=([a-zA-Z0-9-_]+)/,
+      /docs\.google\.com\/file\/d\/([a-zA-Z0-9-_]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        console.log('✅ Extracted file ID:', match[1]);
+        return match[1];
+      }
     }
+  } catch (error) {
+    console.error('❌ Error in extractFileId:', error);
   }
   
+  console.log('⚠️ Could not extract file ID');
   return '';
 };
 
@@ -88,13 +106,18 @@ export const validateGoogleDriveUrl = (url: string): boolean => {
     return true;
   }
   
-  const patterns = [
-    /drive\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/,
-    /drive\.google\.com\/open\?id=[a-zA-Z0-9-_]+/,
-    /docs\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/
-  ];
-  
-  return patterns.some(pattern => pattern.test(url));
+  try {
+    const patterns = [
+      /drive\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/,
+      /drive\.google\.com\/open\?id=[a-zA-Z0-9-_]+/,
+      /docs\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/
+    ];
+    
+    return patterns.some(pattern => pattern.test(url));
+  } catch (error) {
+    console.error('❌ Error validating URL:', error);
+    return false;
+  }
 };
 
 // Cache video metadata for better performance
