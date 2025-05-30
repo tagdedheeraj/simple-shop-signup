@@ -7,11 +7,36 @@ import { useVideoData } from './hooks/useVideoData';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
 
 const VideoShowcase: React.FC = () => {
-  const { videos, verticalVideos, horizontalVideos } = useVideoData();
-  const { playingVideo, handleVideoPlay, handleVideoEnd } = useVideoPlayer();
+  // Wrap hook calls in try-catch to handle potential React context issues
+  let videos, verticalVideos, horizontalVideos;
+  let playingVideo, handleVideoPlay, handleVideoEnd;
+
+  try {
+    const videoData = useVideoData();
+    videos = videoData.videos || [];
+    verticalVideos = videoData.verticalVideos || [];
+    horizontalVideos = videoData.horizontalVideos || [];
+
+    const playerData = useVideoPlayer();
+    playingVideo = playerData.playingVideo;
+    handleVideoPlay = playerData.handleVideoPlay;
+    handleVideoEnd = playerData.handleVideoEnd;
+  } catch (error) {
+    console.error('❌ Error in VideoShowcase hooks:', error);
+    // Return early with error state if hooks fail
+    return (
+      <section className="py-16 bg-gradient-to-b from-amber-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center">
+            <p className="text-gray-600">Unable to load video showcase</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   // Add debugging to see what videos we're getting
-  console.log('🎬 VideoShowcase - Total videos:', videos.length);
+  console.log('🎬 VideoShowcase - Total videos:', videos?.length || 0);
   console.log('🎬 VideoShowcase - Videos data:', videos);
 
   // Enhanced safety function to validate video URLs
@@ -90,7 +115,7 @@ const VideoShowcase: React.FC = () => {
         </motion.div>
 
         {/* Horizontal Videos (Lakshmikrupa Agriculture) */}
-        {safeHorizontalVideos.length > 0 && (
+        {safeHorizontalVideos.length > 0 && handleVideoPlay && handleVideoEnd && (
           <VideoSection
             title="Lakshmikrupa Agriculture"
             videos={safeHorizontalVideos}
@@ -102,7 +127,7 @@ const VideoShowcase: React.FC = () => {
         )}
 
         {/* Vertical Videos (Wheat Processing, etc.) */}
-        {safeVerticalVideos.length > 0 && (
+        {safeVerticalVideos.length > 0 && handleVideoPlay && handleVideoEnd && (
           <VideoSection
             title="Processing Videos"
             videos={safeVerticalVideos}
