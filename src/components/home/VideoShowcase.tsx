@@ -10,70 +10,10 @@ const VideoShowcase: React.FC = () => {
   const { videos, verticalVideos, horizontalVideos } = useVideoData();
   const { playingVideo, handleVideoPlay, handleVideoEnd } = useVideoPlayer();
 
-  // Enhanced safe filter function with comprehensive null checks
-  const safeVideos = videos.filter(video => {
-    if (!video || typeof video !== 'object') {
-      console.warn('Invalid video object:', video);
-      return false;
-    }
-    
-    // Check required properties exist and are valid
-    const hasRequiredProps = video.id && 
-                            video.title && 
-                            video.category;
-    
-    if (!hasRequiredProps) {
-      console.warn('Video missing required properties:', video);
-      return false;
-    }
-    
-    return true;
-  });
-
-  // Safe vertical videos with comprehensive validation
-  const safeVerticalVideos = verticalVideos.filter(video => {
-    if (!video || typeof video !== 'object') {
-      console.warn('Invalid vertical video object:', video);
-      return false;
-    }
-    
-    const isValid = video.id && 
-                   video.title && 
-                   typeof video.title === 'string' &&
-                   typeof video.id === 'string';
-    
-    if (!isValid) {
-      console.warn('Vertical video validation failed:', video);
-      return false;
-    }
-    
-    return true;
-  });
-
-  // Safe horizontal videos with comprehensive validation
-  const safeHorizontalVideos = horizontalVideos.filter(video => {
-    if (!video || typeof video !== 'object') {
-      console.warn('Invalid horizontal video object:', video);
-      return false;
-    }
-    
-    const isValid = video.id && 
-                   video.title && 
-                   typeof video.title === 'string' &&
-                   typeof video.id === 'string';
-    
-    if (!isValid) {
-      console.warn('Horizontal video validation failed:', video);
-      return false;
-    }
-    
-    return true;
-  });
-
-  console.log('VideoShowcase - Safe videos loaded:', {
-    total: safeVideos.length,
-    vertical: safeVerticalVideos.length,
-    horizontal: safeHorizontalVideos.length
+  console.log('VideoShowcase - Videos loaded:', {
+    total: videos.length,
+    vertical: verticalVideos.length,
+    horizontal: horizontalVideos.length
   });
 
   return (
@@ -96,10 +36,10 @@ const VideoShowcase: React.FC = () => {
         </motion.div>
 
         {/* Horizontal Videos (Lakshmikrupa Agriculture) */}
-        {safeHorizontalVideos.length > 0 && (
+        {horizontalVideos.length > 0 && (
           <VideoSection
             title="Lakshmikrupa Agriculture"
-            videos={safeHorizontalVideos}
+            videos={horizontalVideos}
             playingVideo={playingVideo}
             isVertical={false}
             onVideoPlay={handleVideoPlay}
@@ -108,10 +48,10 @@ const VideoShowcase: React.FC = () => {
         )}
 
         {/* Vertical Videos (Wheat Processing, etc.) */}
-        {safeVerticalVideos.length > 0 && (
+        {verticalVideos.length > 0 && (
           <VideoSection
             title="Processing Videos"
-            videos={safeVerticalVideos}
+            videos={verticalVideos}
             playingVideo={playingVideo}
             isVertical={true}
             onVideoPlay={handleVideoPlay}
@@ -120,7 +60,7 @@ const VideoShowcase: React.FC = () => {
         )}
 
         {/* Show message if no videos */}
-        {safeVideos.length === 0 && (
+        {videos.length === 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
