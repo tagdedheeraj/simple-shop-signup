@@ -12,7 +12,7 @@ export const loadPayPalScript = (currency = 'USD'): Promise<boolean> => {
     
     const script = document.createElement('script');
     script.id = 'paypal-script';
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=${currency}`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=${currency}&intent=capture`;
     script.async = true;
     
     script.onload = () => {

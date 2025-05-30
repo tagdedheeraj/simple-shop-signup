@@ -1,30 +1,105 @@
 
 import { toast } from 'sonner';
 import { PayPalOrder } from './types';
+import { PAYPAL_CLIENT_ID, PAYPAL_CLIENT_SECRET, PAYPAL_ENVIRONMENT } from './config';
+
+const PAYPAL_API_BASE = PAYPAL_ENVIRONMENT === 'live' 
+  ? 'https://api.paypal.com' 
+  : 'https://api.sandbox.paypal.com';
+
+// Get PayPal access token
+const getAccessToken = async (): Promise<string> => {
+  const auth = btoa(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`);
+  
+  const response = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Authorization': `Basic ${auth}`,
+    },
+    body: 'grant_type=client_credentials',
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get PayPal access token');
+  }
+
+  const data = await response.json();
+  return data.access_token;
+};
 
 export const createPayPalOrder = async (order: PayPalOrder): Promise<string> => {
-  // In a real implementation, this would communicate with your backend
-  // which would then create an order with the PayPal API
-  
-  // For this demo, we're simulating a successful order creation
-  console.log('Creating PayPal order:', order);
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // In sandbox mode, we can return any string as the order ID
-  // This is only for testing purposes
-  toast.info('Test Mode: PayPal sandbox environment active');
-  return `TEST-ORDER-${Math.random().toString(36).substr(2, 9)}`;
+  try {
+    const accessToken = await getAccessToken();
+    
+    const orderData = {
+      intent: 'CAPTURE',
+      purchase_units: [{
+        amount: {
+          currency_code: order.currency,
+          value: order.totalAmount.toFixed(2),
+        },
+        items: order.items.map(item => ({
+          name: item.name,
+          quantity: item.quantity.toString(),
+          unit_amount: {
+            currency_code: order.currency,
+            value: item.price.toFixed(2),
+          },
+        })),
+      }],
+      application_context: {
+        return_url: `${window.location.origin}/order-success`,
+        cancel_url: `${window.location.origin}/cart`,
+      },
+    };
+
+    const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(orderData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create PayPal order');
+    }
+
+    const data = await response.json();
+    console.log('PayPal order created:', data);
+    return data.id;
+  } catch (error) {
+    console.error('Error creating PayPal order:', error);
+    toast.error('Failed to create PayPal order');
+    throw error;
+  }
 };
 
 export const capturePayPalOrder = async (orderId: string): Promise<boolean> => {
-  // In a real implementation, this would communicate with your backend
-  // which would then capture the payment with the PayPal API
-  
-  // For this demo, we're simulating a successful payment capture
-  console.log(`Capturing payment for order: ${orderId}`);
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  // This is only for testing purposes
-  toast.info('Test Mode: Payment captured in sandbox environment');
-  return true;
+  try {
+    const accessToken = await getAccessToken();
+    
+    const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${orderId}/capture`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to capture PayPal order');
+    }
+
+    const data = await response.json();
+    console.log('PayPal order captured:', data);
+    toast.success('Payment successful!');
+    return true;
+  } catch (error) {
+    console.error('Error capturing PayPal order:', error);
+    toast.error('Failed to capture payment');
+    throw error;
+  }
 };

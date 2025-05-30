@@ -38,19 +38,19 @@ const CartSummary: React.FC<CartSummaryProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-      <h2 className="text-lg font-medium mb-4">{t('orderSummary')}</h2>
+      <h2 className="text-lg font-medium mb-4">{t('orderSummary') || 'Order Summary'}</h2>
       
       <div className="space-y-3 mb-6">
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">{t('subtotal')} ({totalItems} items)</span>
+          <span className="text-muted-foreground">{t('subtotal') || 'Subtotal'} ({totalItems} items)</span>
           <span>{formatPrice(totalPrice)}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-muted-foreground">{t('shipping')}</span>
-          <span>{t('free')}</span>
+          <span className="text-muted-foreground">{t('shipping') || 'Shipping'}</span>
+          <span>{t('free') || 'Free'}</span>
         </div>
         <div className="border-t pt-3 mt-3 flex justify-between font-medium">
-          <span>{t('total')}</span>
+          <span>{t('total') || 'Total'}</span>
           <span>{formatPrice(totalPrice)}</span>
         </div>
       </div>
@@ -70,7 +70,7 @@ const CartSummary: React.FC<CartSummaryProps> = ({
           onClick={handleCheckout}
         >
           <CreditCard className="mr-2 h-4 w-4" />
-          {t('proceedToCheckout')}
+          {t('proceedToCheckout') || 'Proceed to Checkout'}
         </Button>
       )}
       
@@ -84,12 +84,12 @@ const CartSummary: React.FC<CartSummaryProps> = ({
           {isProcessing ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {t('processing')}
+              {t('processing') || 'Processing'}
             </>
           ) : (
             <>
               <CreditCard className="mr-2 h-4 w-4" />
-              {t('checkoutPaypal')}
+              {t('checkoutPaypal') || 'Checkout with PayPal'}
             </>
           )}
         </Button>
@@ -102,12 +102,12 @@ const CartSummary: React.FC<CartSummaryProps> = ({
           onClick={() => navigate('/products')}
         >
           <ArrowRight className="mr-2 h-4 w-4" />
-          {t('continueShop')}
+          {t('continueShop') || 'Continue Shopping'}
         </Button>
       </div>
       
       <p className="text-xs text-muted-foreground mt-4 text-center">
-        {t('paypalTestMode')}
+        Secure PayPal Payment Gateway
       </p>
     </div>
   );
