@@ -72,73 +72,60 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ customerInfo, isFormComplet
           label: 'pay'
         },
         
-        // Create order using PayPal's client-side SDK
-        createOrder: async (): Promise<string> => {
+        // Create order - using the correct PayPal SDK method
+        createOrder: function(data: any, actions: any) {
           setIsProcessing(true);
-          console.log('Creating PayPal order with client SDK...');
+          console.log('Creating PayPal order...');
           
-          try {
-            const order = await window.paypal.Orders().create({
-              purchase_units: [{
-                amount: {
-                  value: totalPrice.toFixed(2),
-                  currency_code: currency
-                },
-                description: `Order from Green Haven - ${items.length} items`
-              }]
-            });
-            
-            return order.id;
-          } catch (error) {
-            console.error('Error creating PayPal order:', error);
-            toast.error('Failed to create PayPal order');
-            setIsProcessing(false);
-            throw error;
-          }
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: totalPrice.toFixed(2),
+                currency_code: currency
+              },
+              description: `Order from Green Haven - ${items.length} items`
+            }]
+          });
         },
         
         // Capture payment
-        onApprove: async (data: { orderID: string }): Promise<void> => {
-          try {
-            console.log('Capturing PayPal payment for order:', data.orderID);
-            const order = await window.paypal.Orders().capture(data.orderID);
-            console.log('PayPal order captured successfully:', order);
+        onApprove: function(data: any, actions: any) {
+          console.log('Capturing PayPal payment for order:', data.orderID);
+          
+          return actions.order.capture().then(function(orderData: any) {
+            console.log('PayPal order captured successfully:', orderData);
             
-            if (order.status === 'COMPLETED') {
-              // Save order info to localStorage
-              localStorage.setItem('lastOrder', JSON.stringify({
-                items,
-                totalPrice,
-                customerInfo,
-                orderId: data.orderID,
-                paymentId: order.id,
-                date: new Date().toISOString()
-              }));
-              
-              // Clear cart and navigate
-              clearCart();
-              navigate('/order-success');
-              toast.success('Payment successful! Thank you for your purchase.');
-            } else {
-              toast.error('Payment was not completed');
-            }
-          } catch (error) {
+            // Save order info to localStorage
+            localStorage.setItem('lastOrder', JSON.stringify({
+              items,
+              totalPrice,
+              customerInfo,
+              orderId: data.orderID,
+              paymentId: orderData.id,
+              date: new Date().toISOString()
+            }));
+            
+            // Clear cart and navigate
+            clearCart();
+            navigate('/order-success');
+            toast.success('Payment successful! Thank you for your purchase.');
+            setIsProcessing(false);
+          }).catch(function(error: any) {
             console.error('Error capturing PayPal payment:', error);
             toast.error('Failed to process payment');
-          } finally {
             setIsProcessing(false);
-          }
+          });
         },
         
         // Handle errors
-        onError: (err: any) => {
+        onError: function(err: any) {
           console.error('PayPal Error:', err);
           toast.error('Payment error occurred');
           setIsProcessing(false);
         },
         
         // Handle cancellations
-        onCancel: () => {
+        onCancel: function() {
           console.log('Payment cancelled by user');
           toast.info('Payment cancelled');
           setIsProcessing(false);
