@@ -62,6 +62,11 @@ const SimpleVideoManager: React.FC = () => {
   const convertGoogleDriveUrl = (url: string): string => {
     console.log('🔄 Converting Google Drive URL:', url);
     
+    // Don't modify if empty
+    if (!url || url.trim() === '') {
+      return url;
+    }
+    
     // Handle different Google Drive URL formats
     let fileId = '';
     
@@ -98,6 +103,11 @@ const SimpleVideoManager: React.FC = () => {
   };
 
   const validateGoogleDriveUrl = (url: string): boolean => {
+    // Allow empty URLs during typing
+    if (!url || url.trim() === '') {
+      return true;
+    }
+    
     const patterns = [
       /drive\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/,
       /drive\.google\.com\/open\?id=[a-zA-Z0-9-_]+/,
@@ -107,13 +117,21 @@ const SimpleVideoManager: React.FC = () => {
     return patterns.some(pattern => pattern.test(url));
   };
 
+  const handleNewVideoUrlChange = (url: string) => {
+    console.log('📝 URL change detected:', url);
+    // Don't validate or convert while user is typing
+    setNewVideo(prev => ({ ...prev, googleDriveUrl: url }));
+  };
+
   const addVideo = () => {
     if (!newVideo.title || !newVideo.googleDriveUrl) {
       toast.error('कृपया title और Google Drive URL दोनों भरें');
       return;
     }
 
-    if (!validateGoogleDriveUrl(newVideo.googleDriveUrl)) {
+    const trimmedUrl = newVideo.googleDriveUrl.trim();
+    
+    if (!validateGoogleDriveUrl(trimmedUrl)) {
       toast.error('कृपया valid Google Drive URL दें। Example: https://drive.google.com/file/d/FILE_ID/view');
       return;
     }
@@ -122,8 +140,8 @@ const SimpleVideoManager: React.FC = () => {
       id: `video-${Date.now()}`,
       title: newVideo.title,
       description: newVideo.description,
-      googleDriveUrl: newVideo.googleDriveUrl,
-      embedUrl: convertGoogleDriveUrl(newVideo.googleDriveUrl),
+      googleDriveUrl: trimmedUrl,
+      embedUrl: convertGoogleDriveUrl(trimmedUrl),
       category: newVideo.category
     };
 
@@ -150,17 +168,25 @@ const SimpleVideoManager: React.FC = () => {
     setEditingVideo({ ...video });
   };
 
+  const handleEditUrlChange = (url: string) => {
+    if (!editingVideo) return;
+    console.log('📝 Edit URL change detected:', url);
+    setEditingVideo({ ...editingVideo, googleDriveUrl: url });
+  };
+
   const saveEdit = () => {
     if (!editingVideo) return;
 
-    if (!validateGoogleDriveUrl(editingVideo.googleDriveUrl)) {
+    const trimmedUrl = editingVideo.googleDriveUrl.trim();
+
+    if (!validateGoogleDriveUrl(trimmedUrl)) {
       toast.error('कृपया valid Google Drive URL दें');
       return;
     }
 
     const updatedVideos = videos.map(video => 
       video.id === editingVideo.id 
-        ? { ...editingVideo, embedUrl: convertGoogleDriveUrl(editingVideo.googleDriveUrl) }
+        ? { ...editingVideo, googleDriveUrl: trimmedUrl, embedUrl: convertGoogleDriveUrl(trimmedUrl) }
         : video
     );
     saveVideos(updatedVideos);
@@ -214,7 +240,7 @@ const SimpleVideoManager: React.FC = () => {
             <Input
               id="url"
               value={newVideo.googleDriveUrl}
-              onChange={(e) => setNewVideo({ ...newVideo, googleDriveUrl: e.target.value })}
+              onChange={(e) => handleNewVideoUrlChange(e.target.value)}
               placeholder="https://drive.google.com/file/d/YOUR_FILE_ID/view"
             />
             <div className="text-sm text-gray-500 mt-2 space-y-1">
@@ -297,7 +323,7 @@ const SimpleVideoManager: React.FC = () => {
                   />
                   <Input
                     value={editingVideo.googleDriveUrl}
-                    onChange={(e) => setEditingVideo({ ...editingVideo, googleDriveUrl: e.target.value })}
+                    onChange={(e) => handleEditUrlChange(e.target.value)}
                     placeholder="Google Drive URL"
                   />
                   <Select 
@@ -359,6 +385,7 @@ const SimpleVideoManager: React.FC = () => {
                       </Button>
                     </div>
                     <p className="text-sm text-gray-600">{video.description}</p>
+                    <p className="text-xs text-gray-400 break-all">URL: {video.googleDriveUrl}</p>
                   </div>
                 </>
               )}
