@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { useCart } from '@/contexts/CartContext';
 import { Loader2 } from 'lucide-react';
-import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypal';
+import { loadPayPalScript } from '@/services/paypal';
 import { CustomerInfo } from './CustomerInfoForm';
 
 interface PayPalButtonProps {
@@ -69,52 +69,41 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ customerInfo, isFormComplet
           layout: 'vertical',
           color: 'gold',
           shape: 'rect',
-          label: 'pay'
+          label: 'pay',
+          height: 40
         },
         
-        // Create order
-        createOrder: async () => {
+        // Create order using PayPal's client-side SDK
+        createOrder: (data: any, actions: any) => {
           setIsProcessing(true);
-          try {
-            console.log('Creating PayPal order...');
-            const itemsForPayPal = items.map(item => ({
-              name: item.product.name,
-              quantity: item.quantity,
-              price: item.product.price
-            }));
-
-            const orderId = await createPayPalOrder({
-              orderId: `ORD-${Date.now()}`,
-              totalAmount: totalPrice,
-              currency,
-              items: itemsForPayPal,
-              customerInfo
-            });
-            
-            console.log('PayPal order created with ID:', orderId);
-            return orderId;
-          } catch (error) {
-            console.error('Error creating PayPal order:', error);
-            toast.error('Failed to create PayPal order');
-            setIsProcessing(false);
-            throw error;
-          }
+          console.log('Creating PayPal order with client SDK...');
+          
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                value: totalPrice.toFixed(2),
+                currency_code: currency
+              },
+              description: `Order from Green Haven - ${items.length} items`
+            }]
+          });
         },
         
         // Capture payment
-        onApprove: async (data: any) => {
+        onApprove: async (data: any, actions: any) => {
           try {
             console.log('Capturing PayPal payment for order:', data.orderID);
-            const success = await capturePayPalOrder(data.orderID);
+            const order = await actions.order.capture();
+            console.log('PayPal order captured successfully:', order);
             
-            if (success) {
+            if (order.status === 'COMPLETED') {
               // Save order info to localStorage
               localStorage.setItem('lastOrder', JSON.stringify({
                 items,
                 totalPrice,
                 customerInfo,
                 orderId: data.orderID,
-                paymentId: data.paymentID,
+                paymentId: order.id,
                 date: new Date().toISOString()
               }));
               
@@ -122,6 +111,8 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ customerInfo, isFormComplet
               clearCart();
               navigate('/order-success');
               toast.success('Payment successful! Thank you for your purchase.');
+            } else {
+              toast.error('Payment was not completed');
             }
           } catch (error) {
             console.error('Error capturing PayPal payment:', error);
@@ -165,7 +156,7 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ customerInfo, isFormComplet
   }
 
   return (
-    <div className="mt-4 min-h-[150px]">
+    <div className="mt-4 min-h-[150px] relative">
       <div 
         ref={paypalButtonRef}
         className="paypal-button-container"
