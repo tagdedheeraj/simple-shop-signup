@@ -14,38 +14,61 @@ const VideoShowcase: React.FC = () => {
   console.log('🎬 VideoShowcase - Total videos:', videos.length);
   console.log('🎬 VideoShowcase - Videos data:', videos);
 
-  // Filter out videos with undefined or invalid URLs to prevent errors
-  const safeVerticalVideos = verticalVideos.filter(video => {
-    // Add null checks for all URL properties
-    const hasValidUrl = (video.googleDriveUrl && typeof video.googleDriveUrl === 'string' && video.googleDriveUrl.trim() !== '') ||
-                       (video.embedUrl && typeof video.embedUrl === 'string' && video.embedUrl.trim() !== '') ||
-                       (video.videoUrl && typeof video.videoUrl === 'string' && video.videoUrl.trim() !== '');
+  // Enhanced safety function to validate video URLs
+  const hasValidVideoUrl = (video: any) => {
+    console.log('🔍 Checking video URLs for:', video?.title || 'Unknown video');
     
-    if (!hasValidUrl) {
-      console.warn('⚠️ Video missing valid URLs:', video.title, {
-        googleDriveUrl: video.googleDriveUrl,
-        embedUrl: video.embedUrl,
-        videoUrl: video.videoUrl
-      });
+    // Check if video object exists
+    if (!video || typeof video !== 'object') {
+      console.warn('⚠️ Invalid video object:', video);
+      return false;
     }
-    return hasValidUrl;
-  });
 
-  const safeHorizontalVideos = horizontalVideos.filter(video => {
-    // Add null checks for all URL properties
-    const hasValidUrl = (video.googleDriveUrl && typeof video.googleDriveUrl === 'string' && video.googleDriveUrl.trim() !== '') ||
-                       (video.embedUrl && typeof video.embedUrl === 'string' && video.embedUrl.trim() !== '') ||
-                       (video.videoUrl && typeof video.videoUrl === 'string' && video.videoUrl.trim() !== '');
+    // Check each URL property safely
+    const checkUrl = (url: any, urlType: string) => {
+      if (url === null || url === undefined) {
+        console.log(`📝 ${urlType} is null/undefined for video:`, video.title);
+        return false;
+      }
+      if (typeof url !== 'string') {
+        console.warn(`⚠️ ${urlType} is not a string for video:`, video.title, 'Type:', typeof url, 'Value:', url);
+        return false;
+      }
+      if (url.trim() === '') {
+        console.warn(`⚠️ ${urlType} is empty for video:`, video.title);
+        return false;
+      }
+      return true;
+    };
+
+    const hasGoogleDriveUrl = checkUrl(video.googleDriveUrl, 'googleDriveUrl');
+    const hasEmbedUrl = checkUrl(video.embedUrl, 'embedUrl');
+    const hasVideoUrl = checkUrl(video.videoUrl, 'videoUrl');
+
+    const hasAnyValidUrl = hasGoogleDriveUrl || hasEmbedUrl || hasVideoUrl;
     
-    if (!hasValidUrl) {
-      console.warn('⚠️ Video missing valid URLs:', video.title, {
+    if (!hasAnyValidUrl) {
+      console.warn('⚠️ Video has no valid URLs:', video.title, {
         googleDriveUrl: video.googleDriveUrl,
         embedUrl: video.embedUrl,
         videoUrl: video.videoUrl
       });
     }
-    return hasValidUrl;
-  });
+
+    return hasAnyValidUrl;
+  };
+
+  // Filter videos with enhanced safety checks
+  const safeVerticalVideos = Array.isArray(verticalVideos) 
+    ? verticalVideos.filter(hasValidVideoUrl)
+    : [];
+
+  const safeHorizontalVideos = Array.isArray(horizontalVideos) 
+    ? horizontalVideos.filter(hasValidVideoUrl)
+    : [];
+
+  console.log('✅ Safe vertical videos count:', safeVerticalVideos.length);
+  console.log('✅ Safe horizontal videos count:', safeHorizontalVideos.length);
 
   return (
     <section className="py-16 bg-gradient-to-b from-amber-50 to-white">
