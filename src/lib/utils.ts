@@ -10,17 +10,17 @@ export function cn(...inputs: ClassValue[]) {
 
 // Function to force browser to reload images by appending a timestamp query parameter
 export function getImageWithTimestamp(imageUrl: string): string {
-  // Handle our custom local storage URLs
+  // Handle our custom local storage URLs first
   if (imageUrl && imageUrl.startsWith('local-storage://')) {
     return getUploadedFileUrl(imageUrl);
   }
   
-  // Only add timestamp to URLs that don't already have query parameters
-  // and are not data URLs or blob URLs
+  // Only add timestamp to regular URLs (not data URLs or blob URLs)
   if (
     imageUrl && 
     !imageUrl.startsWith('data:') && 
-    !imageUrl.startsWith('blob:')
+    !imageUrl.startsWith('blob:') &&
+    !imageUrl.startsWith('local-storage://')
   ) {
     // Get the global timestamp for this session
     const timestamp = getGlobalTimestamp();
@@ -37,5 +37,6 @@ export function getImageWithTimestamp(imageUrl: string): string {
     const separator = cleanUrl.includes('?') ? '&' : '?';
     return `${cleanUrl}${separator}t=${timestamp}`;
   }
+  
   return imageUrl;
 }
