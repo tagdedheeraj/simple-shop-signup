@@ -38,23 +38,25 @@ const SignInForm: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      console.log("SignInForm: Attempting login...");
+      console.log("=== SIGNIN FORM: ATTEMPTING LOGIN ===", { email });
       const result = await login(email, password);
-      console.log("SignInForm: Login result:", result);
+      console.log("=== SIGNIN FORM: LOGIN RESULT ===", result);
       
       if (result.success) {
-        console.log("SignInForm: Login successful, isAdmin:", result.isAdmin);
+        console.log("=== SIGNIN FORM: LOGIN SUCCESSFUL ===", { isAdmin: result.isAdmin });
         
-        // Add delay to ensure state is properly set before navigation
+        // Longer delay to ensure state is completely set
         setTimeout(() => {
           if (result.isAdmin) {
-            console.log("SignInForm: Redirecting to admin panel");
-            navigate('/admin');
+            console.log("SignInForm: Redirecting admin to admin panel");
+            navigate('/admin', { replace: true });
           } else {
-            console.log("SignInForm: Redirecting to home");
-            navigate('/');
+            console.log("SignInForm: Redirecting regular user to home");
+            navigate('/', { replace: true });
           }
-        }, 100);
+        }, 500); // Increased delay to 500ms
+      } else {
+        console.log("SignInForm: Login failed");
       }
     } catch (error) {
       console.error("SignInForm: Login error:", error);

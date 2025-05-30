@@ -12,35 +12,59 @@ export const useLogin = () => {
   const login = useCallback(async (email: string, password: string): Promise<{success: boolean; isAdmin: boolean}> => {
     try {
       setLoading(true);
-      console.log("Starting login process...");
+      console.log("=== STARTING LOGIN PROCESS ===");
       
       // Sign in with Firebase
       const firebaseUser = await signIn(email, password);
       console.log("Firebase sign in successful:", firebaseUser?.uid);
       
-      // Wait for user role to be fetched
       if (firebaseUser) {
         console.log("Fetching user data from Firestore...");
-        const userData = await getUserByUid(firebaseUser.uid) as UserData;
-        console.log("User data fetched:", userData);
+        
+        // Retry mechanism for getting user data
+        let userData: UserData | null = null;
+        let attempts = 0;
+        const maxAttempts = 3;
+        
+        while (!userData && attempts < maxAttempts) {
+          try {
+            userData = await getUserByUid(firebaseUser.uid) as UserData;
+            if (userData) {
+              console.log("User data fetched successfully:", userData);
+              break;
+            }
+          } catch (error) {
+            console.log(`Attempt ${attempts + 1} failed, retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+          attempts++;
+        }
         
         const userIsAdmin = userData?.role === 'admin';
-        console.log("User is admin:", userIsAdmin);
+        console.log("=== USER ROLE CHECK ===", { 
+          role: userData?.role, 
+          isAdmin: userIsAdmin,
+          userData: userData 
+        });
         
-        // Update persistent state with role information
+        // Update persistent state immediately
         setPersistentAuthState({
           isAuthenticated: true,
           isAdmin: userIsAdmin,
           uid: firebaseUser.uid
         });
         
-        console.log("Persistent auth state updated");
+        console.log("Persistent auth state updated:", {
+          isAuthenticated: true,
+          isAdmin: userIsAdmin,
+          uid: firebaseUser.uid
+        });
         
-        // Add a small delay to ensure state is properly set
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Wait for state to be properly set
+        await new Promise(resolve => setTimeout(resolve, 300));
         
         toast.success('Successfully logged in');
-        console.log("Login completed, returning success with admin status:", userIsAdmin);
+        console.log("=== LOGIN COMPLETED ===", { success: true, isAdmin: userIsAdmin });
         
         return {
           success: true, 

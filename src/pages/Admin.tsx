@@ -10,22 +10,27 @@ const Admin: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  console.log("Admin page render - Auth state:", { 
+  console.log("=== ADMIN PAGE RENDER ===", { 
     isAuthenticated, 
     isAdmin, 
     loading, 
-    userUid: user?.uid 
+    userUid: user?.uid,
+    userRole: user?.role
   });
   
-  // Improved effect with better dependency tracking and delayed redirects
   useEffect(() => {
+    console.log("=== ADMIN PAGE EFFECT ===", {
+      loading,
+      isAuthenticated,
+      isAdmin,
+      pathname: location.pathname
+    });
+    
     // Don't do anything while still loading
     if (loading) {
       console.log("Admin page: Still loading, waiting...");
       return;
     }
-    
-    console.log("Admin page: Loading complete, checking auth state");
     
     // Handle unauthenticated users
     if (!isAuthenticated) {
@@ -34,23 +39,26 @@ const Admin: React.FC = () => {
       return;
     }
     
-    // Handle authenticated but non-admin users with delay to ensure state is loaded
+    // Handle authenticated but non-admin users with longer delay
     if (isAuthenticated && !isAdmin) {
-      console.log("Admin page: Authenticated but not admin, will redirect to home");
+      console.log("Admin page: User authenticated but not admin, checking role...");
       
-      // Add a small delay to ensure the role has been properly loaded
+      // Give more time for role to load properly
       setTimeout(() => {
-        console.log("Admin page: Executing delayed redirect to home");
-        toast.error('You do not have permission to access the admin panel');
-        navigate('/', { replace: true });
-      }, 200);
+        console.log("Admin page: Final check - isAdmin:", isAdmin);
+        if (!isAdmin) {
+          console.log("Admin page: User confirmed as non-admin, redirecting to home");
+          toast.error('You do not have permission to access the admin panel');
+          navigate('/', { replace: true });
+        }
+      }, 1000); // Increased delay to 1 second
       return;
     }
     
     console.log("Admin page: User is authenticated and admin, staying on admin page");
-  }, [isAuthenticated, isAdmin, loading, navigate, location]);
+  }, [isAuthenticated, isAdmin, loading, navigate, location.pathname]);
   
-  // Show loading state to prevent flickering and premature redirects
+  // Show loading state longer to prevent flickering
   if (loading) {
     console.log("Admin page: Showing loading spinner");
     return (
@@ -63,9 +71,9 @@ const Admin: React.FC = () => {
     );
   }
   
-  // If authenticated and admin, directly render the layout
+  // Only render admin layout if definitely authenticated and admin
   if (isAuthenticated && isAdmin) {
-    console.log("Admin page: Rendering admin layout");
+    console.log("Admin page: Rendering admin layout for admin user");
     return (
       <AdminLayout>
         <Outlet />
@@ -73,13 +81,13 @@ const Admin: React.FC = () => {
     );
   }
   
-  // Return a loading state while redirects are happening (prevents flashing)
+  // Show checking state while authentication is being processed
   console.log("Admin page: Showing permission checking state");
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center space-y-4">
         <div className="h-12 w-12 border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-        <p className="text-muted-foreground">Checking permissions...</p>
+        <p className="text-muted-foreground">Verifying admin access...</p>
       </div>
     </div>
   );

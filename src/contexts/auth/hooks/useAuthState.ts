@@ -14,74 +14,102 @@ export const useAuthState = () => {
   // Initialize from persistent state
   useEffect(() => {
     const persistentState = getPersistentAuthState();
-    console.log("Initializing from persistent state:", persistentState);
+    console.log("=== INITIALIZING FROM PERSISTENT STATE ===", persistentState);
     
-    if (persistentState.isAuthenticated && persistentState.isAdmin) {
+    if (persistentState.isAuthenticated && persistentState.isAdmin !== undefined) {
       setIsAdmin(persistentState.isAdmin);
       console.log("Set admin status from persistent state:", persistentState.isAdmin);
     }
   }, []);
 
-  // Improved auth state handling
+  // Main auth state handler
   useEffect(() => {
     const checkUserRole = async () => {
-      console.log("Checking user role, currentUser:", currentUser?.uid, "firebaseLoading:", firebaseLoading);
+      console.log("=== AUTH STATE CHECK ===", { 
+        currentUserUid: currentUser?.uid, 
+        firebaseLoading,
+        userDataFetched
+      });
       
       if (currentUser) {
         try {
-          console.log("Checking user role for:", currentUser.uid);
-          
-          // Cache check - if we already have the same user, don't refetch
+          // Skip if we already have data for this user
           if (user && user.uid === currentUser.uid && userDataFetched) {
-            console.log("User data already fetched, skipping");
+            console.log("User data already fetched for this user, skipping");
             setLoading(false);
             return;
           }
           
-          console.log("Fetching user data from Firestore...");
-          const userData = await getUserByUid(currentUser.uid) as UserData;
-          console.log("User data from Firestore:", userData);
+          console.log("Fetching fresh user data from Firestore...");
+          
+          // Multiple attempts to get user data
+          let userData: UserData | null = null;
+          let attempts = 0;
+          const maxAttempts = 5;
+          
+          while (!userData && attempts < maxAttempts) {
+            try {
+              userData = await getUserByUid(currentUser.uid) as UserData;
+              if (userData) {
+                console.log("=== USER DATA FETCHED ===", userData);
+                break;
+              }
+            } catch (error) {
+              console.log(`Firestore fetch attempt ${attempts + 1} failed:`, error);
+            }
+            attempts++;
+            if (attempts < maxAttempts) {
+              await new Promise(resolve => setTimeout(resolve, 200 * attempts));
+            }
+          }
           
           const customUser = convertToCustomUser(currentUser, userData);
           setUser(customUser);
           
-          // Check if role is admin and set state
+          // Set admin status
           const userIsAdmin = userData?.role === 'admin';
-          console.log("Setting admin status:", userIsAdmin);
+          console.log("=== SETTING ADMIN STATUS ===", { 
+            role: userData?.role, 
+            isAdmin: userIsAdmin,
+            userData: userData 
+          });
+          
           setIsAdmin(userIsAdmin);
           
-          // Update persistent state
+          // Update persistent state with definitive values
           setPersistentAuthState({
             isAuthenticated: true,
             isAdmin: userIsAdmin,
             uid: currentUser.uid
           });
           
-          console.log("Updated persistent state with admin status:", userIsAdmin);
+          console.log("=== PERSISTENT STATE UPDATED ===", {
+            isAuthenticated: true,
+            isAdmin: userIsAdmin,
+            uid: currentUser.uid
+          });
           
-          // Mark user data as fetched to prevent repeated checks
           setUserDataFetched(true);
         } catch (error) {
-          console.error("Error checking user role:", error);
+          console.error("Error in auth state check:", error);
+          // Set defaults on error
           setIsAdmin(false);
           setUser(convertToCustomUser(currentUser));
           
-          // Even on error, update persistent state
           setPersistentAuthState({
             isAuthenticated: true,
             isAdmin: false,
             uid: currentUser.uid
           });
         } finally {
-          console.log("Setting loading to false");
           setLoading(false);
         }
       } else {
-        console.log("No current user, clearing state");
+        console.log("=== NO CURRENT USER, CLEARING STATE ===");
         setIsAdmin(false);
         setUser(null);
+        setUserDataFetched(false);
         
-        // Clear persistent state when no user
         setPersistentAuthState({
           isAuthenticated: false,
           isAdmin: false,
@@ -89,26 +117,24 @@ export const useAuthState = () => {
         });
         
         setLoading(false);
-        setUserDataFetched(false);
       }
     };
     
-    // Only check user role if Firebase loading is complete
+    // Only check if Firebase is not loading
     if (!firebaseLoading) {
       checkUserRole();
     }
     
-  }, [currentUser, firebaseLoading, getUserByUid, user, userDataFetched]);
+  }, [currentUser, firebaseLoading, getUserByUid]);
 
-  // Additional effect to reset state when user logs out
+  // Reset state on logout
   useEffect(() => {
     if (!currentUser && userDataFetched) {
-      console.log("User logged out, resetting state");
+      console.log("=== USER LOGGED OUT, RESETTING STATE ===");
       setUserDataFetched(false);
       setIsAdmin(false);
       setUser(null);
       
-      // Clear persistent state on logout
       setPersistentAuthState({
         isAuthenticated: false,
         isAdmin: false,
@@ -117,10 +143,11 @@ export const useAuthState = () => {
     }
   }, [currentUser, userDataFetched]);
 
-  console.log("Auth state hook returning:", { 
-    user: user?.uid, 
+  console.log("=== AUTH STATE HOOK RETURNING ===", { 
+    userUid: user?.uid, 
     isAdmin, 
-    loading: loading || firebaseLoading 
+    loading: loading || firebaseLoading,
+    userDataFetched
   });
 
   return {
