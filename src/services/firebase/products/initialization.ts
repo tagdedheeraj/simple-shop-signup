@@ -1,3 +1,4 @@
+
 import { db } from '../index';
 import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { products as initialProducts } from '@/services/product/data';
@@ -7,9 +8,16 @@ import { toast } from 'sonner';
 import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 import { queryClient } from '@/services/query-client';
 
-// Initialize Firestore products collection with data if empty
+// Initialize Firestore products collection - but NOT for mobile apps
 export const initializeFirestoreProducts = async () => {
   try {
+    // Skip initialization for mobile builds - mobile should only show admin-added products
+    const isCapacitor = !!(window as any).Capacitor;
+    if (isCapacitor) {
+      console.log('📱 Mobile app detected - skipping default product initialization');
+      return;
+    }
+
     // Skip initialization if already done in this session
     if (productsInitialized) {
       console.log('Products already initialized in this session, skipping');
@@ -20,7 +28,7 @@ export const initializeFirestoreProducts = async () => {
     const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
     
     if (productsSnapshot.empty) {
-      console.log('Initializing Firestore products collection with default data');
+      console.log('Initializing Firestore products collection with default data (web only)');
       
       // Get list of deleted product IDs to avoid re-adding them
       const deletedIds = await getDeletedProductIds();
@@ -48,14 +56,15 @@ export const initializeFirestoreProducts = async () => {
   }
 };
 
-// Refresh product data - but only ADD missing products, don't add deleted ones
+// Refresh product data - for mobile, don't add any default products
 export const refreshFirestoreProducts = async (options?: { forceReset?: boolean }): Promise<boolean> => {
   try {
     console.log('Refreshing Firestore products');
+    const isCapacitor = !!(window as any).Capacitor;
     
-    // Only perform a complete reset if explicitly requested
-    if (options?.forceReset) {
-      console.log('Performing full reset of product data as requested');
+    // Only perform a complete reset if explicitly requested AND not on mobile
+    if (options?.forceReset && !isCapacitor) {
+      console.log('Performing full reset of product data as requested (web only)');
       
       // Delete all existing products
       const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
@@ -87,9 +96,9 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       );
       
       toast.success('Product data completely reset to defaults');
-    } else {
-      // Just add any missing products from the initial data, don't delete existing ones
-      console.log('Adding any missing default products');
+    } else if (!isCapacitor) {
+      // Just add any missing products from the initial data for web only
+      console.log('Adding any missing default products (web only)');
       
       // Get existing product IDs
       const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
@@ -116,8 +125,13 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
         toast.success(`Added ${missingProducts.length} missing products`);
       } else {
         console.log('No missing products found');
-        toast.info('All default products are already available');
+        if (!isCapacitor) {
+          toast.info('All default products are already available');
+        }
       }
+    } else {
+      // For mobile, just log that we're not adding defaults
+      console.log('📱 Mobile app - not adding any default products, only showing admin-added products');
     }
     
     // Invalidate the products query cache

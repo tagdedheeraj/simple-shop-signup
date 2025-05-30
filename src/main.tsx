@@ -26,21 +26,19 @@ const initializeApp = async () => {
   const isCapacitor = !!(window as any).Capacitor;
   
   if (isCapacitor) {
-    console.log('📱 Mobile app detected - ensuring fresh data...');
+    console.log('📱 Mobile app detected - ensuring only Firebase data is used...');
     
-    // Clear only cache data, not user data like videos/products
+    // Clear ALL localStorage data except Firebase auth and admin data
     const keysToKeep = ['admin-videos', 'firebase:authUser', 'firebase:host', 'persist:auth'];
     const allKeys = Object.keys(localStorage);
     
     allKeys.forEach(key => {
       if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
-        if (key.startsWith('cache-') || key.startsWith('app-cache-')) {
-          localStorage.removeItem(key);
-        }
+        localStorage.removeItem(key);
       }
     });
     
-    console.log('✅ Mobile cache cleared, preserving admin data');
+    console.log('✅ Mobile app initialized - only Firebase and admin data preserved');
   }
 };
 

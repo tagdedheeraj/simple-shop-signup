@@ -5,21 +5,23 @@ import { initializeFirestoreProducts, refreshFirestoreProducts } from '../fireba
 // Simulate API calls with a delay
 export const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Initialize products in Firebase if they don't exist
+// Initialize products in Firebase - for mobile, only load from Firebase, no defaults
 export const initializeProducts = async (options?: { forceRefresh?: boolean; respectDeletedItems?: boolean }) => {
   const shouldRefresh = options?.forceRefresh === true;
-  const respectDeleted = options?.respectDeletedItems !== false; // Default to true
   
-  // For mobile builds, always force refresh to ensure latest data
+  // For mobile builds, never use default data - only Firebase
   const isCapacitor = !!(window as any).Capacitor;
   
-  if (shouldRefresh || isCapacitor) {
-    console.log('🔄 Force refreshing product data for mobile build or explicit request');
-    // For mobile, don't force reset - just ensure we get fresh data
+  if (isCapacitor) {
+    console.log('📱 Mobile app detected - loading ONLY from Firebase, no defaults');
+    // For mobile, just ensure Firebase connection, don't add any default data
+    return;
+  } else if (shouldRefresh) {
+    console.log('🔄 Force refreshing product data');
     await refreshFirestoreProducts({ forceReset: false });
   } else {
-    console.log('Initializing products from data files with respectDeletedItems:', respectDeleted);
-    // This will only populate if collection is empty
+    console.log('Initializing products from Firebase only');
+    // This will only populate if collection is empty and NOT on mobile
     await initializeFirestoreProducts();
   }
 };
@@ -49,9 +51,9 @@ export const addTimestampToImage = (imageUrl: string): string => {
   return `${cleanUrl}${separator}t=${timestamp}`;
 };
 
-// Force refresh product data from source files
+// Force refresh product data from Firebase only
 export const refreshProductData = async () => {
-  console.log('🔄 Refreshing product data');
+  console.log('🔄 Refreshing product data from Firebase');
   
   // Generate a new global timestamp for mobile
   const newTimestamp = Date.now().toString();
@@ -62,10 +64,9 @@ export const refreshProductData = async () => {
   if (isCapacitor) {
     console.log('📱 Clearing mobile caches...');
     localStorage.removeItem('products-cache');
-    // Don't clear deleted products for mobile - respect admin decisions
   }
   
-  // Refresh products in Firebase - don't force reset for mobile
+  // For mobile, only refresh existing Firebase data, don't add defaults
   await refreshFirestoreProducts({ forceReset: false });
   
   // Add a small delay to simulate API call

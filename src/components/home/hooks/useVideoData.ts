@@ -56,9 +56,8 @@ export const useVideoData = () => {
         console.log('✅ Safe videos processed:', safeVideos.length);
         setVideos(safeVideos);
       } else {
-        console.log('📱 No admin videos found in localStorage');
-        // For mobile builds, if no admin videos found, show empty state
-        // This ensures only admin-uploaded videos are shown
+        console.log('📱 No admin videos found in localStorage - showing empty state');
+        // For mobile/website consistency, if no admin videos found, show empty state
         setVideos([]);
       }
     } catch (error) {
