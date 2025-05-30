@@ -10,10 +10,69 @@ const VideoShowcase: React.FC = () => {
   const { videos, verticalVideos, horizontalVideos } = useVideoData();
   const { playingVideo, handleVideoPlay, handleVideoEnd } = useVideoPlayer();
 
-  console.log('VideoShowcase - Videos loaded:', {
-    total: videos.length,
-    vertical: verticalVideos.length,
-    horizontal: horizontalVideos.length
+  // Add extensive debugging to track down the issue
+  console.log('🎬 VideoShowcase Debug - Raw data:', {
+    videosRaw: videos,
+    verticalRaw: verticalVideos,
+    horizontalRaw: horizontalVideos
+  });
+
+  // Comprehensive safety filter to prevent any undefined/null issues
+  const safeFilter = (videoList: any[]) => {
+    if (!Array.isArray(videoList)) {
+      console.warn('⚠️ Video list is not an array:', videoList);
+      return [];
+    }
+    
+    return videoList.filter((video, index) => {
+      console.log(`🔍 Checking video ${index}:`, video);
+      
+      // Basic null/undefined check
+      if (!video) {
+        console.warn(`❌ Video at index ${index} is null/undefined`);
+        return false;
+      }
+      
+      // Object type check
+      if (typeof video !== 'object') {
+        console.warn(`❌ Video at index ${index} is not an object:`, typeof video);
+        return false;
+      }
+      
+      // Required properties check
+      if (!video.id || !video.title) {
+        console.warn(`❌ Video at index ${index} missing required props:`, {
+          hasId: !!video.id,
+          hasTitle: !!video.title,
+          video
+        });
+        return false;
+      }
+      
+      // String type checks for URL properties
+      const urlProps = ['googleDriveUrl', 'embedUrl', 'videoUrl', 'thumbnail'];
+      urlProps.forEach(prop => {
+        if (video[prop] !== undefined && typeof video[prop] !== 'string') {
+          console.warn(`⚠️ Video ${video.id} has non-string ${prop}:`, video[prop]);
+          // Convert to string or set to undefined
+          video[prop] = video[prop] ? String(video[prop]) : undefined;
+        }
+      });
+      
+      console.log(`✅ Video ${video.id} passed validation`);
+      return true;
+    });
+  };
+
+  // Apply safety filtering to all video arrays
+  const safeVerticalVideos = safeFilter(verticalVideos);
+  const safeHorizontalVideos = safeFilter(horizontalVideos);
+  const safeAllVideos = safeFilter(videos);
+
+  console.log('✅ VideoShowcase - Safe videos after filtering:', {
+    total: safeAllVideos.length,
+    vertical: safeVerticalVideos.length,
+    horizontal: safeHorizontalVideos.length
   });
 
   return (
@@ -36,10 +95,10 @@ const VideoShowcase: React.FC = () => {
         </motion.div>
 
         {/* Horizontal Videos (Lakshmikrupa Agriculture) */}
-        {horizontalVideos.length > 0 && (
+        {safeHorizontalVideos.length > 0 && (
           <VideoSection
             title="Lakshmikrupa Agriculture"
-            videos={horizontalVideos}
+            videos={safeHorizontalVideos}
             playingVideo={playingVideo}
             isVertical={false}
             onVideoPlay={handleVideoPlay}
@@ -48,10 +107,10 @@ const VideoShowcase: React.FC = () => {
         )}
 
         {/* Vertical Videos (Wheat Processing, etc.) */}
-        {verticalVideos.length > 0 && (
+        {safeVerticalVideos.length > 0 && (
           <VideoSection
             title="Processing Videos"
-            videos={verticalVideos}
+            videos={safeVerticalVideos}
             playingVideo={playingVideo}
             isVertical={true}
             onVideoPlay={handleVideoPlay}
@@ -60,7 +119,7 @@ const VideoShowcase: React.FC = () => {
         )}
 
         {/* Show message if no videos */}
-        {videos.length === 0 && (
+        {safeAllVideos.length === 0 && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
