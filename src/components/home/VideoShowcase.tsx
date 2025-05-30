@@ -7,93 +7,8 @@ import { useVideoData } from './hooks/useVideoData';
 import { useVideoPlayer } from './hooks/useVideoPlayer';
 
 const VideoShowcase: React.FC = () => {
-  // Wrap hook calls in try-catch to handle potential React context issues
-  let videos, verticalVideos, horizontalVideos;
-  let playingVideo, handleVideoPlay, handleVideoEnd;
-
-  try {
-    const videoData = useVideoData();
-    videos = videoData.videos || [];
-    verticalVideos = videoData.verticalVideos || [];
-    horizontalVideos = videoData.horizontalVideos || [];
-
-    const playerData = useVideoPlayer();
-    playingVideo = playerData.playingVideo;
-    handleVideoPlay = playerData.handleVideoPlay;
-    handleVideoEnd = playerData.handleVideoEnd;
-  } catch (error) {
-    console.error('❌ Error in VideoShowcase hooks:', error);
-    // Return early with error state if hooks fail
-    return (
-      <section className="py-16 bg-gradient-to-b from-amber-50 to-white">
-        <div className="container mx-auto px-4">
-          <div className="text-center">
-            <p className="text-gray-600">Unable to load video showcase</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  // Add debugging to see what videos we're getting
-  console.log('🎬 VideoShowcase - Total videos:', videos?.length || 0);
-  console.log('🎬 VideoShowcase - Videos data:', videos);
-
-  // Enhanced safety function to validate video URLs
-  const hasValidVideoUrl = (video: any) => {
-    console.log('🔍 Checking video URLs for:', video?.title || 'Unknown video');
-    
-    // Check if video object exists
-    if (!video || typeof video !== 'object') {
-      console.warn('⚠️ Invalid video object:', video);
-      return false;
-    }
-
-    // Check each URL property safely
-    const checkUrl = (url: any, urlType: string) => {
-      if (url === null || url === undefined) {
-        console.log(`📝 ${urlType} is null/undefined for video:`, video.title);
-        return false;
-      }
-      if (typeof url !== 'string') {
-        console.warn(`⚠️ ${urlType} is not a string for video:`, video.title, 'Type:', typeof url, 'Value:', url);
-        return false;
-      }
-      if (url.trim() === '') {
-        console.warn(`⚠️ ${urlType} is empty for video:`, video.title);
-        return false;
-      }
-      return true;
-    };
-
-    const hasGoogleDriveUrl = checkUrl(video.googleDriveUrl, 'googleDriveUrl');
-    const hasEmbedUrl = checkUrl(video.embedUrl, 'embedUrl');
-    const hasVideoUrl = checkUrl(video.videoUrl, 'videoUrl');
-
-    const hasAnyValidUrl = hasGoogleDriveUrl || hasEmbedUrl || hasVideoUrl;
-    
-    if (!hasAnyValidUrl) {
-      console.warn('⚠️ Video has no valid URLs:', video.title, {
-        googleDriveUrl: video.googleDriveUrl,
-        embedUrl: video.embedUrl,
-        videoUrl: video.videoUrl
-      });
-    }
-
-    return hasAnyValidUrl;
-  };
-
-  // Filter videos with enhanced safety checks
-  const safeVerticalVideos = Array.isArray(verticalVideos) 
-    ? verticalVideos.filter(hasValidVideoUrl)
-    : [];
-
-  const safeHorizontalVideos = Array.isArray(horizontalVideos) 
-    ? horizontalVideos.filter(hasValidVideoUrl)
-    : [];
-
-  console.log('✅ Safe vertical videos count:', safeVerticalVideos.length);
-  console.log('✅ Safe horizontal videos count:', safeHorizontalVideos.length);
+  const { videos, verticalVideos, horizontalVideos } = useVideoData();
+  const { playingVideo, handleVideoPlay, handleVideoEnd } = useVideoPlayer();
 
   return (
     <section className="py-16 bg-gradient-to-b from-amber-50 to-white">
@@ -115,28 +30,24 @@ const VideoShowcase: React.FC = () => {
         </motion.div>
 
         {/* Horizontal Videos (Lakshmikrupa Agriculture) */}
-        {safeHorizontalVideos.length > 0 && handleVideoPlay && handleVideoEnd && (
-          <VideoSection
-            title="Lakshmikrupa Agriculture"
-            videos={safeHorizontalVideos}
-            playingVideo={playingVideo}
-            isVertical={false}
-            onVideoPlay={handleVideoPlay}
-            onVideoEnd={handleVideoEnd}
-          />
-        )}
+        <VideoSection
+          title="Lakshmikrupa Agriculture"
+          videos={horizontalVideos}
+          playingVideo={playingVideo}
+          isVertical={false}
+          onVideoPlay={handleVideoPlay}
+          onVideoEnd={handleVideoEnd}
+        />
 
         {/* Vertical Videos (Wheat Processing, etc.) */}
-        {safeVerticalVideos.length > 0 && handleVideoPlay && handleVideoEnd && (
-          <VideoSection
-            title="Processing Videos"
-            videos={safeVerticalVideos}
-            playingVideo={playingVideo}
-            isVertical={true}
-            onVideoPlay={handleVideoPlay}
-            onVideoEnd={handleVideoEnd}
-          />
-        )}
+        <VideoSection
+          title="Processing Videos"
+          videos={verticalVideos}
+          playingVideo={playingVideo}
+          isVertical={true}
+          onVideoPlay={handleVideoPlay}
+          onVideoEnd={handleVideoEnd}
+        />
 
         {/* Show message if no videos */}
         {videos.length === 0 && (

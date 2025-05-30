@@ -1,11 +1,11 @@
 
 // Firebase configuration
 export const firebaseConfig = {
-  apiKey: "AIzaSyCsqi-hrhgJff4NiIE5gZhRuOkAnWtimlY",
-  authDomain: "lakshmi-krupa-agricultur-18bee.firebaseapp.com",
-  projectId: "lakshmi-krupa-agricultur-18bee",
-  storageBucket: "lakshmi-krupa-agricultur-18bee.firebasestorage.app",
-  messagingSenderId: "937441308819",
-  appId: "1:937441308819:web:13629f57a8e803ddc55d66",
-  measurementId: "G-BV0K1D6D5W"
+  apiKey: "AIzaSyDNR4FbccY703TfEPyzU8SYeM9D0E0yoi4",
+  authDomain: "lakshmi-krupa-agriculture.firebaseapp.com",
+  projectId: "lakshmi-krupa-agriculture",
+  storageBucket: "lakshmi-krupa-agriculture.firebasestorage.app",
+  messagingSenderId: "1009990363756",
+  appId: "1:1009990363756:web:707afdb6c4ac03cf878649",
+  measurementId: "G-E7WJVJWD95"
 };
