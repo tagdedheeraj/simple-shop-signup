@@ -21,12 +21,12 @@ const SignInForm: React.FC = () => {
     e.preventDefault();
     
     if (!email.trim()) {
-      toast.error('Please enter your email');
+      toast.error('कृपया अपना email enter करें');
       return;
     }
     
     if (!password.trim()) {
-      toast.error('Please enter your password');
+      toast.error('कृपया अपना password enter करें');
       return;
     }
     
@@ -45,22 +45,20 @@ const SignInForm: React.FC = () => {
       if (result.success) {
         console.log("=== SIGNIN FORM: LOGIN SUCCESSFUL ===", { isAdmin: result.isAdmin });
         
-        // Small delay to ensure state is set
-        setTimeout(() => {
-          if (result.isAdmin) {
-            console.log("SignInForm: Redirecting admin to admin panel");
-            navigate('/admin', { replace: true });
-          } else {
-            console.log("SignInForm: Redirecting regular user to home");
-            navigate('/', { replace: true });
-          }
-        }, 200);
-      } else {
-        console.log("SignInForm: Login failed");
+        // Wait a bit for state to update
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        if (result.isAdmin) {
+          console.log("SignInForm: Redirecting admin to admin panel");
+          navigate('/admin', { replace: true });
+        } else {
+          console.log("SignInForm: Redirecting regular user to home");
+          navigate('/', { replace: true });
+        }
       }
     } catch (error) {
       console.error("SignInForm: Login error:", error);
-      toast.error('An unexpected error occurred during login');
+      toast.error('Login में कोई समस्या हुई है');
     } finally {
       setIsSubmitting(false);
     }

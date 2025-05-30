@@ -9,52 +9,51 @@ const Admin: React.FC = () => {
   const { user, isAuthenticated, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [initialCheck, setInitialCheck] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   
-  console.log("=== ADMIN PAGE RENDER ===", { 
+  console.log("=== ADMIN PAGE DEBUG ===", { 
     isAuthenticated, 
     isAdmin, 
     loading, 
     userUid: user?.uid,
     userRole: user?.role,
     pathname: location.pathname,
-    initialCheck
+    hasCheckedAuth
   });
 
   useEffect(() => {
-    console.log("=== ADMIN PAGE EFFECT ===", {
+    console.log("=== ADMIN PAGE AUTH CHECK ===", {
       loading,
       isAuthenticated,
       isAdmin,
-      pathname: location.pathname,
-      initialCheck
+      hasCheckedAuth
     });
     
-    // Wait for initial auth check to complete
-    if (!loading && !initialCheck) {
-      setInitialCheck(true);
+    if (!loading && !hasCheckedAuth) {
+      setHasCheckedAuth(true);
+      
+      console.log("Performing auth check...", { isAuthenticated, isAdmin });
       
       if (!isAuthenticated) {
-        console.log("Admin page: Not authenticated, redirecting to signin");
-        navigate('/signin', { state: { from: location }, replace: true });
+        console.log("User not authenticated, redirecting to signin");
+        navigate('/signin', { replace: true });
         return;
       }
       
-      if (isAuthenticated && !isAdmin) {
-        console.log("Admin page: User authenticated but not admin, redirecting to home");
-        toast.error('You do not have permission to access the admin panel');
+      if (!isAdmin) {
+        console.log("User not admin, redirecting to home");
+        toast.error('आपको admin panel access करने की permission नहीं है');
         navigate('/', { replace: true });
         return;
       }
       
-      // If we reach here, user is authenticated and admin
-      console.log("Admin page: User is authenticated admin, staying on admin page");
+      console.log("User is authenticated admin, staying on admin page");
     }
-  }, [isAuthenticated, isAdmin, loading, navigate, location, initialCheck]);
+  }, [loading, isAuthenticated, isAdmin, navigate, hasCheckedAuth]);
   
-  // Show loading state while checking authentication
-  if (loading || !initialCheck) {
-    console.log("Admin page: Showing loading spinner");
+  // Show loading while checking auth
+  if (loading || !hasCheckedAuth) {
+    console.log("Showing loading state");
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="flex flex-col items-center space-y-4">
@@ -65,9 +64,9 @@ const Admin: React.FC = () => {
     );
   }
   
-  // Only render admin layout if authenticated and admin
+  // Only render if authenticated and admin
   if (isAuthenticated && isAdmin) {
-    console.log("Admin page: Rendering admin layout for admin user");
+    console.log("Rendering admin layout");
     return (
       <AdminLayout>
         <Outlet />
@@ -75,15 +74,13 @@ const Admin: React.FC = () => {
     );
   }
   
-  // This should not be reached due to redirects above, but kept as fallback
-  console.log("Admin page: Access denied fallback");
+  // Fallback - should not reach here due to redirects
+  console.log("Access denied fallback");
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
-          <p className="text-muted-foreground">You don't have permission to access the admin panel.</p>
-        </div>
+      <div className="text-center">
+        <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+        <p className="text-muted-foreground">आपको admin panel access करने की permission नहीं है।</p>
       </div>
     </div>
   );

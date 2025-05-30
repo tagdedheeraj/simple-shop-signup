@@ -9,65 +9,38 @@ export const useAuthState = () => {
   const [user, setUser] = useState<CustomUser | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [authInitialized, setAuthInitialized] = useState(false);
 
-  // Initialize from persistent state only once
-  useEffect(() => {
-    if (!authInitialized) {
-      const persistentState = getPersistentAuthState();
-      console.log("=== INITIALIZING FROM PERSISTENT STATE ===", persistentState);
-      
-      if (persistentState.isAuthenticated && persistentState.isAdmin !== undefined) {
-        setIsAdmin(persistentState.isAdmin);
-        console.log("Set admin status from persistent state:", persistentState.isAdmin);
-      }
-      setAuthInitialized(true);
-    }
-  }, [authInitialized]);
+  console.log("=== AUTH STATE HOOK ===", { 
+    currentUserUid: currentUser?.uid, 
+    firebaseLoading,
+    userState: user?.uid,
+    isAdmin
+  });
 
-  // Main auth state handler
   useEffect(() => {
-    const checkUserRole = async () => {
-      console.log("=== AUTH STATE CHECK ===", { 
+    const handleAuthStateChange = async () => {
+      console.log("=== HANDLING AUTH STATE CHANGE ===", { 
         currentUserUid: currentUser?.uid, 
-        firebaseLoading,
-        authInitialized
+        firebaseLoading
       });
       
-      if (!authInitialized) {
-        console.log("Auth not initialized yet, waiting...");
+      if (firebaseLoading) {
+        console.log("Firebase still loading, waiting...");
         return;
       }
       
       if (currentUser) {
         try {
-          console.log("Fetching user data from Firestore...");
+          console.log("User found, fetching data from Firestore...");
           
-          // Get user data with retry logic
-          let userData: UserData | null = null;
-          let attempts = 0;
-          const maxAttempts = 3;
-          
-          while (!userData && attempts < maxAttempts) {
-            try {
-              userData = await getUserByUid(currentUser.uid) as UserData;
-              if (userData) {
-                console.log("=== USER DATA FETCHED ===", userData);
-                break;
-              }
-            } catch (error) {
-              console.log(`Firestore fetch attempt ${attempts + 1} failed:`, error);
-            }
-            attempts++;
-            if (attempts < maxAttempts) {
-              await new Promise(resolve => setTimeout(resolve, 300));
-            }
-          }
+          // Get user data from Firestore
+          const userData = await getUserByUid(currentUser.uid) as UserData;
+          console.log("=== FIRESTORE USER DATA ===", userData);
           
           const customUser = convertToCustomUser(currentUser, userData);
           setUser(customUser);
           
-          // Set admin status
+          // Check admin status
           const userIsAdmin = userData?.role === 'admin';
           console.log("=== SETTING ADMIN STATUS ===", { 
             role: userData?.role, 
@@ -90,51 +63,46 @@ export const useAuthState = () => {
           });
           
         } catch (error) {
-          console.error("Error in auth state check:", error);
+          console.error("Error fetching user data:", error);
           // Set defaults on error
+          const customUser = convertToCustomUser(currentUser);
+          setUser(customUser);
           setIsAdmin(false);
-          setUser(convertToCustomUser(currentUser));
           
           setPersistentAuthState({
             isAuthenticated: true,
             isAdmin: false,
             uid: currentUser.uid
           });
-        } finally {
-          setLoading(false);
         }
       } else {
-        console.log("=== NO CURRENT USER, CLEARING STATE ===");
-        setIsAdmin(false);
+        console.log("=== NO USER, CLEARING STATE ===");
         setUser(null);
+        setIsAdmin(false);
         
         setPersistentAuthState({
           isAuthenticated: false,
           isAdmin: false,
           uid: null
         });
-        
-        setLoading(false);
       }
+      
+      setLoading(false);
     };
     
-    // Only check if Firebase is not loading and auth is initialized
-    if (!firebaseLoading && authInitialized) {
-      checkUserRole();
-    }
-    
-  }, [currentUser, firebaseLoading, getUserByUid, authInitialized]);
+    handleAuthStateChange();
+  }, [currentUser, firebaseLoading, getUserByUid]);
 
   console.log("=== AUTH STATE HOOK RETURNING ===", { 
     userUid: user?.uid, 
     isAdmin, 
-    loading: loading || firebaseLoading || !authInitialized
+    loading: loading || firebaseLoading
   });
 
   return {
     user,
     isAdmin,
-    loading: loading || firebaseLoading || !authInitialized,
+    loading: loading || firebaseLoading,
     setUser
   };
 };
