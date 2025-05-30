@@ -16,17 +16,33 @@ const VideoShowcase: React.FC = () => {
 
   // Filter out videos with undefined or invalid URLs to prevent errors
   const safeVerticalVideos = verticalVideos.filter(video => {
-    const hasValidUrl = video.googleDriveUrl || video.embedUrl || video.videoUrl;
+    // Add null checks for all URL properties
+    const hasValidUrl = (video.googleDriveUrl && typeof video.googleDriveUrl === 'string' && video.googleDriveUrl.trim() !== '') ||
+                       (video.embedUrl && typeof video.embedUrl === 'string' && video.embedUrl.trim() !== '') ||
+                       (video.videoUrl && typeof video.videoUrl === 'string' && video.videoUrl.trim() !== '');
+    
     if (!hasValidUrl) {
-      console.warn('⚠️ Video missing URLs:', video.title, video);
+      console.warn('⚠️ Video missing valid URLs:', video.title, {
+        googleDriveUrl: video.googleDriveUrl,
+        embedUrl: video.embedUrl,
+        videoUrl: video.videoUrl
+      });
     }
     return hasValidUrl;
   });
 
   const safeHorizontalVideos = horizontalVideos.filter(video => {
-    const hasValidUrl = video.googleDriveUrl || video.embedUrl || video.videoUrl;
+    // Add null checks for all URL properties
+    const hasValidUrl = (video.googleDriveUrl && typeof video.googleDriveUrl === 'string' && video.googleDriveUrl.trim() !== '') ||
+                       (video.embedUrl && typeof video.embedUrl === 'string' && video.embedUrl.trim() !== '') ||
+                       (video.videoUrl && typeof video.videoUrl === 'string' && video.videoUrl.trim() !== '');
+    
     if (!hasValidUrl) {
-      console.warn('⚠️ Video missing URLs:', video.title, video);
+      console.warn('⚠️ Video missing valid URLs:', video.title, {
+        googleDriveUrl: video.googleDriveUrl,
+        embedUrl: video.embedUrl,
+        videoUrl: video.videoUrl
+      });
     }
     return hasValidUrl;
   });
