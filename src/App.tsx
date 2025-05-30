@@ -1,6 +1,7 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { CartProvider } from "@/contexts/CartContext";
@@ -34,7 +35,7 @@ import AdminProducts from "./pages/Admin/Products";
 import AdminUsers from "./pages/Admin/Users";
 import AdminSales from "./pages/Admin/Sales";
 import AdminSettings from "./pages/Admin/Settings";
-import AdminHeroBanners from "./pages/Admin/HeroBanners"; // Add the new page
+import AdminHeroBanners from "./pages/Admin/HeroBanners";
 
 // Initialize services
 import { initializeProducts } from "./services/product";
@@ -91,7 +92,6 @@ function App() {
             <LocalizationProvider>
               <TooltipProvider>
                 <Toaster />
-                {/* Sonner toaster with updated styles for normal notifications */}
                 <SonnerToaster 
                   closeButton
                   position="top-right"
@@ -103,89 +103,87 @@ function App() {
                     },
                   }}
                 />
-                <BrowserRouter>
-                  <AnimatePresence mode="wait">
-                    <Routes>
-                      {/* Auth routes */}
-                      <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
-                      <Route path="/signup" element={<PageTransition><SignUp /></PageTransition>} />
-                      
-                      {/* Home route (landing page) */}
-                      <Route path="/" element={
-                        <ProtectedRoute>
-                          <Home />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Product routes */}                      
-                      <Route path="/products" element={
-                        <ProtectedRoute>
-                          <Products />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/product/:productId" element={
-                        <ProtectedRoute>
-                          <ProductDetail />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/cart" element={
-                        <ProtectedRoute>
-                          <Cart />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/wishlist" element={
-                        <ProtectedRoute>
-                          <Wishlist />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/order-success" element={
-                        <ProtectedRoute>
-                          <OrderSuccess />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/profile" element={
-                        <ProtectedRoute>
-                          <UserProfile />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/certificates" element={
-                        <ProtectedRoute>
-                          <Certificates />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Policy pages */}
-                      <Route path="/refund-policy" element={
-                        <ProtectedRoute>
-                          <RefundPolicy />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/privacy-policy" element={
-                        <ProtectedRoute>
-                          <PrivacyPolicy />
-                        </ProtectedRoute>
-                      } />
-                      <Route path="/terms-of-service" element={
-                        <ProtectedRoute>
-                          <TermsOfService />
-                        </ProtectedRoute>
-                      } />
-                      
-                      {/* Admin routes */}
-                      <Route path="/admin" element={<Admin />}>
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="products" element={<AdminProducts />} />
-                        <Route path="users" element={<AdminUsers />} />
-                        <Route path="sales" element={<AdminSales />} />
-                        <Route path="settings" element={<AdminSettings />} />
-                        <Route path="hero-banners" element={<AdminHeroBanners />} />
-                      </Route>
-                      
-                      {/* Catch-all route */}
-                      <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
-                    </Routes>
-                  </AnimatePresence>
-                </BrowserRouter>
+                <AnimatePresence mode="wait">
+                  <Routes>
+                    {/* Auth routes */}
+                    <Route path="/signin" element={<PageTransition><SignIn /></PageTransition>} />
+                    <Route path="/signup" element={<PageTransition><SignUp /></PageTransition>} />
+                    
+                    {/* Home route (landing page) */}
+                    <Route path="/" element={
+                      <ProtectedRoute>
+                        <Home />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Product routes */}                      
+                    <Route path="/products" element={
+                      <ProtectedRoute>
+                        <Products />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/product/:productId" element={
+                      <ProtectedRoute>
+                        <ProductDetail />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/cart" element={
+                      <ProtectedRoute>
+                        <Cart />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/wishlist" element={
+                      <ProtectedRoute>
+                        <Wishlist />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/order-success" element={
+                      <ProtectedRoute>
+                        <OrderSuccess />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/profile" element={
+                      <ProtectedRoute>
+                        <UserProfile />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/certificates" element={
+                      <ProtectedRoute>
+                        <Certificates />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Policy pages */}
+                    <Route path="/refund-policy" element={
+                      <ProtectedRoute>
+                        <RefundPolicy />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/privacy-policy" element={
+                      <ProtectedRoute>
+                        <PrivacyPolicy />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/terms-of-service" element={
+                      <ProtectedRoute>
+                        <TermsOfService />
+                      </ProtectedRoute>
+                    } />
+                    
+                    {/* Admin routes */}
+                    <Route path="/admin" element={<Admin />}>
+                      <Route index element={<AdminDashboard />} />
+                      <Route path="products" element={<AdminProducts />} />
+                      <Route path="users" element={<AdminUsers />} />
+                      <Route path="sales" element={<AdminSales />} />
+                      <Route path="settings" element={<AdminSettings />} />
+                      <Route path="hero-banners" element={<AdminHeroBanners />} />
+                    </Route>
+                    
+                    {/* Catch-all route */}
+                    <Route path="*" element={<PageTransition><NotFound /></PageTransition>} />
+                  </Routes>
+                </AnimatePresence>
               </TooltipProvider>
             </LocalizationProvider>
           </WishlistProvider>
