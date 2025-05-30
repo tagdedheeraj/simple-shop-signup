@@ -1,29 +1,59 @@
 
-declare global {
-  interface Window {
-    paypal?: {
-      Buttons: (config: PayPalButtonsConfig) => {
-        render: (container: HTMLElement | null) => Promise<void>;
-      };
-      FUNDING: {
-        PAYPAL: string;
-      };
+interface PayPalOrderRequest {
+  purchase_units: Array<{
+    amount: {
+      value: string;
+      currency_code: string;
     };
-  }
+    description?: string;
+  }>;
 }
 
-interface PayPalButtonsConfig {
-  style?: {
-    layout?: string;
-    color?: string;
-    shape?: string;
-    label?: string;
-  };
-  fundingSource?: string;
+interface PayPalOrder {
+  id: string;
+  status: string;
+}
+
+interface PayPalApprovalData {
+  orderID: string;
+}
+
+interface PayPalButtonStyle {
+  layout?: 'vertical' | 'horizontal';
+  color?: 'gold' | 'blue' | 'silver' | 'white' | 'black';
+  shape?: 'rect' | 'pill';
+  label?: 'paypal' | 'checkout' | 'buynow' | 'pay' | 'installment' | 'subscribe' | 'donate';
+  tagline?: boolean;
+}
+
+interface PayPalButtonConfig {
+  style?: PayPalButtonStyle;
   createOrder: () => Promise<string>;
-  onApprove: (data: { orderID: string; paymentID?: string }, actions?: any) => Promise<void>;
-  onError?: (err: any) => void;
+  onApprove: (data: PayPalApprovalData) => Promise<void>;
+  onError?: (error: any) => void;
   onCancel?: () => void;
+}
+
+interface PayPalButtons {
+  (config: PayPalButtonConfig): {
+    render: (container: HTMLElement) => void;
+  };
+}
+
+interface PayPalOrders {
+  create: (order: PayPalOrderRequest) => Promise<PayPalOrder>;
+  capture: (orderId: string) => Promise<PayPalOrder>;
+}
+
+interface PayPal {
+  Buttons: PayPalButtons;
+  Orders: () => PayPalOrders;
+}
+
+declare global {
+  interface Window {
+    paypal?: PayPal;
+  }
 }
 
 export {};

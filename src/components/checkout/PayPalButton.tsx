@@ -69,31 +69,39 @@ const PayPalButton: React.FC<PayPalButtonProps> = ({ customerInfo, isFormComplet
           layout: 'vertical',
           color: 'gold',
           shape: 'rect',
-          label: 'pay',
-          height: 40
+          label: 'pay'
         },
         
         // Create order using PayPal's client-side SDK
-        createOrder: (data: any, actions: any) => {
+        createOrder: async (): Promise<string> => {
           setIsProcessing(true);
           console.log('Creating PayPal order with client SDK...');
           
-          return actions.order.create({
-            purchase_units: [{
-              amount: {
-                value: totalPrice.toFixed(2),
-                currency_code: currency
-              },
-              description: `Order from Green Haven - ${items.length} items`
-            }]
-          });
+          try {
+            const order = await window.paypal.Orders().create({
+              purchase_units: [{
+                amount: {
+                  value: totalPrice.toFixed(2),
+                  currency_code: currency
+                },
+                description: `Order from Green Haven - ${items.length} items`
+              }]
+            });
+            
+            return order.id;
+          } catch (error) {
+            console.error('Error creating PayPal order:', error);
+            toast.error('Failed to create PayPal order');
+            setIsProcessing(false);
+            throw error;
+          }
         },
         
         // Capture payment
-        onApprove: async (data: any, actions: any) => {
+        onApprove: async (data: { orderID: string }): Promise<void> => {
           try {
             console.log('Capturing PayPal payment for order:', data.orderID);
-            const order = await actions.order.capture();
+            const order = await window.paypal.Orders().capture(data.orderID);
             console.log('PayPal order captured successfully:', order);
             
             if (order.status === 'COMPLETED') {
