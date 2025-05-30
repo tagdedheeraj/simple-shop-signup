@@ -15,8 +15,8 @@ export const initializeProducts = async (options?: { forceRefresh?: boolean; res
   
   if (shouldRefresh || isCapacitor) {
     console.log('🔄 Force refreshing product data for mobile build or explicit request');
-    // Call with forceReset: true for mobile or when explicitly requested
-    await refreshFirestoreProducts({ forceReset: true });
+    // For mobile, don't force reset - just ensure we get fresh data
+    await refreshFirestoreProducts({ forceReset: false });
   } else {
     console.log('Initializing products from data files with respectDeletedItems:', respectDeleted);
     // This will only populate if collection is empty
@@ -62,11 +62,11 @@ export const refreshProductData = async () => {
   if (isCapacitor) {
     console.log('📱 Clearing mobile caches...');
     localStorage.removeItem('products-cache');
-    localStorage.removeItem('deleted-products');
+    // Don't clear deleted products for mobile - respect admin decisions
   }
   
-  // Refresh products in Firebase - force reset for mobile
-  await refreshFirestoreProducts({ forceReset: isCapacitor });
+  // Refresh products in Firebase - don't force reset for mobile
+  await refreshFirestoreProducts({ forceReset: false });
   
   // Add a small delay to simulate API call
   await delay(300);

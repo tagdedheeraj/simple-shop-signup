@@ -56,61 +56,10 @@ export const useVideoData = () => {
         console.log('✅ Safe videos processed:', safeVideos.length);
         setVideos(safeVideos);
       } else {
-        console.log('📱 No admin videos found, loading default mobile videos...');
-        // Enhanced fallback videos for mobile with proper typing
-        const defaultVideos: Video[] = [
-          {
-            id: 'lakshmikrupa-main',
-            title: 'Lakshmikrupa Agriculture',
-            description: 'Main company introduction and facilities overview',
-            thumbnail: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-            videoUrl: '/videos/lakshmikrupa-main.mp4',
-            category: 'wheat' as const
-          },
-          {
-            id: 'wheat-processing-mobile',
-            title: 'Wheat Processing',
-            description: 'Advanced wheat processing techniques and quality control',
-            thumbnail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-            videoUrl: '/videos/wheat-processing.mp4',
-            category: 'wheat' as const
-          },
-          {
-            id: 'rice-processing-mobile',
-            title: 'Rice Processing',
-            description: 'Modern rice milling and processing methods',
-            thumbnail: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-            videoUrl: '/videos/rice-processing.mp4',
-            category: 'rice' as const
-          },
-          {
-            id: 'quality-control-mobile',
-            title: 'Quality Control',
-            description: 'Our strict quality control and testing procedures',
-            thumbnail: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-            videoUrl: '/videos/quality-control.mp4',
-            category: 'wheat' as const
-          },
-          {
-            id: 'modern-facilities-mobile',
-            title: 'Modern Facilities',
-            description: 'State-of-the-art processing and storage facilities',
-            thumbnail: 'https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-            videoUrl: '/videos/modern-facilities.mp4',
-            category: 'wheat' as const
-          },
-          {
-            id: 'rice-varieties-mobile',
-            title: 'Rice Varieties',
-            description: 'Different types of rice we process and their quality standards',
-            thumbnail: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-            videoUrl: '/videos/rice-varieties.mp4',
-            category: 'rice' as const
-          }
-        ];
-        
-        setVideos(defaultVideos);
-        console.log('✅ Default mobile videos loaded:', defaultVideos.length);
+        console.log('📱 No admin videos found in localStorage');
+        // For mobile builds, if no admin videos found, show empty state
+        // This ensures only admin-uploaded videos are shown
+        setVideos([]);
       }
     } catch (error) {
       console.error('❌ Error loading videos:', error);
