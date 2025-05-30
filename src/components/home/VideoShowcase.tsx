@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Play, Pause, Volume2 } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 
 interface Video {
   id: string;
@@ -56,25 +57,19 @@ const VideoShowcase: React.FC = () => {
     setPlayingVideo(playingVideo === videoId ? null : videoId);
   };
 
-  const openVideoInNewTab = (video: Video) => {
-    if (video.googleDriveUrl) {
-      window.open(video.googleDriveUrl, '_blank');
-    }
-  };
-
   const container = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2
+        staggerChildren: 0.1
       }
     }
   };
 
   const item = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0 }
+    hidden: { opacity: 0, x: -20 },
+    show: { opacity: 1, x: 0 }
   };
 
   return (
@@ -88,66 +83,65 @@ const VideoShowcase: React.FC = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Our Processing Excellence
+            Lakshmikrupa Agriculture Videos
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Witness our state-of-the-art wheat and rice processing facilities that ensure 
-            the highest quality standards for every grain
+            हमारी अत्याधुनिक गेहूं और चावल प्रसंस्करण सुविधाओं को देखें जो 
+            हर अनाज के लिए उच्चतम गुणवत्ता मानकों को सुनिश्चित करती हैं
           </p>
         </motion.div>
 
-        {/* Video Grid */}
+        {/* Vertical Video List */}
         <motion.div 
           variants={container}
           initial="hidden"
           animate="show"
-          className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto"
+          className="max-w-4xl mx-auto space-y-6"
         >
           {videos.map((video) => (
             <motion.div key={video.id} variants={item}>
-              <Card className="overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group">
+              <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300">
                 <CardContent className="p-0">
-                  <div className="relative aspect-video bg-gray-900">
-                    {playingVideo === video.id && video.embedUrl ? (
-                      // Google Drive embedded video with better parameters
-                      <iframe
-                        src={`${video.embedUrl}?autoplay=1`}
-                        width="100%"
-                        height="100%"
-                        frameBorder="0"
-                        allow="autoplay; encrypted-media"
-                        allowFullScreen
-                        className="w-full h-full"
-                        title={video.title}
-                      />
-                    ) : playingVideo === video.id && video.videoUrl ? (
-                      <video
-                        className="w-full h-full object-cover"
-                        controls
-                        autoPlay
-                        onEnded={() => setPlayingVideo(null)}
-                      >
-                        <source src={video.videoUrl} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    ) : (
-                      <>
-                        {/* Video Thumbnail */}
-                        <div className="w-full h-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="text-6xl mb-4">
-                              {video.category === 'wheat' ? '🌾' : '🌾'}
+                  <div className="flex flex-col md:flex-row">
+                    {/* Video Player Section */}
+                    <div className="md:w-2/3 relative aspect-video bg-gray-900">
+                      {playingVideo === video.id && video.embedUrl ? (
+                        <iframe
+                          src={`${video.embedUrl}?autoplay=1&modestbranding=1&rel=0`}
+                          width="100%"
+                          height="100%"
+                          frameBorder="0"
+                          allow="autoplay; encrypted-media"
+                          allowFullScreen
+                          className="w-full h-full"
+                          title={video.title}
+                          loading="lazy"
+                        />
+                      ) : playingVideo === video.id && video.videoUrl ? (
+                        <video
+                          className="w-full h-full object-cover"
+                          controls
+                          autoPlay
+                          onEnded={() => setPlayingVideo(null)}
+                          preload="metadata"
+                        >
+                          <source src={video.videoUrl} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <>
+                          {/* Video Thumbnail */}
+                          <div className="w-full h-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+                            <div className="text-center">
+                              <div className="text-4xl mb-2">
+                                {video.category === 'wheat' ? '🌾' : '🌾'}
+                              </div>
+                              <p className="text-sm text-gray-600 px-4">
+                                Video देखने के लिए Play बटन दबाएं
+                              </p>
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                              {video.title}
-                            </h3>
-                            <p className="text-sm text-gray-600 px-4">
-                              Click to watch video
-                            </p>
                           </div>
-                        </div>
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                          <div className="flex gap-3">
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
                             <Button
                               size="lg"
                               className="bg-white/90 text-amber-800 hover:bg-white rounded-full w-16 h-16 p-0 shadow-lg"
@@ -155,79 +149,50 @@ const VideoShowcase: React.FC = () => {
                             >
                               <Play className="h-6 w-6 ml-1" />
                             </Button>
-                            {video.googleDriveUrl && (
-                              <Button
-                                size="lg"
-                                className="bg-blue-600 text-white hover:bg-blue-700 rounded-full px-4 py-2 shadow-lg"
-                                onClick={() => openVideoInNewTab(video)}
-                              >
-                                Open in Drive
-                              </Button>
-                            )}
                           </div>
-                        </div>
-                      </>
-                    )}
-                    
-                    {/* Category Badge */}
-                    <div className="absolute top-4 left-4">
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                        video.category === 'wheat' 
-                          ? 'bg-amber-600 text-white' 
-                          : 'bg-green-600 text-white'
-                      }`}>
-                        {video.category === 'wheat' ? 'गेहूं' : 'चावल'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Video Info */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {video.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4">
-                      {video.description}
-                    </p>
-                    
-                    {/* Action Buttons */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleVideoPlay(video.id)}
-                          className="flex items-center gap-2"
-                        >
-                          {playingVideo === video.id ? (
-                            <>
-                              <Pause className="h-4 w-4" />
-                              Stop
-                            </>
-                          ) : (
-                            <>
-                              <Play className="h-4 w-4" />
-                              Watch Here
-                            </>
-                          )}
-                        </Button>
-                        
-                        {video.googleDriveUrl && (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            onClick={() => openVideoInNewTab(video)}
-                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                          >
-                            Watch in Drive
-                          </Button>
-                        )}
-                      </div>
+                        </>
+                      )}
                       
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Volume2 className="h-4 w-4" />
-                        HD Quality
+                      {/* Category Badge */}
+                      <div className="absolute top-4 left-4">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          video.category === 'wheat' 
+                            ? 'bg-amber-600 text-white' 
+                            : 'bg-green-600 text-white'
+                        }`}>
+                          {video.category === 'wheat' ? 'गेहूं' : 'चावल'}
+                        </span>
                       </div>
+                    </div>
+
+                    {/* Video Info Section */}
+                    <div className="md:w-1/3 p-6 flex flex-col justify-center">
+                      <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                        {video.title}
+                      </h3>
+                      <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+                        {video.description}
+                      </p>
+                      
+                      {/* Single Action Button */}
+                      <Button
+                        variant={playingVideo === video.id ? "destructive" : "default"}
+                        size="sm"
+                        onClick={() => handleVideoPlay(video.id)}
+                        className="w-full flex items-center justify-center gap-2"
+                      >
+                        {playingVideo === video.id ? (
+                          <>
+                            <Pause className="h-4 w-4" />
+                            बंद करें
+                          </>
+                        ) : (
+                          <>
+                            <Play className="h-4 w-4" />
+                            Video देखें
+                          </>
+                        )}
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
@@ -244,10 +209,10 @@ const VideoShowcase: React.FC = () => {
           className="text-center mt-12"
         >
           <p className="text-gray-600 mb-4">
-            Want to see more of our processing facilities?
+            हमारी processing सुविधाओं के बारे में और जानना चाहते हैं?
           </p>
           <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-            Schedule a Visit
+            हमसे संपर्क करें
           </Button>
         </motion.div>
       </div>
