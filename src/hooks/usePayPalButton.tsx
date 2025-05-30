@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useCart } from '@/contexts/CartContext';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { loadPayPalScript, createPayPalOrder, capturePayPalOrder } from '@/services/paypal';
-import { PayPalOrder } from '@/services/paypal';
+import { loadPayPalScript } from '@/services/paypal';
 
 interface UsePayPalButtonResult {
   paypalButtonRef: React.RefObject<HTMLDivElement>;
@@ -46,41 +45,66 @@ export const usePayPalButton = (customerInfo?: any): UsePayPalButtonResult => {
       
       // Render the PayPal button
       window.paypal.Buttons({
-        // Set up the transaction
-        createOrder: async () => {
+        style: {
+          layout: 'vertical',
+          color: 'gold',
+          shape: 'rect',
+          label: 'pay'
+        },
+        
+        // Create order using PayPal's client-side SDK
+        createOrder: async (): Promise<string> => {
+          setIsProcessing(true);
+          console.log('Creating PayPal order with client SDK...');
+          
           try {
-            const orderData: PayPalOrder = {
-              orderId: `ORDER-${Date.now()}`,
-              totalAmount: totalPrice,
-              currency: currency,
-              items: items.map(item => ({
-                name: item.product.name,
-                quantity: item.quantity,
-                price: item.product.price
-              }))
-            };
+            const order = await window.paypal.Orders().create({
+              purchase_units: [{
+                amount: {
+                  value: totalPrice.toFixed(2),
+                  currency_code: currency
+                },
+                description: `Order from Green Haven - ${items.length} items`
+              }]
+            });
             
-            return await createPayPalOrder(orderData);
+            return order.id;
           } catch (error) {
-            console.error('Failed to create order:', error);
-            toast.error('Could not create PayPal order');
+            console.error('Error creating PayPal order:', error);
+            toast.error('Failed to create PayPal order');
+            setIsProcessing(false);
             throw error;
           }
         },
         
-        // Finalize the transaction
-        onApprove: async (data: any, actions: any) => {
-          setIsProcessing(true);
+        // Capture payment - updated to match new type signature
+        onApprove: async (data: { orderID: string }): Promise<void> => {
           try {
-            const success = await capturePayPalOrder(data.orderID);
-            if (success) {
+            console.log('Capturing PayPal payment for order:', data.orderID);
+            const order = await window.paypal.Orders().capture(data.orderID);
+            console.log('PayPal order captured successfully:', order);
+            
+            if (order.status === 'COMPLETED') {
+              // Save order info to localStorage
+              localStorage.setItem('lastOrder', JSON.stringify({
+                items,
+                totalPrice,
+                customerInfo,
+                orderId: data.orderID,
+                paymentId: order.id,
+                date: new Date().toISOString()
+              }));
+              
+              // Clear cart and navigate
               clearCart();
-              toast.success('Your order has been placed successfully!');
               navigate('/order-success');
+              toast.success('Payment successful! Thank you for your purchase.');
+            } else {
+              toast.error('Payment was not completed');
             }
           } catch (error) {
-            console.error('Error capturing PayPal order:', error);
-            toast.error('There was an error processing your payment');
+            console.error('Error capturing PayPal payment:', error);
+            toast.error('Failed to process payment');
           } finally {
             setIsProcessing(false);
           }
@@ -91,10 +115,17 @@ export const usePayPalButton = (customerInfo?: any): UsePayPalButtonResult => {
           console.error('PayPal error:', err);
           toast.error('PayPal encountered an error. Please try again later.');
           setIsProcessing(false);
+        },
+        
+        // Handle cancellations
+        onCancel: () => {
+          console.log('Payment cancelled by user');
+          toast.info('Payment cancelled');
+          setIsProcessing(false);
         }
       }).render(paypalButtonRef.current);
     }
-  }, [paypalLoaded, items, totalPrice, clearCart, navigate, currency]);
+  }, [paypalLoaded, items, totalPrice, clearCart, navigate, currency, customerInfo]);
 
   const handleLoadPayPal = () => loadPayPalScript(currency);
 
