@@ -34,7 +34,8 @@ export const useVideoData = () => {
                          typeof video === 'object' && 
                          video.id && 
                          video.title && 
-                         video.category;
+                         video.category &&
+                         (video.category === 'wheat' || video.category === 'rice');
           
           if (!isValid) {
             console.warn('⚠️ Invalid video found:', video);
@@ -47,22 +48,24 @@ export const useVideoData = () => {
           googleDriveUrl: typeof video.googleDriveUrl === 'string' ? video.googleDriveUrl : undefined,
           embedUrl: typeof video.embedUrl === 'string' ? video.embedUrl : undefined,
           videoUrl: typeof video.videoUrl === 'string' ? video.videoUrl : undefined,
-          thumbnail: typeof video.thumbnail === 'string' ? video.thumbnail : undefined
+          thumbnail: typeof video.thumbnail === 'string' ? video.thumbnail : undefined,
+          // Ensure category is properly typed
+          category: video.category === 'rice' ? 'rice' as const : 'wheat' as const
         }));
         
         console.log('✅ Safe videos processed:', safeVideos.length);
         setVideos(safeVideos);
       } else {
         console.log('📱 No admin videos found, loading default mobile videos...');
-        // Enhanced fallback videos for mobile
-        const defaultVideos = [
+        // Enhanced fallback videos for mobile with proper typing
+        const defaultVideos: Video[] = [
           {
             id: 'lakshmikrupa-main',
             title: 'Lakshmikrupa Agriculture',
             description: 'Main company introduction and facilities overview',
             thumbnail: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
             videoUrl: '/videos/lakshmikrupa-main.mp4',
-            category: 'wheat'
+            category: 'wheat' as const
           },
           {
             id: 'wheat-processing-mobile',
@@ -70,7 +73,7 @@ export const useVideoData = () => {
             description: 'Advanced wheat processing techniques and quality control',
             thumbnail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
             videoUrl: '/videos/wheat-processing.mp4',
-            category: 'wheat'
+            category: 'wheat' as const
           },
           {
             id: 'rice-processing-mobile',
@@ -78,7 +81,7 @@ export const useVideoData = () => {
             description: 'Modern rice milling and processing methods',
             thumbnail: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
             videoUrl: '/videos/rice-processing.mp4',
-            category: 'rice'
+            category: 'rice' as const
           },
           {
             id: 'quality-control-mobile',
@@ -86,7 +89,23 @@ export const useVideoData = () => {
             description: 'Our strict quality control and testing procedures',
             thumbnail: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
             videoUrl: '/videos/quality-control.mp4',
-            category: 'wheat'
+            category: 'wheat' as const
+          },
+          {
+            id: 'modern-facilities-mobile',
+            title: 'Modern Facilities',
+            description: 'State-of-the-art processing and storage facilities',
+            thumbnail: 'https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+            videoUrl: '/videos/modern-facilities.mp4',
+            category: 'wheat' as const
+          },
+          {
+            id: 'rice-varieties-mobile',
+            title: 'Rice Varieties',
+            description: 'Different types of rice we process and their quality standards',
+            thumbnail: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+            videoUrl: '/videos/rice-varieties.mp4',
+            category: 'rice' as const
           }
         ];
         
@@ -106,7 +125,10 @@ export const useVideoData = () => {
     return title.includes('wheat processing') || 
            title.includes('wheat') || 
            title.includes('processing') ||
-           title.includes('quality control');
+           title.includes('quality control') ||
+           title.includes('rice processing') ||
+           title.includes('rice varieties') ||
+           title.includes('modern facilities');
   };
 
   // Function to check if video is Lakshmikrupa Agriculture
