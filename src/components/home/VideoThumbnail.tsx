@@ -3,7 +3,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { getGoogleDriveThumbnail, getCachedVideoMetadata, cacheVideoMetadata } from '@/utils/videoUtils';
 
 interface VideoThumbnailProps {
   video: {
@@ -25,31 +24,35 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ video, onPlay, isVertic
   const [isVisible, setIsVisible] = useState(false);
   const thumbnailRef = useRef<HTMLDivElement>(null);
 
-  // Get thumbnail URL with proper null/undefined checks
+  // Safe thumbnail URL extraction with comprehensive null checks
   const getThumbnailUrl = () => {
     try {
-      // Check cache first
-      const cached = getCachedVideoMetadata(video.id);
-      if (cached && cached.thumbnail) {
-        return cached.thumbnail;
+      // Return custom thumbnail if available and valid
+      if (video.thumbnail && typeof video.thumbnail === 'string' && video.thumbnail.trim()) {
+        return video.thumbnail;
       }
 
-      // Try to get Google Drive thumbnail with null checks
+      // Check Google Drive URLs with proper validation
       const driveUrl = video.googleDriveUrl || video.embedUrl;
       if (driveUrl && typeof driveUrl === 'string' && driveUrl.trim()) {
-        const driveThumbnail = getGoogleDriveThumbnail(driveUrl);
-        if (driveThumbnail) {
-          // Cache the thumbnail URL
-          cacheVideoMetadata(video.id, { thumbnail: driveThumbnail });
-          return driveThumbnail;
+        // Simple validation for Google Drive URLs
+        if (driveUrl.includes('drive.google.com') || driveUrl.includes('docs.google.com')) {
+          // Extract file ID safely
+          const fileIdMatch = driveUrl.match(/\/file\/d\/([a-zA-Z0-9-_]+)/) ||
+                             driveUrl.match(/[?&]id=([a-zA-Z0-9-_]+)/) ||
+                             driveUrl.match(/docs\.google\.com\/file\/d\/([a-zA-Z0-9-_]+)/);
+          
+          if (fileIdMatch && fileIdMatch[1]) {
+            return `https://drive.google.com/thumbnail?id=${fileIdMatch[1]}&sz=w400-h300`;
+          }
         }
       }
 
-      // Fallback to custom thumbnail
-      return video.thumbnail || '';
+      // Return empty string if no valid thumbnail found
+      return '';
     } catch (error) {
-      console.warn('Error getting thumbnail URL:', error);
-      return video.thumbnail || '';
+      console.warn('Error getting thumbnail URL for video:', video.id, error);
+      return '';
     }
   };
 
@@ -122,7 +125,7 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ video, onPlay, isVertic
               {video.category === 'wheat' ? '🌾' : '🌾'}
             </div>
             <p className="text-sm text-gray-600 px-4">
-              Click Play button to watch video
+              {video.title}
             </p>
           </div>
         </div>

@@ -10,30 +10,70 @@ const VideoShowcase: React.FC = () => {
   const { videos, verticalVideos, horizontalVideos } = useVideoData();
   const { playingVideo, handleVideoPlay, handleVideoEnd } = useVideoPlayer();
 
-  // Safe filter function to handle undefined video properties
+  // Enhanced safe filter function with comprehensive null checks
   const safeVideos = videos.filter(video => {
-    // Ensure video object exists and has required properties
-    return video && 
-           typeof video === 'object' && 
-           video.id && 
-           video.title && 
-           video.category;
+    if (!video || typeof video !== 'object') {
+      console.warn('Invalid video object:', video);
+      return false;
+    }
+    
+    // Check required properties exist and are valid
+    const hasRequiredProps = video.id && 
+                            video.title && 
+                            video.category;
+    
+    if (!hasRequiredProps) {
+      console.warn('Video missing required properties:', video);
+      return false;
+    }
+    
+    return true;
   });
 
-  // Safe vertical videos with proper null checks
+  // Safe vertical videos with comprehensive validation
   const safeVerticalVideos = verticalVideos.filter(video => {
-    return video && 
-           typeof video === 'object' && 
-           video.id && 
-           video.title;
+    if (!video || typeof video !== 'object') {
+      console.warn('Invalid vertical video object:', video);
+      return false;
+    }
+    
+    const isValid = video.id && 
+                   video.title && 
+                   typeof video.title === 'string' &&
+                   typeof video.id === 'string';
+    
+    if (!isValid) {
+      console.warn('Vertical video validation failed:', video);
+      return false;
+    }
+    
+    return true;
   });
 
-  // Safe horizontal videos with proper null checks
+  // Safe horizontal videos with comprehensive validation
   const safeHorizontalVideos = horizontalVideos.filter(video => {
-    return video && 
-           typeof video === 'object' && 
-           video.id && 
-           video.title;
+    if (!video || typeof video !== 'object') {
+      console.warn('Invalid horizontal video object:', video);
+      return false;
+    }
+    
+    const isValid = video.id && 
+                   video.title && 
+                   typeof video.title === 'string' &&
+                   typeof video.id === 'string';
+    
+    if (!isValid) {
+      console.warn('Horizontal video validation failed:', video);
+      return false;
+    }
+    
+    return true;
+  });
+
+  console.log('VideoShowcase - Safe videos loaded:', {
+    total: safeVideos.length,
+    vertical: safeVerticalVideos.length,
+    horizontal: safeHorizontalVideos.length
   });
 
   return (
@@ -87,7 +127,7 @@ const VideoShowcase: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <p className="text-gray-600">No videos available</p>
+            <p className="text-gray-600">No videos available at the moment</p>
           </motion.div>
         )}
 
