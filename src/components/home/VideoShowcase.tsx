@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
@@ -57,6 +56,12 @@ const VideoShowcase: React.FC = () => {
     setPlayingVideo(playingVideo === videoId ? null : videoId);
   };
 
+  const openVideoInNewTab = (video: Video) => {
+    if (video.googleDriveUrl) {
+      window.open(video.googleDriveUrl, '_blank');
+    }
+  };
+
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -103,30 +108,31 @@ const VideoShowcase: React.FC = () => {
               <Card className="overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group">
                 <CardContent className="p-0">
                   <div className="relative aspect-video bg-gray-900">
-                    {playingVideo === video.id ? (
-                      // Google Drive embedded video or regular video
-                      video.embedUrl ? (
-                        <iframe
-                          src={video.embedUrl}
-                          width="100%"
-                          height="100%"
-                          allow="autoplay"
-                          className="w-full h-full"
-                        />
-                      ) : (
-                        <video
-                          className="w-full h-full object-cover"
-                          controls
-                          autoPlay
-                          onEnded={() => setPlayingVideo(null)}
-                        >
-                          <source src={video.videoUrl} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      )
+                    {playingVideo === video.id && video.embedUrl ? (
+                      // Google Drive embedded video with better parameters
+                      <iframe
+                        src={`${video.embedUrl}?autoplay=1`}
+                        width="100%"
+                        height="100%"
+                        frameBorder="0"
+                        allow="autoplay; encrypted-media"
+                        allowFullScreen
+                        className="w-full h-full"
+                        title={video.title}
+                      />
+                    ) : playingVideo === video.id && video.videoUrl ? (
+                      <video
+                        className="w-full h-full object-cover"
+                        controls
+                        autoPlay
+                        onEnded={() => setPlayingVideo(null)}
+                      >
+                        <source src={video.videoUrl} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
                     ) : (
                       <>
-                        {/* Thumbnail for Google Drive videos */}
+                        {/* Video Thumbnail */}
                         <div className="w-full h-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
                           <div className="text-center">
                             <div className="text-6xl mb-4">
@@ -135,16 +141,30 @@ const VideoShowcase: React.FC = () => {
                             <h3 className="text-xl font-semibold text-gray-800 mb-2">
                               {video.title}
                             </h3>
+                            <p className="text-sm text-gray-600 px-4">
+                              Click to watch video
+                            </p>
                           </div>
                         </div>
                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                          <Button
-                            size="lg"
-                            className="bg-white/90 text-amber-800 hover:bg-white rounded-full w-16 h-16 p-0 shadow-lg"
-                            onClick={() => handleVideoPlay(video.id)}
-                          >
-                            <Play className="h-6 w-6 ml-1" />
-                          </Button>
+                          <div className="flex gap-3">
+                            <Button
+                              size="lg"
+                              className="bg-white/90 text-amber-800 hover:bg-white rounded-full w-16 h-16 p-0 shadow-lg"
+                              onClick={() => handleVideoPlay(video.id)}
+                            >
+                              <Play className="h-6 w-6 ml-1" />
+                            </Button>
+                            {video.googleDriveUrl && (
+                              <Button
+                                size="lg"
+                                className="bg-blue-600 text-white hover:bg-blue-700 rounded-full px-4 py-2 shadow-lg"
+                                onClick={() => openVideoInNewTab(video)}
+                              >
+                                Open in Drive
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </>
                     )}
@@ -172,24 +192,37 @@ const VideoShowcase: React.FC = () => {
                     
                     {/* Action Buttons */}
                     <div className="flex items-center justify-between">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleVideoPlay(video.id)}
-                        className="flex items-center gap-2"
-                      >
-                        {playingVideo === video.id ? (
-                          <>
-                            <Pause className="h-4 w-4" />
-                            Pause
-                          </>
-                        ) : (
-                          <>
-                            <Play className="h-4 w-4" />
-                            Watch Now
-                          </>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleVideoPlay(video.id)}
+                          className="flex items-center gap-2"
+                        >
+                          {playingVideo === video.id ? (
+                            <>
+                              <Pause className="h-4 w-4" />
+                              Stop
+                            </>
+                          ) : (
+                            <>
+                              <Play className="h-4 w-4" />
+                              Watch Here
+                            </>
+                          )}
+                        </Button>
+                        
+                        {video.googleDriveUrl && (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => openVideoInNewTab(video)}
+                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
+                          >
+                            Watch in Drive
+                          </Button>
                         )}
-                      </Button>
+                      </div>
                       
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <Volume2 className="h-4 w-4" />

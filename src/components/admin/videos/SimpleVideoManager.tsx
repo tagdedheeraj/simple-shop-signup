@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Trash2, Edit2, Save, X } from 'lucide-react';
+import { Trash2, Edit2, Save, X, ExternalLink } from 'lucide-react';
 
 interface Video {
   id: string;
@@ -60,17 +60,61 @@ const SimpleVideoManager: React.FC = () => {
   };
 
   const convertGoogleDriveUrl = (url: string): string => {
-    // Convert Google Drive share URL to embed URL
-    const fileIdMatch = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-    if (fileIdMatch) {
-      return `https://drive.google.com/file/d/${fileIdMatch[1]}/preview`;
+    console.log('🔄 Converting Google Drive URL:', url);
+    
+    // Handle different Google Drive URL formats
+    let fileId = '';
+    
+    // Format 1: https://drive.google.com/file/d/FILE_ID/view
+    let match = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+    if (match) {
+      fileId = match[1];
     }
+    
+    // Format 2: https://drive.google.com/open?id=FILE_ID
+    if (!fileId) {
+      match = url.match(/[?&]id=([a-zA-Z0-9-_]+)/);
+      if (match) {
+        fileId = match[1];
+      }
+    }
+    
+    // Format 3: https://docs.google.com/file/d/FILE_ID/edit
+    if (!fileId) {
+      match = url.match(/docs\.google\.com\/file\/d\/([a-zA-Z0-9-_]+)/);
+      if (match) {
+        fileId = match[1];
+      }
+    }
+    
+    if (fileId) {
+      const embedUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+      console.log('✅ Converted to embed URL:', embedUrl);
+      return embedUrl;
+    }
+    
+    console.log('⚠️ Could not extract file ID, returning original URL');
     return url;
+  };
+
+  const validateGoogleDriveUrl = (url: string): boolean => {
+    const patterns = [
+      /drive\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/,
+      /drive\.google\.com\/open\?id=[a-zA-Z0-9-_]+/,
+      /docs\.google\.com\/file\/d\/[a-zA-Z0-9-_]+/
+    ];
+    
+    return patterns.some(pattern => pattern.test(url));
   };
 
   const addVideo = () => {
     if (!newVideo.title || !newVideo.googleDriveUrl) {
       toast.error('कृपया title और Google Drive URL दोनों भरें');
+      return;
+    }
+
+    if (!validateGoogleDriveUrl(newVideo.googleDriveUrl)) {
+      toast.error('कृपया valid Google Drive URL दें। Example: https://drive.google.com/file/d/FILE_ID/view');
       return;
     }
 
@@ -109,6 +153,11 @@ const SimpleVideoManager: React.FC = () => {
   const saveEdit = () => {
     if (!editingVideo) return;
 
+    if (!validateGoogleDriveUrl(editingVideo.googleDriveUrl)) {
+      toast.error('कृपया valid Google Drive URL दें');
+      return;
+    }
+
     const updatedVideos = videos.map(video => 
       video.id === editingVideo.id 
         ? { ...editingVideo, embedUrl: convertGoogleDriveUrl(editingVideo.googleDriveUrl) }
@@ -121,6 +170,10 @@ const SimpleVideoManager: React.FC = () => {
 
   const cancelEdit = () => {
     setEditingVideo(null);
+  };
+
+  const openVideoInDrive = (url: string) => {
+    window.open(url, '_blank');
   };
 
   return (
@@ -164,9 +217,12 @@ const SimpleVideoManager: React.FC = () => {
               onChange={(e) => setNewVideo({ ...newVideo, googleDriveUrl: e.target.value })}
               placeholder="https://drive.google.com/file/d/YOUR_FILE_ID/view"
             />
-            <p className="text-sm text-gray-500 mt-1">
-              Google Drive से video का share link paste करें
-            </p>
+            <div className="text-sm text-gray-500 mt-2 space-y-1">
+              <p>📋 Supported formats:</p>
+              <p>• https://drive.google.com/file/d/FILE_ID/view</p>
+              <p>• https://drive.google.com/open?id=FILE_ID</p>
+              <p>• Make sure video is set to "Anyone with link can view"</p>
+            </div>
           </div>
 
           <div>
@@ -199,6 +255,14 @@ const SimpleVideoManager: React.FC = () => {
               <div className="flex justify-between items-start">
                 <CardTitle className="text-lg">{video.title}</CardTitle>
                 <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => openVideoInDrive(video.googleDriveUrl)}
+                    title="Open in Google Drive"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"
@@ -267,19 +331,33 @@ const SimpleVideoManager: React.FC = () => {
                       src={video.embedUrl}
                       width="100%"
                       height="100%"
-                      allow="autoplay"
+                      frameBorder="0"
+                      allow="autoplay; encrypted-media"
+                      allowFullScreen
                       className="w-full h-full"
+                      title={video.title}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                      video.category === 'wheat' 
-                        ? 'bg-amber-100 text-amber-800' 
-                        : 'bg-green-100 text-green-800'
-                    }`}>
-                      {video.category === 'wheat' ? 'गेहूं' : 'चावल'}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                        video.category === 'wheat' 
+                          ? 'bg-amber-100 text-amber-800' 
+                          : 'bg-green-100 text-green-800'
+                      }`}>
+                        {video.category === 'wheat' ? 'गेहूं' : 'चावल'}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openVideoInDrive(video.googleDriveUrl)}
+                        className="text-blue-600 hover:text-blue-700"
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1" />
+                        Open in Drive
+                      </Button>
+                    </div>
                     <p className="text-sm text-gray-600">{video.description}</p>
                   </div>
                 </>
