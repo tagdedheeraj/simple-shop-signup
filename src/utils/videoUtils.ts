@@ -3,7 +3,8 @@ export const convertGoogleDriveUrl = (url: string): string => {
   console.log('🔄 Converting Google Drive URL:', url);
   
   // Don't modify if empty or undefined
-  if (!url || url.trim() === '') {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    console.log('⚠️ Invalid URL provided to convertGoogleDriveUrl:', url);
     return url || '';
   }
   
@@ -45,7 +46,8 @@ export const convertGoogleDriveUrl = (url: string): string => {
 
 export const getGoogleDriveThumbnail = (url: string): string => {
   // Handle undefined or empty URLs
-  if (!url || url.trim() === '') {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    console.log('⚠️ Invalid URL provided to getGoogleDriveThumbnail:', url);
     return '';
   }
   
@@ -59,7 +61,8 @@ export const getGoogleDriveThumbnail = (url: string): string => {
 
 export const extractFileId = (url: string): string => {
   // Handle undefined or empty URLs
-  if (!url || url.trim() === '') {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    console.log('⚠️ Invalid URL provided to extractFileId:', url);
     return '';
   }
   
@@ -81,7 +84,7 @@ export const extractFileId = (url: string): string => {
 
 export const validateGoogleDriveUrl = (url: string): boolean => {
   // Allow empty URLs during typing
-  if (!url || url.trim() === '') {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
     return true;
   }
   

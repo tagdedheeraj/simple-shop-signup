@@ -10,6 +10,27 @@ const VideoShowcase: React.FC = () => {
   const { videos, verticalVideos, horizontalVideos } = useVideoData();
   const { playingVideo, handleVideoPlay, handleVideoEnd } = useVideoPlayer();
 
+  // Add debugging to see what videos we're getting
+  console.log('🎬 VideoShowcase - Total videos:', videos.length);
+  console.log('🎬 VideoShowcase - Videos data:', videos);
+
+  // Filter out videos with undefined or invalid URLs to prevent errors
+  const safeVerticalVideos = verticalVideos.filter(video => {
+    const hasValidUrl = video.googleDriveUrl || video.embedUrl || video.videoUrl;
+    if (!hasValidUrl) {
+      console.warn('⚠️ Video missing URLs:', video.title, video);
+    }
+    return hasValidUrl;
+  });
+
+  const safeHorizontalVideos = horizontalVideos.filter(video => {
+    const hasValidUrl = video.googleDriveUrl || video.embedUrl || video.videoUrl;
+    if (!hasValidUrl) {
+      console.warn('⚠️ Video missing URLs:', video.title, video);
+    }
+    return hasValidUrl;
+  });
+
   return (
     <section className="py-16 bg-gradient-to-b from-amber-50 to-white">
       <div className="container mx-auto px-4">
@@ -30,24 +51,28 @@ const VideoShowcase: React.FC = () => {
         </motion.div>
 
         {/* Horizontal Videos (Lakshmikrupa Agriculture) */}
-        <VideoSection
-          title="Lakshmikrupa Agriculture"
-          videos={horizontalVideos}
-          playingVideo={playingVideo}
-          isVertical={false}
-          onVideoPlay={handleVideoPlay}
-          onVideoEnd={handleVideoEnd}
-        />
+        {safeHorizontalVideos.length > 0 && (
+          <VideoSection
+            title="Lakshmikrupa Agriculture"
+            videos={safeHorizontalVideos}
+            playingVideo={playingVideo}
+            isVertical={false}
+            onVideoPlay={handleVideoPlay}
+            onVideoEnd={handleVideoEnd}
+          />
+        )}
 
         {/* Vertical Videos (Wheat Processing, etc.) */}
-        <VideoSection
-          title="Processing Videos"
-          videos={verticalVideos}
-          playingVideo={playingVideo}
-          isVertical={true}
-          onVideoPlay={handleVideoPlay}
-          onVideoEnd={handleVideoEnd}
-        />
+        {safeVerticalVideos.length > 0 && (
+          <VideoSection
+            title="Processing Videos"
+            videos={safeVerticalVideos}
+            playingVideo={playingVideo}
+            isVertical={true}
+            onVideoPlay={handleVideoPlay}
+            onVideoEnd={handleVideoEnd}
+          />
+        )}
 
         {/* Show message if no videos */}
         {videos.length === 0 && (
