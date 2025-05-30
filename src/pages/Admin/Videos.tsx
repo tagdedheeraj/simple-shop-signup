@@ -1,9 +1,9 @@
 
 import React from 'react';
-import VideoManager from '@/components/admin/videos/VideoManager';
+import SimpleVideoManager from '@/components/admin/videos/SimpleVideoManager';
 
 const AdminVideosPage: React.FC = () => {
-  return <VideoManager />;
+  return <SimpleVideoManager />;
 };
 
 export default AdminVideosPage;

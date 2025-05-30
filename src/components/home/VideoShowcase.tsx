@@ -1,16 +1,18 @@
+
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Volume2 } from 'lucide-react';
-import { getUploadedFileUrl } from '@/utils/file-storage';
 
 interface Video {
   id: string;
   title: string;
   description: string;
-  videoUrl: string;
-  thumbnail: string;
+  googleDriveUrl?: string;
+  embedUrl?: string;
+  videoUrl?: string;
+  thumbnail?: string;
   category: 'wheat' | 'rice';
 }
 
@@ -25,7 +27,9 @@ const VideoShowcase: React.FC = () => {
   const loadVideos = () => {
     const storedVideos = localStorage.getItem('admin-videos');
     if (storedVideos) {
-      setVideos(JSON.parse(storedVideos));
+      const adminVideos = JSON.parse(storedVideos);
+      console.log('📺 Loaded admin videos:', adminVideos);
+      setVideos(adminVideos);
     } else {
       // Fallback placeholder videos if no admin videos are found
       setVideos([
@@ -51,20 +55,6 @@ const VideoShowcase: React.FC = () => {
 
   const handleVideoPlay = (videoId: string) => {
     setPlayingVideo(playingVideo === videoId ? null : videoId);
-  };
-
-  const getVideoUrl = (url: string) => {
-    if (url.startsWith('local-storage://')) {
-      return getUploadedFileUrl(url);
-    }
-    return url;
-  };
-
-  const getThumbnailUrl = (url: string) => {
-    if (url.startsWith('local-storage://')) {
-      return getUploadedFileUrl(url);
-    }
-    return url;
   };
 
   const container = {
@@ -114,22 +104,39 @@ const VideoShowcase: React.FC = () => {
                 <CardContent className="p-0">
                   <div className="relative aspect-video bg-gray-900">
                     {playingVideo === video.id ? (
-                      <video
-                        className="w-full h-full object-cover"
-                        controls
-                        autoPlay
-                        onEnded={() => setPlayingVideo(null)}
-                      >
-                        <source src={getVideoUrl(video.videoUrl)} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
+                      // Google Drive embedded video or regular video
+                      video.embedUrl ? (
+                        <iframe
+                          src={video.embedUrl}
+                          width="100%"
+                          height="100%"
+                          allow="autoplay"
+                          className="w-full h-full"
+                        />
+                      ) : (
+                        <video
+                          className="w-full h-full object-cover"
+                          controls
+                          autoPlay
+                          onEnded={() => setPlayingVideo(null)}
+                        >
+                          <source src={video.videoUrl} type="video/mp4" />
+                          Your browser does not support the video tag.
+                        </video>
+                      )
                     ) : (
                       <>
-                        <img
-                          src={getThumbnailUrl(video.thumbnail)}
-                          alt={video.title}
-                          className="w-full h-full object-cover"
-                        />
+                        {/* Thumbnail for Google Drive videos */}
+                        <div className="w-full h-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-6xl mb-4">
+                              {video.category === 'wheat' ? '🌾' : '🌾'}
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                              {video.title}
+                            </h3>
+                          </div>
+                        </div>
                         <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
                           <Button
                             size="lg"
@@ -150,13 +157,6 @@ const VideoShowcase: React.FC = () => {
                           : 'bg-green-600 text-white'
                       }`}>
                         {video.category === 'wheat' ? 'गेहूं' : 'चावल'}
-                      </span>
-                    </div>
-
-                    {/* Video Duration Overlay */}
-                    <div className="absolute bottom-4 right-4">
-                      <span className="bg-black/70 text-white px-2 py-1 rounded text-sm">
-                        2:30
                       </span>
                     </div>
                   </div>
