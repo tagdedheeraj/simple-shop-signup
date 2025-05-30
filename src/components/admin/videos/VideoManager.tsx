@@ -34,6 +34,7 @@ const VideoManager: React.FC = () => {
       setVideos(parsedVideos);
     } else {
       console.log('No videos found in localStorage');
+      setVideos([]);
     }
   };
 
@@ -59,48 +60,48 @@ const VideoManager: React.FC = () => {
       size: file.size
     });
 
-    // More lenient video type check
+    // Check if it's a video file
     const isVideoFile = file.type.startsWith('video/') || 
-                       file.name.toLowerCase().endsWith('.mp4') ||
-                       file.name.toLowerCase().endsWith('.webm') ||
-                       file.name.toLowerCase().endsWith('.ogg') ||
-                       file.name.toLowerCase().endsWith('.avi') ||
-                       file.name.toLowerCase().endsWith('.mov');
+                       /\.(mp4|webm|ogg|avi|mov|mkv|flv|wmv)$/i.test(file.name);
 
     if (!isVideoFile) {
       console.log('Invalid file type:', file.type);
-      toast.error('Please select a valid video file (MP4, WebM, OGG, AVI, MOV)');
+      toast.error('Please select a valid video file (MP4, WebM, OGG, AVI, MOV, etc.)');
       return;
     }
 
-    if (file.size > 100 * 1024 * 1024) { // Increased to 100MB limit
+    // Check file size (200MB limit)
+    if (file.size > 200 * 1024 * 1024) {
       console.log('File too large:', file.size);
-      toast.error('Video size should be less than 100MB');
+      toast.error('Video size should be less than 200MB');
       return;
     }
 
     setUploading(true);
-    toast.info('Uploading video... Please wait');
+    toast.info('Uploading video... This may take a few minutes');
     
     try {
       console.log('Starting file upload...');
       const videoUrl = await saveUploadedFile(file);
       console.log('Video uploaded successfully, URL:', videoUrl);
       
+      // Generate a thumbnail placeholder
+      const thumbnailUrl = '/placeholder.svg';
+      
       const newVideo: Video = {
-        id: `video-${Date.now()}`,
-        title: `${file.name.split('.')[0]} - Video ${videos.length + 1}`,
-        description: 'Uploaded video - Please update description',
+        id: `video-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        title: file.name.replace(/\.[^/.]+$/, ""), // Remove file extension
+        description: 'Newly uploaded video - Please update description and category',
         videoUrl,
-        thumbnail: '/placeholder.svg',
-        category: 'wheat'
+        thumbnail: thumbnailUrl,
+        category: 'wheat' // Default category
       };
 
       console.log('Creating new video object:', newVideo);
       const updatedVideos = [...videos, newVideo];
       saveVideos(updatedVideos);
       
-      toast.success('Video uploaded successfully!');
+      toast.success('Video uploaded successfully! You can now edit its details.');
       
       // Clear the input
       event.target.value = '';

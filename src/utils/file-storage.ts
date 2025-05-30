@@ -3,21 +3,26 @@ export const saveUploadedFile = async (file: File): Promise<string> => {
   try {
     // Create a unique filename with timestamp
     const timestamp = Date.now();
-    const extension = file.name.split('.').pop() || 'jpg';
-    const filename = `product-${timestamp}.${extension}`;
+    const extension = file.name.split('.').pop() || 'mp4';
+    const filename = `${file.type.startsWith('video/') ? 'video' : 'image'}-${timestamp}.${extension}`;
     
     // Convert file to base64 for storage
     const base64 = await fileToBase64(file);
     
     // Store in localStorage with the filename as key
-    const imageData = {
+    const fileData = {
       data: base64,
       type: file.type,
       name: filename,
-      savedAt: timestamp
+      originalName: file.name,
+      savedAt: timestamp,
+      size: file.size
     };
     
-    localStorage.setItem(`uploaded-image-${filename}`, JSON.stringify(imageData));
+    const storageKey = `uploaded-${file.type.startsWith('video/') ? 'video' : 'image'}-${filename}`;
+    localStorage.setItem(storageKey, JSON.stringify(fileData));
+    
+    console.log(`File saved to localStorage with key: ${storageKey}`);
     
     // Return a custom URL that we can recognize later
     return `local-storage://${filename}`;
@@ -34,15 +39,20 @@ export const getUploadedFileUrl = (localStorageUrl: string): string => {
     }
     
     const filename = localStorageUrl.replace('local-storage://', '');
-    const storedData = localStorage.getItem(`uploaded-image-${filename}`);
+    
+    // Try both video and image prefixes
+    let storedData = localStorage.getItem(`uploaded-video-${filename}`);
+    if (!storedData) {
+      storedData = localStorage.getItem(`uploaded-image-${filename}`);
+    }
     
     if (!storedData) {
       console.error('Uploaded file not found in storage:', filename);
       return '/placeholder.svg';
     }
     
-    const imageData = JSON.parse(storedData);
-    return imageData.data; // Return the base64 data URL
+    const fileData = JSON.parse(storedData);
+    return fileData.data; // Return the base64 data URL
   } catch (error) {
     console.error('Error retrieving uploaded file:', error);
     return '/placeholder.svg';
@@ -63,7 +73,7 @@ export const cleanupOldUploadedFiles = () => {
     const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
     
     Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('uploaded-image-')) {
+      if (key.startsWith('uploaded-image-') || key.startsWith('uploaded-video-')) {
         try {
           const data = JSON.parse(localStorage.getItem(key) || '{}');
           if (data.savedAt && data.savedAt < oneWeekAgo) {
