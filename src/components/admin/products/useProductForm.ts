@@ -22,7 +22,7 @@ export const useProductForm = ({ product, onSave, onOpenChange }: UseProductForm
       description: product?.description || '',
       price: product?.price || 0,
       stock: product?.stock || 0,
-      category: product?.category || 'fruits',
+      category: product?.category || 'wheat',
       image: product?.image || '',
     },
   });
@@ -43,7 +43,7 @@ export const useProductForm = ({ product, onSave, onOpenChange }: UseProductForm
         description: '',
         price: 0,
         stock: 0,
-        category: 'fruits',
+        category: 'wheat',
         image: '',
       });
     }

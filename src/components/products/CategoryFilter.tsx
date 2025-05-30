@@ -27,9 +27,6 @@ const CategoryFilter: React.FC<CategoryFilterProps> = ({
     { value: 'all', label: 'All Products' },
     { value: 'wheat', label: 'Wheat' },
     { value: 'rice', label: 'Rice' },
-    { value: 'vegetable', label: 'Vegetables' },
-    { value: 'onion', label: 'Onions' },
-    { value: 'fruits', label: 'Fruits' },
   ];
 
   return (

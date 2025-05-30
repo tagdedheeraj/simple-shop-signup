@@ -23,7 +23,8 @@ const ProductContent: React.FC<ProductContentProps> = ({
   decreaseQuantity,
   handleAddToCart
 }) => {
-  const isOrganic = product.category === 'vegetable' || product.category === 'fruits';
+  // Since we only have wheat and rice categories now, no organic check needed
+  const isOrganic = false;
   
   // Use the social share hook instead of directly using the component
   const { socialShareLinks, handleShareProduct } = useProductSocialShare({

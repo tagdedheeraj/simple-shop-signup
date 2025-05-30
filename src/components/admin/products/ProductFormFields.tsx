@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -149,11 +148,8 @@ const ProductFormFields: React.FC<ProductFormFieldsProps> = ({ form }) => {
                   className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   {...field}
                 >
-                  <option value="fruits">Fruits</option>
-                  <option value="vegetable">Vegetable</option>
-                  <option value="rice">Rice</option>
                   <option value="wheat">Wheat</option>
-                  <option value="onion">Onion</option>
+                  <option value="rice">Rice</option>
                 </select>
               </FormControl>
               <FormMessage />
