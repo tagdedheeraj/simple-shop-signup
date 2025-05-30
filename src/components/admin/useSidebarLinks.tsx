@@ -7,7 +7,8 @@ import {
   Settings,
   ShoppingCart,
   Heart,
-  Home
+  Home,
+  FileText
 } from 'lucide-react';
 
 export interface SidebarLink {
@@ -24,6 +25,7 @@ export const useSidebarLinks = () => {
     { name: 'Products', href: '/products', icon: Package },
     { name: 'Cart', href: '/cart', icon: ShoppingCart },
     { name: 'Wishlist', href: '/wishlist', icon: Heart },
+    { name: 'Certificates', href: '/certificates', icon: FileText },
   ];
 
   // Admin navigation links

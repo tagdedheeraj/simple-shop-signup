@@ -23,6 +23,7 @@ import Wishlist from "./pages/Wishlist";
 import OrderSuccess from "./pages/OrderSuccess";
 import NotFound from "./pages/NotFound";
 import UserProfile from "./pages/UserProfile";
+import Certificates from "./pages/Certificates";
 
 // Admin Pages
 import Admin from "./pages/Admin";
@@ -143,6 +144,11 @@ function App() {
                       <Route path="/profile" element={
                         <ProtectedRoute>
                           <UserProfile />
+                        </ProtectedRoute>
+                      } />
+                      <Route path="/certificates" element={
+                        <ProtectedRoute>
+                          <Certificates />
                         </ProtectedRoute>
                       } />
                       
