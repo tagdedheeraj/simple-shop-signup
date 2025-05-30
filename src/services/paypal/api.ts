@@ -38,6 +38,12 @@ export const createPayPalOrder = async (order: PayPalOrder): Promise<string> => 
         amount: {
           currency_code: order.currency,
           value: order.totalAmount.toFixed(2),
+          breakdown: {
+            item_total: {
+              currency_code: order.currency,
+              value: order.totalAmount.toFixed(2)
+            }
+          }
         },
         items: order.items.map(item => ({
           name: item.name,
@@ -50,9 +56,15 @@ export const createPayPalOrder = async (order: PayPalOrder): Promise<string> => 
       }],
       application_context: {
         return_url: `${window.location.origin}/order-success`,
-        cancel_url: `${window.location.origin}/cart`,
+        cancel_url: `${window.location.origin}/checkout`,
+        brand_name: 'Green Haven',
+        locale: 'en-US',
+        landing_page: 'NO_PREFERENCE',
+        user_action: 'PAY_NOW'
       },
     };
+
+    console.log('Creating PayPal order with data:', orderData);
 
     const response = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
       method: 'POST',
@@ -64,11 +76,13 @@ export const createPayPalOrder = async (order: PayPalOrder): Promise<string> => 
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create PayPal order');
+      const errorData = await response.text();
+      console.error('PayPal order creation failed:', errorData);
+      throw new Error(`Failed to create PayPal order: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('PayPal order created:', data);
+    console.log('PayPal order created successfully:', data);
     return data.id;
   } catch (error) {
     console.error('Error creating PayPal order:', error);
@@ -90,13 +104,21 @@ export const capturePayPalOrder = async (orderId: string): Promise<boolean> => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to capture PayPal order');
+      const errorData = await response.text();
+      console.error('PayPal order capture failed:', errorData);
+      throw new Error(`Failed to capture PayPal order: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('PayPal order captured:', data);
-    toast.success('Payment successful!');
-    return true;
+    console.log('PayPal order captured successfully:', data);
+    
+    if (data.status === 'COMPLETED') {
+      toast.success('Payment successful!');
+      return true;
+    } else {
+      toast.error('Payment was not completed');
+      return false;
+    }
   } catch (error) {
     console.error('Error capturing PayPal order:', error);
     toast.error('Failed to capture payment');

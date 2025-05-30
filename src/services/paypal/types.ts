@@ -3,22 +3,22 @@ export interface PayPalOrder {
   orderId: string;
   totalAmount: number;
   currency: string;
-  items: { name: string; quantity: number; price: number }[];
-  customerInfo?: {
-    fullName: string;
-    email: string;
-    phone: string;
-    address: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
+  items: PayPalOrderItem[];
+  customerInfo?: any;
 }
 
-// Add PayPal global type definition 
-declare global {
-  interface Window {
-    paypal: any;
-  }
+export interface PayPalOrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface PayPalResponse {
+  id: string;
+  status: string;
+  links: Array<{
+    href: string;
+    rel: string;
+    method: string;
+  }>;
 }
