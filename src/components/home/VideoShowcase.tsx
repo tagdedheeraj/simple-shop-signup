@@ -132,7 +132,7 @@ const VideoShowcase: React.FC = () => {
                         {video.category === 'wheat' ? '🌾' : '🌾'}
                       </div>
                       <p className="text-sm text-gray-600 px-4">
-                        Video देखने के लिए Play बटन दबाएं
+                        Click Play button to watch video
                       </p>
                     </div>
                   </div>
@@ -155,7 +155,7 @@ const VideoShowcase: React.FC = () => {
                     ? 'bg-amber-600 text-white' 
                     : 'bg-green-600 text-white'
                 }`}>
-                  {video.category === 'wheat' ? 'गेहूं' : 'चावल'}
+                  {video.category === 'wheat' ? 'Wheat' : 'Rice'}
                 </span>
               </div>
             </div>
@@ -179,12 +179,12 @@ const VideoShowcase: React.FC = () => {
                 {playingVideo === video.id ? (
                   <>
                     <Pause className="h-4 w-4" />
-                    बंद करें
+                    Stop Video
                   </>
                 ) : (
                   <>
                     <Play className="h-4 w-4" />
-                    Video देखें
+                    Watch Video
                   </>
                 )}
               </Button>
@@ -206,11 +206,11 @@ const VideoShowcase: React.FC = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Lakshmikrupa Agriculture Videos
+            Lakshmikrupa Agriculture Processing Videos
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            हमारी अत्याधुनिक गेहूं और चावल प्रसंस्करण सुविधाओं को देखें जो 
-            हर अनाज के लिए उच्चतम गुणवत्ता मानकों को सुनिश्चित करती हैं
+            Explore our state-of-the-art wheat and rice processing facilities that 
+            ensure the highest quality standards for every grain
           </p>
         </motion.div>
 
@@ -254,7 +254,7 @@ const VideoShowcase: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="text-center"
           >
-            <p className="text-gray-600">कोई videos उपलब्ध नहीं हैं</p>
+            <p className="text-gray-600">No videos available</p>
           </motion.div>
         )}
 
@@ -266,10 +266,10 @@ const VideoShowcase: React.FC = () => {
           className="text-center mt-12"
         >
           <p className="text-gray-600 mb-4">
-            हमारी processing सुविधाओं के बारे में और जानना चाहते हैं?
+            Want to know more about our processing facilities?
           </p>
           <Button className="bg-amber-600 hover:bg-amber-700 text-white">
-            हमसे संपर्क करें
+            Contact Us
           </Button>
         </motion.div>
       </div>
