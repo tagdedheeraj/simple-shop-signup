@@ -5,7 +5,7 @@ export interface Product {
   description: string;
   price: number;
   image: string;
-  category: 'wheat' | 'rice' | 'vegetable' | 'onion' | 'fruits';
+  category: 'wheat' | 'rice'; // Removed unused categories
   stock: number;
   reviews?: Review[];
 }
