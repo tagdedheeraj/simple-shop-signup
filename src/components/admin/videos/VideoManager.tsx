@@ -28,49 +28,87 @@ const VideoManager: React.FC = () => {
   }, []);
 
   const loadVideos = () => {
+    console.log('Loading videos from localStorage...');
     const storedVideos = localStorage.getItem('admin-videos');
     if (storedVideos) {
-      setVideos(JSON.parse(storedVideos));
+      const parsedVideos = JSON.parse(storedVideos);
+      console.log('Videos loaded:', parsedVideos);
+      setVideos(parsedVideos);
+    } else {
+      console.log('No videos found in localStorage');
     }
   };
 
   const saveVideos = (newVideos: Video[]) => {
+    console.log('Saving videos to localStorage:', newVideos);
     localStorage.setItem('admin-videos', JSON.stringify(newVideos));
     setVideos(newVideos);
+    toast.success('Videos updated successfully');
   };
 
   const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('video/')) {
-      toast.error('Please select a video file');
+    console.log('Video upload started, file:', file);
+    
+    if (!file) {
+      console.log('No file selected');
       return;
     }
 
-    if (file.size > 50 * 1024 * 1024) { // 50MB limit
-      toast.error('Video size should be less than 50MB');
+    console.log('File details:', {
+      name: file.name,
+      type: file.type,
+      size: file.size
+    });
+
+    // More lenient video type check
+    const isVideoFile = file.type.startsWith('video/') || 
+                       file.name.toLowerCase().endsWith('.mp4') ||
+                       file.name.toLowerCase().endsWith('.webm') ||
+                       file.name.toLowerCase().endsWith('.ogg') ||
+                       file.name.toLowerCase().endsWith('.avi') ||
+                       file.name.toLowerCase().endsWith('.mov');
+
+    if (!isVideoFile) {
+      console.log('Invalid file type:', file.type);
+      toast.error('Please select a valid video file (MP4, WebM, OGG, AVI, MOV)');
+      return;
+    }
+
+    if (file.size > 100 * 1024 * 1024) { // Increased to 100MB limit
+      console.log('File too large:', file.size);
+      toast.error('Video size should be less than 100MB');
       return;
     }
 
     setUploading(true);
+    toast.info('Uploading video... Please wait');
+    
     try {
+      console.log('Starting file upload...');
       const videoUrl = await saveUploadedFile(file);
+      console.log('Video uploaded successfully, URL:', videoUrl);
       
       const newVideo: Video = {
         id: `video-${Date.now()}`,
-        title: `New Video ${videos.length + 1}`,
-        description: 'Video description',
+        title: `${file.name.split('.')[0]} - Video ${videos.length + 1}`,
+        description: 'Uploaded video - Please update description',
         videoUrl,
         thumbnail: '/placeholder.svg',
         category: 'wheat'
       };
 
+      console.log('Creating new video object:', newVideo);
       const updatedVideos = [...videos, newVideo];
       saveVideos(updatedVideos);
-      toast.success('Video uploaded successfully');
+      
+      toast.success('Video uploaded successfully!');
+      
+      // Clear the input
+      event.target.value = '';
     } catch (error) {
-      toast.error('Failed to upload video');
+      console.error('Video upload failed:', error);
+      toast.error(`Failed to upload video: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setUploading(false);
     }
@@ -78,6 +116,8 @@ const VideoManager: React.FC = () => {
 
   const handleThumbnailUpload = async (event: React.ChangeEvent<HTMLInputElement>, videoId: string) => {
     const file = event.target.files?.[0];
+    console.log('Thumbnail upload for video:', videoId, 'file:', file);
+    
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
@@ -86,18 +126,23 @@ const VideoManager: React.FC = () => {
     }
 
     try {
+      console.log('Uploading thumbnail...');
       const thumbnailUrl = await saveUploadedFile(file);
+      console.log('Thumbnail uploaded:', thumbnailUrl);
+      
       const updatedVideos = videos.map(video => 
         video.id === videoId ? { ...video, thumbnail: thumbnailUrl } : video
       );
       saveVideos(updatedVideos);
       toast.success('Thumbnail updated');
     } catch (error) {
+      console.error('Thumbnail upload failed:', error);
       toast.error('Failed to upload thumbnail');
     }
   };
 
   const updateVideo = (videoId: string, updates: Partial<Video>) => {
+    console.log('Updating video:', videoId, 'with:', updates);
     const updatedVideos = videos.map(video => 
       video.id === videoId ? { ...video, ...updates } : video
     );
@@ -105,6 +150,7 @@ const VideoManager: React.FC = () => {
   };
 
   const deleteVideo = (videoId: string) => {
+    console.log('Deleting video:', videoId);
     const updatedVideos = videos.filter(video => video.id !== videoId);
     saveVideos(updatedVideos);
     toast.success('Video deleted');
@@ -125,12 +171,35 @@ const VideoManager: React.FC = () => {
           <Input
             id="video-upload"
             type="file"
-            accept="video/*"
+            accept="video/*,.mp4,.webm,.ogg,.avi,.mov"
             onChange={handleVideoUpload}
             className="hidden"
           />
         </div>
       </div>
+
+      {videos.length === 0 && (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">No videos uploaded</h3>
+            <p className="text-gray-600 mb-4">Upload your first video to get started</p>
+            <Label htmlFor="video-upload-empty" className="cursor-pointer">
+              <Button className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Upload Video
+              </Button>
+            </Label>
+            <Input
+              id="video-upload-empty"
+              type="file"
+              accept="video/*,.mp4,.webm,.ogg,.avi,.mov"
+              onChange={handleVideoUpload}
+              className="hidden"
+            />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
