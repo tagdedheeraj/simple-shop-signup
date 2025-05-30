@@ -1,44 +1,70 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Volume2 } from 'lucide-react';
+import { getUploadedFileUrl } from '@/utils/file-storage';
 
 interface Video {
   id: string;
   title: string;
   description: string;
-  thumbnail: string;
   videoUrl: string;
+  thumbnail: string;
   category: 'wheat' | 'rice';
 }
 
 const VideoShowcase: React.FC = () => {
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+  const [videos, setVideos] = useState<Video[]>([]);
 
-  // Placeholder videos - replace these paths with actual uploaded videos
-  const videos: Video[] = [
-    {
-      id: 'wheat-processing-1',
-      title: 'Premium Wheat Processing',
-      description: 'Traditional wheat processing methods ensuring quality and purity',
-      thumbnail: '/placeholder.svg',
-      videoUrl: '/videos/wheat-processing.mp4', // Replace with actual video path
-      category: 'wheat'
-    },
-    {
-      id: 'rice-processing-1',
-      title: 'Rice Milling Excellence',
-      description: 'Modern rice processing techniques for superior grain quality',
-      thumbnail: '/placeholder.svg',
-      videoUrl: '/videos/rice-processing.mp4', // Replace with actual video path
-      category: 'rice'
+  useEffect(() => {
+    loadVideos();
+  }, []);
+
+  const loadVideos = () => {
+    const storedVideos = localStorage.getItem('admin-videos');
+    if (storedVideos) {
+      setVideos(JSON.parse(storedVideos));
+    } else {
+      // Fallback placeholder videos if no admin videos are found
+      setVideos([
+        {
+          id: 'wheat-processing-1',
+          title: 'Premium Wheat Processing',
+          description: 'Traditional wheat processing methods ensuring quality and purity',
+          thumbnail: '/placeholder.svg',
+          videoUrl: '/videos/wheat-processing.mp4',
+          category: 'wheat'
+        },
+        {
+          id: 'rice-processing-1',
+          title: 'Rice Milling Excellence',
+          description: 'Modern rice processing techniques for superior grain quality',
+          thumbnail: '/placeholder.svg',
+          videoUrl: '/videos/rice-processing.mp4',
+          category: 'rice'
+        }
+      ]);
     }
-  ];
+  };
 
   const handleVideoPlay = (videoId: string) => {
     setPlayingVideo(playingVideo === videoId ? null : videoId);
+  };
+
+  const getVideoUrl = (url: string) => {
+    if (url.startsWith('local-storage://')) {
+      return getUploadedFileUrl(url);
+    }
+    return url;
+  };
+
+  const getThumbnailUrl = (url: string) => {
+    if (url.startsWith('local-storage://')) {
+      return getUploadedFileUrl(url);
+    }
+    return url;
   };
 
   const container = {
@@ -94,13 +120,13 @@ const VideoShowcase: React.FC = () => {
                         autoPlay
                         onEnded={() => setPlayingVideo(null)}
                       >
-                        <source src={video.videoUrl} type="video/mp4" />
+                        <source src={getVideoUrl(video.videoUrl)} type="video/mp4" />
                         Your browser does not support the video tag.
                       </video>
                     ) : (
                       <>
                         <img
-                          src={video.thumbnail}
+                          src={getThumbnailUrl(video.thumbnail)}
                           alt={video.title}
                           className="w-full h-full object-cover"
                         />
@@ -130,7 +156,7 @@ const VideoShowcase: React.FC = () => {
                     {/* Video Duration Overlay */}
                     <div className="absolute bottom-4 right-4">
                       <span className="bg-black/70 text-white px-2 py-1 rounded text-sm">
-                        2:30 {/* Replace with actual duration */}
+                        2:30
                       </span>
                     </div>
                   </div>

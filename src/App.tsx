@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route, Navigate } from "react-router-dom";
@@ -36,6 +35,7 @@ import AdminUsers from "./pages/Admin/Users";
 import AdminSales from "./pages/Admin/Sales";
 import AdminSettings from "./pages/Admin/Settings";
 import AdminHeroBanners from "./pages/Admin/HeroBanners";
+import AdminVideos from "./pages/Admin/Videos";
 
 // Initialize services
 import { initializeProducts } from "./services/product";
@@ -176,6 +176,7 @@ function App() {
                       <Route path="products" element={<AdminProducts />} />
                       <Route path="users" element={<AdminUsers />} />
                       <Route path="sales" element={<AdminSales />} />
+                      <Route path="videos" element={<AdminVideos />} />
                       <Route path="settings" element={<AdminSettings />} />
                       <Route path="hero-banners" element={<AdminHeroBanners />} />
                     </Route>
