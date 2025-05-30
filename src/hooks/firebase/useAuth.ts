@@ -21,6 +21,13 @@ export const useAuth = () => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Check if auth is available
+        if (!auth) {
+          console.error("Firebase auth is not initialized");
+          setLoading(false);
+          return;
+        }
+
         // Set persistence to LOCAL to keep user logged in
         await setPersistence(auth, browserLocalPersistence);
         console.log("Firebase persistence set to LOCAL");
@@ -44,6 +51,10 @@ export const useAuth = () => {
 
   const createUser = useCallback(async (email: string, password: string, displayName?: string, role: string = 'user') => {
     try {
+      if (!auth) {
+        throw new Error("Firebase auth is not initialized");
+      }
+
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
       // Update user profile if display name is provided
@@ -51,15 +62,17 @@ export const useAuth = () => {
         await updateProfile(userCredential.user, { displayName });
         
         // Store additional user data in Firestore
-        const userDocRef = doc(db, 'users', userCredential.user.uid);
-        await setDoc(userDocRef, {
-          uid: userCredential.user.uid,
-          email: userCredential.user.email,
-          displayName: displayName,
-          createdAt: new Date().toISOString(),
-          role: role, // Set role from parameter
-          lastLogin: new Date().toISOString()
-        });
+        if (db) {
+          const userDocRef = doc(db, 'users', userCredential.user.uid);
+          await setDoc(userDocRef, {
+            uid: userCredential.user.uid,
+            email: userCredential.user.email,
+            displayName: displayName,
+            createdAt: new Date().toISOString(),
+            role: role, // Set role from parameter
+            lastLogin: new Date().toISOString()
+          });
+        }
       }
       
       return userCredential.user;
@@ -71,17 +84,23 @@ export const useAuth = () => {
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
+      if (!auth) {
+        throw new Error("Firebase auth is not initialized");
+      }
+
       console.log("Attempting Firebase signIn");
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       console.log("Firebase signIn successful");
       
       // Update last login time in Firestore
       try {
-        const userDocRef = doc(db, 'users', userCredential.user.uid);
-        await setDoc(userDocRef, {
-          lastLogin: new Date().toISOString()
-        }, { merge: true });
-        console.log("Updated last login time in Firestore");
+        if (db) {
+          const userDocRef = doc(db, 'users', userCredential.user.uid);
+          await setDoc(userDocRef, {
+            lastLogin: new Date().toISOString()
+          }, { merge: true });
+          console.log("Updated last login time in Firestore");
+        }
       } catch (firestoreError) {
         console.error("Error updating login time in Firestore:", firestoreError);
         // Continue even if Firestore update fails
@@ -96,6 +115,10 @@ export const useAuth = () => {
 
   const logOut = useCallback(async () => {
     try {
+      if (!auth) {
+        throw new Error("Firebase auth is not initialized");
+      }
+
       console.log("Attempting Firebase signOut");
       await signOut(auth);
       console.log("Firebase signOut successful");
@@ -107,7 +130,7 @@ export const useAuth = () => {
   }, []);
 
   const getCurrentUser = useCallback((): User | null => {
-    return auth.currentUser || currentUser;
+    return auth?.currentUser || currentUser;
   }, [currentUser]);
 
   return {

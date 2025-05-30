@@ -25,7 +25,7 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ video, onPlay, isVertic
   const [isVisible, setIsVisible] = useState(false);
   const thumbnailRef = useRef<HTMLDivElement>(null);
 
-  // Get thumbnail URL
+  // Get thumbnail URL with proper null/undefined checks
   const getThumbnailUrl = () => {
     // Check cache first
     const cached = getCachedVideoMetadata(video.id);
@@ -33,14 +33,18 @@ const VideoThumbnail: React.FC<VideoThumbnailProps> = ({ video, onPlay, isVertic
       return cached.thumbnail;
     }
 
-    // Try to get Google Drive thumbnail
-    if (video.googleDriveUrl || video.embedUrl) {
-      const driveUrl = video.googleDriveUrl || video.embedUrl;
-      const driveThumbnail = getGoogleDriveThumbnail(driveUrl!);
-      if (driveThumbnail) {
-        // Cache the thumbnail URL
-        cacheVideoMetadata(video.id, { thumbnail: driveThumbnail });
-        return driveThumbnail;
+    // Try to get Google Drive thumbnail with null checks
+    const driveUrl = video.googleDriveUrl || video.embedUrl;
+    if (driveUrl && typeof driveUrl === 'string' && driveUrl.trim()) {
+      try {
+        const driveThumbnail = getGoogleDriveThumbnail(driveUrl);
+        if (driveThumbnail) {
+          // Cache the thumbnail URL
+          cacheVideoMetadata(video.id, { thumbnail: driveThumbnail });
+          return driveThumbnail;
+        }
+      } catch (error) {
+        console.warn('Error getting Google Drive thumbnail:', error);
       }
     }
 
