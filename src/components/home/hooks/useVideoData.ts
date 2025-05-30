@@ -21,14 +21,21 @@ export const useVideoData = () => {
 
   const loadVideos = () => {
     try {
-      console.log('🎬 Loading videos for mobile app...');
+      const isCapacitor = !!(window as any).Capacitor;
+      
+      if (isCapacitor) {
+        console.log('📱 Mobile app - loading videos from admin storage only');
+      } else {
+        console.log('🌐 Web app - loading videos from admin storage');
+      }
+      
       const storedVideos = localStorage.getItem('admin-videos');
       
       if (storedVideos) {
         const adminVideos = JSON.parse(storedVideos);
-        console.log('📺 Loaded admin videos:', adminVideos.length, 'videos found');
+        console.log('📺 Found admin videos:', adminVideos.length);
         
-        // Ensure all videos have required properties and safe URL handling
+        // Validate and filter videos
         const safeVideos = adminVideos.filter((video: any) => {
           const isValid = video && 
                          typeof video === 'object' && 
@@ -44,20 +51,17 @@ export const useVideoData = () => {
           return isValid;
         }).map((video: any) => ({
           ...video,
-          // Ensure URL properties are strings or undefined
           googleDriveUrl: typeof video.googleDriveUrl === 'string' ? video.googleDriveUrl : undefined,
           embedUrl: typeof video.embedUrl === 'string' ? video.embedUrl : undefined,
           videoUrl: typeof video.videoUrl === 'string' ? video.videoUrl : undefined,
           thumbnail: typeof video.thumbnail === 'string' ? video.thumbnail : undefined,
-          // Ensure category is properly typed
           category: video.category === 'rice' ? 'rice' as const : 'wheat' as const
         }));
         
-        console.log('✅ Safe videos processed:', safeVideos.length);
+        console.log('✅ Valid videos loaded:', safeVideos.length);
         setVideos(safeVideos);
       } else {
-        console.log('📱 No admin videos found in localStorage - showing empty state');
-        // For mobile/website consistency, if no admin videos found, show empty state
+        console.log('📱 No admin videos found - showing empty state');
         setVideos([]);
       }
     } catch (error) {
@@ -86,7 +90,7 @@ export const useVideoData = () => {
            video.title.toLowerCase().includes('lakshmikrupa');
   };
 
-  // Separate videos into categories with safe filtering
+  // Separate videos into categories
   const verticalVideos = videos.filter(video => 
     video && isVerticalVideo(video) && !isLakshmikrupaVideo(video)
   );
@@ -95,7 +99,7 @@ export const useVideoData = () => {
     video && isLakshmikrupaVideo(video)
   );
 
-  console.log('📊 Video categorization:', {
+  console.log('📊 Video categorization for display:', {
     total: videos.length,
     vertical: verticalVideos.length, 
     horizontal: horizontalVideos.length

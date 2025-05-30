@@ -8,13 +8,13 @@ import { toast } from 'sonner';
 import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 import { queryClient } from '@/services/query-client';
 
-// Initialize Firestore products collection - but NOT for mobile apps
+// Initialize Firestore products collection - NEVER for mobile apps
 export const initializeFirestoreProducts = async () => {
   try {
-    // Skip initialization for mobile builds - mobile should only show admin-added products
+    // Completely skip initialization for mobile builds
     const isCapacitor = !!(window as any).Capacitor;
     if (isCapacitor) {
-      console.log('📱 Mobile app detected - skipping default product initialization');
+      console.log('📱 Mobile app detected - NO default product initialization allowed');
       return;
     }
 
@@ -52,18 +52,29 @@ export const initializeFirestoreProducts = async () => {
     global.productsInitialized = true;
   } catch (error) {
     console.error('Error initializing Firestore products:', error);
-    toast.error('Failed to initialize product data from Firebase');
+    if (typeof window !== 'undefined' && !(window as any).Capacitor) {
+      toast.error('Failed to initialize product data from Firebase');
+    }
   }
 };
 
-// Refresh product data - for mobile, don't add any default products
+// Refresh product data - for mobile, absolutely no defaults
 export const refreshFirestoreProducts = async (options?: { forceReset?: boolean }): Promise<boolean> => {
   try {
     console.log('Refreshing Firestore products');
     const isCapacitor = !!(window as any).Capacitor;
     
-    // Only perform a complete reset if explicitly requested AND not on mobile
-    if (options?.forceReset && !isCapacitor) {
+    if (isCapacitor) {
+      console.log('📱 Mobile app - only refreshing existing Firebase data, NO defaults');
+      // For mobile, just invalidate cache - no data manipulation
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
+      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+      return true;
+    }
+    
+    // Only perform full reset if explicitly requested AND not on mobile
+    if (options?.forceReset) {
       console.log('Performing full reset of product data as requested (web only)');
       
       // Delete all existing products
@@ -74,7 +85,7 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
         })
       );
       
-      // Clear the deleted products collection (important!)
+      // Clear the deleted products collection
       const deletedSnapshot = await getDocs(collection(db, DELETED_PRODUCTS_COLLECTION));
       await Promise.all(
         deletedSnapshot.docs.map(async (doc) => {
@@ -96,7 +107,7 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       );
       
       toast.success('Product data completely reset to defaults');
-    } else if (!isCapacitor) {
+    } else {
       // Just add any missing products from the initial data for web only
       console.log('Adding any missing default products (web only)');
       
@@ -125,13 +136,8 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
         toast.success(`Added ${missingProducts.length} missing products`);
       } else {
         console.log('No missing products found');
-        if (!isCapacitor) {
-          toast.info('All default products are already available');
-        }
+        toast.info('All default products are already available');
       }
-    } else {
-      // For mobile, just log that we're not adding defaults
-      console.log('📱 Mobile app - not adding any default products, only showing admin-added products');
     }
     
     // Invalidate the products query cache
@@ -142,7 +148,9 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
     return true;
   } catch (error) {
     console.error('Error refreshing Firestore products:', error);
-    toast.error('Failed to refresh product data in Firebase');
+    if (typeof window !== 'undefined' && !(window as any).Capacitor) {
+      toast.error('Failed to refresh product data in Firebase');
+    }
     return false;
   }
 };

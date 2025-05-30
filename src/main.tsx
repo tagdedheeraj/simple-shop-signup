@@ -22,23 +22,26 @@ cleanupOldUploadedFiles();
 
 // Initialize app for mobile builds
 const initializeApp = async () => {
-  // Check if this is a mobile build (Capacitor)
   const isCapacitor = !!(window as any).Capacitor;
   
   if (isCapacitor) {
-    console.log('📱 Mobile app detected - ensuring only Firebase data is used...');
+    console.log('📱 Mobile app detected - performing complete data reset...');
     
-    // Clear ALL localStorage data except Firebase auth and admin data
-    const keysToKeep = ['admin-videos', 'firebase:authUser', 'firebase:host', 'persist:auth'];
+    // Clear ALL localStorage data except essential Firebase auth
+    const keysToKeep = ['firebase:authUser', 'firebase:host'];
     const allKeys = Object.keys(localStorage);
     
     allKeys.forEach(key => {
       if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
         localStorage.removeItem(key);
+        console.log('🗑️ Cleared cache:', key);
       }
     });
     
-    console.log('✅ Mobile app initialized - only Firebase and admin data preserved');
+    // Set fresh timestamp
+    localStorage.setItem('global_timestamp', Date.now().toString());
+    
+    console.log('✅ Mobile app data completely reset - only Firebase data will be used');
   }
 };
 
