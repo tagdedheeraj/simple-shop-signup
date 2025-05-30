@@ -65,26 +65,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <PageTransition>{children}</PageTransition>;
 };
 
-// Route guard for admin routes
-const AdminRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
-  
-  // Show loading while checking auth status
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-t-emerald-500 border-emerald-200 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-  
-  if (!isAuthenticated || !isAdmin) {
-    return <Navigate to="/signin" replace />;
-  }
-  
-  return <PageTransition>{children}</PageTransition>;
-};
-
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -177,7 +157,7 @@ function App() {
                       </ProtectedRoute>
                     } />
                     
-                    {/* Admin routes */}
+                    {/* Admin routes - Fixed structure */}
                     <Route path="/admin" element={<Admin />}>
                       <Route index element={<AdminDashboard />} />
                       <Route path="products" element={<AdminProducts />} />

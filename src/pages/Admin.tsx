@@ -1,23 +1,24 @@
 
 import React, { useEffect } from 'react';
-import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { toast } from 'sonner';
 
 const Admin: React.FC = () => {
   const { user, isAuthenticated, isAdmin, loading } = useAuth();
-  const location = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   
   console.log("=== ADMIN PAGE RENDER ===", { 
     isAuthenticated, 
     isAdmin, 
     loading, 
     userUid: user?.uid,
-    userRole: user?.role
+    userRole: user?.role,
+    pathname: location.pathname
   });
-  
+
   useEffect(() => {
     console.log("=== ADMIN PAGE EFFECT ===", {
       loading,
@@ -26,39 +27,24 @@ const Admin: React.FC = () => {
       pathname: location.pathname
     });
     
-    // Don't do anything while still loading
-    if (loading) {
-      console.log("Admin page: Still loading, waiting...");
-      return;
-    }
-    
-    // Handle unauthenticated users
-    if (!isAuthenticated) {
-      console.log("Admin page: Not authenticated, redirecting to signin");
-      navigate('/signin', { state: { from: location }, replace: true });
-      return;
-    }
-    
-    // Handle authenticated but non-admin users with longer delay
-    if (isAuthenticated && !isAdmin) {
-      console.log("Admin page: User authenticated but not admin, checking role...");
+    // Only redirect if we're sure about the authentication state
+    if (!loading) {
+      if (!isAuthenticated) {
+        console.log("Admin page: Not authenticated, redirecting to signin");
+        navigate('/signin', { state: { from: location }, replace: true });
+        return;
+      }
       
-      // Give more time for role to load properly
-      setTimeout(() => {
-        console.log("Admin page: Final check - isAdmin:", isAdmin);
-        if (!isAdmin) {
-          console.log("Admin page: User confirmed as non-admin, redirecting to home");
-          toast.error('You do not have permission to access the admin panel');
-          navigate('/', { replace: true });
-        }
-      }, 1000); // Increased delay to 1 second
-      return;
+      if (isAuthenticated && !isAdmin) {
+        console.log("Admin page: User authenticated but not admin, redirecting to home");
+        toast.error('You do not have permission to access the admin panel');
+        navigate('/', { replace: true });
+        return;
+      }
     }
-    
-    console.log("Admin page: User is authenticated and admin, staying on admin page");
-  }, [isAuthenticated, isAdmin, loading, navigate, location.pathname]);
+  }, [isAuthenticated, isAdmin, loading, navigate, location]);
   
-  // Show loading state longer to prevent flickering
+  // Show loading state while checking authentication
   if (loading) {
     console.log("Admin page: Showing loading spinner");
     return (
@@ -71,7 +57,7 @@ const Admin: React.FC = () => {
     );
   }
   
-  // Only render admin layout if definitely authenticated and admin
+  // Only render admin layout if authenticated and admin
   if (isAuthenticated && isAdmin) {
     console.log("Admin page: Rendering admin layout for admin user");
     return (
@@ -81,13 +67,15 @@ const Admin: React.FC = () => {
     );
   }
   
-  // Show checking state while authentication is being processed
-  console.log("Admin page: Showing permission checking state");
+  // Show access denied state
+  console.log("Admin page: Access denied");
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center space-y-4">
-        <div className="h-12 w-12 border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-        <p className="text-muted-foreground">Verifying admin access...</p>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-2">Access Denied</h1>
+          <p className="text-muted-foreground">You don't have permission to access the admin panel.</p>
+        </div>
       </div>
     </div>
   );
