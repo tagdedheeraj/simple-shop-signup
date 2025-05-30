@@ -1,4 +1,3 @@
-
 import { Product } from '@/types/product';
 
 export const wheatProducts: Product[] = [
@@ -7,7 +6,7 @@ export const wheatProducts: Product[] = [
     name: 'Premium Whole Wheat Flour',
     description: 'Organic stone-ground wheat flour, perfect for making healthy bread and pastries.',
     price: 5.99,
-    image: '/lovable-uploads/2a6a68af-beec-4906-b6e9-5eb249505820.png',
+    image: '/lovable-uploads/5c040d9b-b9c9-4d14-b7b6-7df9e79592a6.png',
     category: 'wheat',
     stock: 50,
     reviews: [
