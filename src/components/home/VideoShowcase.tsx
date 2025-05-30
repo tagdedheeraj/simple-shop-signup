@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause } from 'lucide-react';
+import VideoThumbnail from './VideoThumbnail';
+import VideoPlayer from './VideoPlayer';
 
 interface Video {
   id: string;
@@ -19,6 +21,7 @@ interface Video {
 const VideoShowcase: React.FC = () => {
   const [playingVideo, setPlayingVideo] = useState<string | null>(null);
   const [videos, setVideos] = useState<Video[]>([]);
+  const [loadingStats, setLoadingStats] = useState<Record<string, number>>({});
 
   useEffect(() => {
     loadVideos();
@@ -37,7 +40,7 @@ const VideoShowcase: React.FC = () => {
           id: 'wheat-processing-1',
           title: 'Premium Wheat Processing',
           description: 'Traditional wheat processing methods ensuring quality and purity',
-          thumbnail: '/placeholder.svg',
+          thumbnail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
           videoUrl: '/videos/wheat-processing.mp4',
           category: 'wheat'
         },
@@ -45,7 +48,7 @@ const VideoShowcase: React.FC = () => {
           id: 'rice-processing-1',
           title: 'Rice Milling Excellence',
           description: 'Modern rice processing techniques for superior grain quality',
-          thumbnail: '/placeholder.svg',
+          thumbnail: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
           videoUrl: '/videos/rice-processing.mp4',
           category: 'rice'
         }
@@ -54,7 +57,16 @@ const VideoShowcase: React.FC = () => {
   };
 
   const handleVideoPlay = (videoId: string) => {
+    const startTime = Date.now();
+    setLoadingStats(prev => ({ ...prev, [videoId]: startTime }));
     setPlayingVideo(playingVideo === videoId ? null : videoId);
+    
+    console.log('🎬 Video play triggered:', videoId);
+  };
+
+  const handleVideoEnd = (videoId: string) => {
+    console.log('🏁 Video ended:', videoId);
+    setPlayingVideo(null);
   };
 
   // Function to check if video should be displayed vertically
@@ -99,66 +111,19 @@ const VideoShowcase: React.FC = () => {
         <CardContent className="p-0">
           <div className={`flex ${isVertical ? 'flex-col' : 'flex-col md:flex-row'}`}>
             {/* Video Player Section */}
-            <div className={`${isVertical ? 'w-full aspect-[9/16]' : 'md:w-2/3 aspect-video'} relative bg-gray-900`}>
-              {playingVideo === video.id && video.embedUrl ? (
-                <iframe
-                  src={`${video.embedUrl}?autoplay=1&modestbranding=1&rel=0`}
-                  width="100%"
-                  height="100%"
-                  frameBorder="0"
-                  allow="autoplay; encrypted-media"
-                  allowFullScreen
-                  className="w-full h-full"
-                  title={video.title}
-                  loading="lazy"
-                />
-              ) : playingVideo === video.id && video.videoUrl ? (
-                <video
-                  className="w-full h-full object-cover"
-                  controls
-                  autoPlay
-                  onEnded={() => setPlayingVideo(null)}
-                  preload="metadata"
-                >
-                  <source src={video.videoUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
-                <>
-                  {/* Video Thumbnail */}
-                  <div className="w-full h-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl mb-2">
-                        {video.category === 'wheat' ? '🌾' : '🌾'}
-                      </div>
-                      <p className="text-sm text-gray-600 px-4">
-                        Click Play button to watch video
-                      </p>
-                    </div>
-                  </div>
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                    <Button
-                      size="lg"
-                      className="bg-white/90 text-amber-800 hover:bg-white rounded-full w-16 h-16 p-0 shadow-lg"
-                      onClick={() => handleVideoPlay(video.id)}
-                    >
-                      <Play className="h-6 w-6 ml-1" />
-                    </Button>
-                  </div>
-                </>
-              )}
-              
-              {/* Category Badge */}
-              <div className="absolute top-4 left-4">
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  video.category === 'wheat' 
-                    ? 'bg-amber-600 text-white' 
-                    : 'bg-green-600 text-white'
-                }`}>
-                  {video.category === 'wheat' ? 'Wheat' : 'Rice'}
-                </span>
-              </div>
-            </div>
+            {playingVideo === video.id ? (
+              <VideoPlayer
+                video={video}
+                isVertical={isVertical}
+                onEnded={() => handleVideoEnd(video.id)}
+              />
+            ) : (
+              <VideoThumbnail
+                video={video}
+                isVertical={isVertical}
+                onPlay={() => handleVideoPlay(video.id)}
+              />
+            )}
 
             {/* Video Info Section */}
             <div className={`${isVertical ? 'w-full' : 'md:w-1/3'} p-6 flex flex-col justify-center`}>
