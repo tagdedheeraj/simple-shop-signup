@@ -1,13 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { Upload, Trash2, Play, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { saveUploadedFile } from '@/utils/file-storage';
+import VideoUploadButton from './VideoUploadButton';
+import EmptyVideoState from './EmptyVideoState';
+import VideoCard from './VideoCard';
+import VideoEditDialog from './VideoEditDialog';
 
 interface Video {
   id: string;
@@ -156,159 +154,50 @@ const VideoManager: React.FC = () => {
     toast.success('Video deleted');
   };
 
+  const handleSaveEdit = (video: Video) => {
+    updateVideo(video.id, video);
+    setEditingVideo(null);
+    toast.success('Video updated');
+  };
+
+  const handleCategoryChange = (videoId: string, category: 'wheat' | 'rice') => {
+    updateVideo(videoId, { category });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Video Management</h2>
-        
-        <div className="flex items-center gap-4">
-          <Label htmlFor="video-upload" className="cursor-pointer">
-            <Button disabled={uploading} className="flex items-center gap-2">
-              <Upload className="h-4 w-4" />
-              {uploading ? 'Uploading...' : 'Upload Video'}
-            </Button>
-          </Label>
-          <Input
-            id="video-upload"
-            type="file"
-            accept="video/*,.mp4,.webm,.ogg,.avi,.mov"
-            onChange={handleVideoUpload}
-            className="hidden"
-          />
-        </div>
+        <VideoUploadButton 
+          uploading={uploading}
+          onVideoUpload={handleVideoUpload}
+        />
       </div>
 
       {videos.length === 0 && (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-semibold mb-2">No videos uploaded</h3>
-            <p className="text-gray-600 mb-4">Upload your first video to get started</p>
-            <Label htmlFor="video-upload-empty" className="cursor-pointer">
-              <Button className="flex items-center gap-2">
-                <Upload className="h-4 w-4" />
-                Upload Video
-              </Button>
-            </Label>
-            <Input
-              id="video-upload-empty"
-              type="file"
-              accept="video/*,.mp4,.webm,.ogg,.avi,.mov"
-              onChange={handleVideoUpload}
-              className="hidden"
-            />
-          </CardContent>
-        </Card>
+        <EmptyVideoState onVideoUpload={handleVideoUpload} />
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {videos.map((video) => (
-          <Card key={video.id} className="overflow-hidden">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <CardTitle className="text-lg">{video.title}</CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setEditingVideo(video)}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => deleteVideo(video.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="space-y-4">
-              <AspectRatio ratio={16/9}>
-                <div className="relative w-full h-full bg-gray-100 rounded overflow-hidden">
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30">
-                    <Play className="h-8 w-8 text-white" />
-                  </div>
-                </div>
-              </AspectRatio>
-
-              <div className="space-y-2">
-                <Label htmlFor={`thumbnail-${video.id}`} className="text-sm font-medium">
-                  Update Thumbnail
-                </Label>
-                <Input
-                  id={`thumbnail-${video.id}`}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleThumbnailUpload(e, video.id)}
-                  className="text-sm"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Category</Label>
-                <select
-                  value={video.category}
-                  onChange={(e) => updateVideo(video.id, { category: e.target.value as 'wheat' | 'rice' })}
-                  className="w-full p-2 border rounded text-sm"
-                >
-                  <option value="wheat">Wheat (गेहूं)</option>
-                  <option value="rice">Rice (चावल)</option>
-                </select>
-              </div>
-
-              <p className="text-sm text-gray-600">{video.description}</p>
-            </CardContent>
-          </Card>
+          <VideoCard
+            key={video.id}
+            video={video}
+            onEdit={setEditingVideo}
+            onDelete={deleteVideo}
+            onThumbnailUpload={handleThumbnailUpload}
+            onCategoryChange={handleCategoryChange}
+          />
         ))}
       </div>
 
       {editingVideo && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Edit Video: {editingVideo.title}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label htmlFor="edit-title">Title</Label>
-              <Input
-                id="edit-title"
-                value={editingVideo.title}
-                onChange={(e) => setEditingVideo({ ...editingVideo, title: e.target.value })}
-              />
-            </div>
-            
-            <div>
-              <Label htmlFor="edit-description">Description</Label>
-              <Input
-                id="edit-description"
-                value={editingVideo.description}
-                onChange={(e) => setEditingVideo({ ...editingVideo, description: e.target.value })}
-              />
-            </div>
-
-            <div className="flex gap-2">
-              <Button onClick={() => {
-                updateVideo(editingVideo.id, editingVideo);
-                setEditingVideo(null);
-                toast.success('Video updated');
-              }}>
-                Save Changes
-              </Button>
-              <Button variant="outline" onClick={() => setEditingVideo(null)}>
-                Cancel
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <VideoEditDialog
+          video={editingVideo}
+          onSave={handleSaveEdit}
+          onCancel={() => setEditingVideo(null)}
+          onChange={setEditingVideo}
+        />
       )}
     </div>
   );
