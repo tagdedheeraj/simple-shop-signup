@@ -28,7 +28,7 @@ export const initializeFirestoreProducts = async () => {
     const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
     
     if (productsSnapshot.empty) {
-      console.log('Initializing Firestore products collection with default data (web only)');
+      console.log('Initializing Firestore products collection with cleaned data (web only)');
       
       // Get list of deleted product IDs to avoid re-adding them
       const deletedIds = await getDeletedProductIds();
@@ -43,9 +43,23 @@ export const initializeFirestoreProducts = async () => {
         })
       );
       
-      console.log('Firestore products initialized successfully');
+      console.log('Firestore products initialized with cleaned data successfully');
     } else {
-      console.log('Firestore products collection already exists, skipping initialization');
+      console.log('Firestore products collection already exists, cleaning old products');
+      
+      // For web, clean up old products that are not in our current list
+      const currentProductIds = new Set(initialProducts.map(p => p.id));
+      const existingDocs = productsSnapshot.docs;
+      
+      // Delete products that are no longer in our cleaned list
+      for (const docSnapshot of existingDocs) {
+        if (!currentProductIds.has(docSnapshot.id)) {
+          console.log('Removing old product:', docSnapshot.id);
+          await deleteDoc(docSnapshot.ref);
+        }
+      }
+      
+      console.log('Old products cleaned up successfully');
     }
     
     // Mark as initialized for this session
@@ -75,7 +89,7 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
     
     // Only perform full reset if explicitly requested AND not on mobile
     if (options?.forceReset) {
-      console.log('Performing full reset of product data as requested (web only)');
+      console.log('Performing full reset of product data with cleaned list (web only)');
       
       // Delete all existing products
       const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
@@ -99,17 +113,17 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       // Clear deleted products list if doing a full reset
       localStorage.removeItem(DELETED_PRODUCTS_KEY);
       
-      // Re-initialize with fresh data
+      // Re-initialize with cleaned data
       await Promise.all(
         initialProducts.map(async (product) => {
           await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
         })
       );
       
-      toast.success('Product data completely reset to defaults');
+      toast.success('Product data completely reset with cleaned products');
     } else {
-      // Just add any missing products from the initial data for web only
-      console.log('Adding any missing default products (web only)');
+      // Just add any missing products from the cleaned data for web only
+      console.log('Adding any missing cleaned products (web only)');
       
       // Get existing product IDs
       const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
@@ -123,6 +137,21 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
         product => !existingProductIds.has(product.id) && !deletedIds.includes(product.id)
       );
       
+      // Remove old products that are no longer in our cleaned list
+      const currentProductIds = new Set(initialProducts.map(p => p.id));
+      const productsToRemove = productsSnapshot.docs.filter(
+        doc => !currentProductIds.has(doc.id)
+      );
+      
+      if (productsToRemove.length > 0) {
+        console.log(`Removing ${productsToRemove.length} old products`);
+        await Promise.all(
+          productsToRemove.map(async (doc) => {
+            await deleteDoc(doc.ref);
+          })
+        );
+      }
+      
       if (missingProducts.length > 0) {
         console.log(`Adding ${missingProducts.length} missing products`);
         
@@ -133,10 +162,12 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
           })
         );
         
-        toast.success(`Added ${missingProducts.length} missing products`);
+        toast.success(`Updated products: removed ${productsToRemove.length}, added ${missingProducts.length}`);
+      } else if (productsToRemove.length > 0) {
+        toast.success(`Cleaned up ${productsToRemove.length} old products`);
       } else {
-        console.log('No missing products found');
-        toast.info('All default products are already available');
+        console.log('No product updates needed');
+        toast.info('Product data is already up to date');
       }
     }
     

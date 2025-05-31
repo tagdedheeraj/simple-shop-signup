@@ -50,55 +50,5 @@ export const riceProducts: Product[] = [
         date: '2023-10-22T19:15:00Z'
       }
     ]
-  },
-  {
-    id: '9',
-    name: 'Brown Rice',
-    description: 'Whole grain brown rice rich in fiber and nutrients.',
-    price: 6.99,
-    image: '/lovable-uploads/39136ca6-67f4-46c7-8d50-c7cd78ce0ded.png',
-    category: 'rice',
-    stock: 70,
-    reviews: []
-  },
-  {
-    id: '36',
-    name: 'Parboiled Rice',
-    description: 'Partially boiled rice with improved nutritional profile and cooking properties.',
-    price: 5.99,
-    image: 'https://images.unsplash.com/photo-1613758235402-745466bb7ead?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    category: 'rice',
-    stock: 65,
-    reviews: []
-  },
-  {
-    id: '37',
-    name: 'Arborio Rice',
-    description: 'Short-grain rice perfect for making creamy risotto dishes.',
-    price: 7.99,
-    image: 'https://images.unsplash.com/photo-1640283668310-bd3ed37a1702?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    category: 'rice',
-    stock: 55,
-    reviews: []
-  },
-  {
-    id: '38',
-    name: 'Sushi Rice',
-    description: 'Short-grain Japanese rice with perfect stickiness for making sushi.',
-    price: 8.49,
-    image: 'https://images.unsplash.com/photo-1516684669134-de6f7c473a2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    category: 'rice',
-    stock: 60,
-    reviews: []
-  },
-  {
-    id: '39',
-    name: 'Wild Rice',
-    description: 'Nutritious grain with nutty flavor and chewy texture.',
-    price: 9.99,
-    image: 'https://images.unsplash.com/photo-1604151352497-e28bea81f57e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    category: 'rice',
-    stock: 45,
-    reviews: []
   }
 ];

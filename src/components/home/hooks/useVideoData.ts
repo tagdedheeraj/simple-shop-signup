@@ -24,7 +24,7 @@ export const useVideoData = () => {
       const isCapacitor = !!(window as any).Capacitor;
       
       if (isCapacitor) {
-        console.log('📱 Mobile app - loading videos from admin storage only');
+        console.log('📱 Mobile app - loading videos from admin storage and ensuring proper format');
       } else {
         console.log('🌐 Web app - loading videos from admin storage');
       }
@@ -35,14 +35,15 @@ export const useVideoData = () => {
         const adminVideos = JSON.parse(storedVideos);
         console.log('📺 Found admin videos:', adminVideos.length);
         
-        // Validate and filter videos
+        // Enhanced validation and filtering for mobile
         const safeVideos = adminVideos.filter((video: any) => {
           const isValid = video && 
                          typeof video === 'object' && 
                          video.id && 
                          video.title && 
                          video.category &&
-                         (video.category === 'wheat' || video.category === 'rice');
+                         (video.category === 'wheat' || video.category === 'rice') &&
+                         (video.googleDriveUrl || video.embedUrl || video.videoUrl);
           
           if (!isValid) {
             console.warn('⚠️ Invalid video found:', video);
@@ -51,18 +52,44 @@ export const useVideoData = () => {
           return isValid;
         }).map((video: any) => ({
           ...video,
-          googleDriveUrl: typeof video.googleDriveUrl === 'string' ? video.googleDriveUrl : undefined,
-          embedUrl: typeof video.embedUrl === 'string' ? video.embedUrl : undefined,
-          videoUrl: typeof video.videoUrl === 'string' ? video.videoUrl : undefined,
-          thumbnail: typeof video.thumbnail === 'string' ? video.thumbnail : undefined,
+          googleDriveUrl: typeof video.googleDriveUrl === 'string' && video.googleDriveUrl.trim() ? video.googleDriveUrl : undefined,
+          embedUrl: typeof video.embedUrl === 'string' && video.embedUrl.trim() ? video.embedUrl : undefined,
+          videoUrl: typeof video.videoUrl === 'string' && video.videoUrl.trim() ? video.videoUrl : undefined,
+          thumbnail: typeof video.thumbnail === 'string' && video.thumbnail.trim() ? video.thumbnail : undefined,
           category: video.category === 'rice' ? 'rice' as const : 'wheat' as const
         }));
         
-        console.log('✅ Valid videos loaded:', safeVideos.length);
+        console.log('✅ Valid videos loaded for mobile:', safeVideos.length);
         setVideos(safeVideos);
       } else {
         console.log('📱 No admin videos found - showing empty state');
-        setVideos([]);
+        
+        // For mobile, try to load default sample videos if no admin videos exist
+        if (isCapacitor) {
+          const defaultVideos: Video[] = [
+            {
+              id: 'default-1',
+              title: 'Lakshmikrupa Agriculture - Wheat Processing',
+              description: 'Advanced wheat processing techniques at our facility',
+              category: 'wheat',
+              googleDriveUrl: 'https://drive.google.com/file/d/1example/view',
+              thumbnail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&q=80'
+            },
+            {
+              id: 'default-2', 
+              title: 'Rice Quality Control Process',
+              description: 'Quality assurance in rice processing',
+              category: 'rice',
+              googleDriveUrl: 'https://drive.google.com/file/d/2example/view',
+              thumbnail: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=400&q=80'
+            }
+          ];
+          
+          console.log('📱 Loading default videos for mobile demo');
+          setVideos(defaultVideos);
+        } else {
+          setVideos([]);
+        }
       }
     } catch (error) {
       console.error('❌ Error loading videos:', error);
@@ -99,7 +126,7 @@ export const useVideoData = () => {
     video && isLakshmikrupaVideo(video)
   );
 
-  console.log('📊 Video categorization for display:', {
+  console.log('📊 Video categorization for mobile display:', {
     total: videos.length,
     vertical: verticalVideos.length, 
     horizontal: horizontalVideos.length
