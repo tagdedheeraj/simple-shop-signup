@@ -1,7 +1,6 @@
 
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { getGlobalTimestamp } from '@/utils/version-checker';
 import { getUploadedFileUrl } from '@/utils/file-storage';
 
 export function cn(...inputs: ClassValue[]) {
@@ -9,9 +8,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function getImageWithTimestamp(imageUrl: string): string {
-  // Handle local storage URLs
+  // Handle local storage URLs by converting them to displayable format
   if (imageUrl && imageUrl.startsWith('local-storage://')) {
-    return getUploadedFileUrl(imageUrl);
+    const displayUrl = getUploadedFileUrl(imageUrl);
+    console.log('Converting local storage URL in utils:', imageUrl, 'to:', displayUrl);
+    return displayUrl;
   }
   
   // For regular URLs (not data URLs or blob URLs)
@@ -19,10 +20,9 @@ export function getImageWithTimestamp(imageUrl: string): string {
     imageUrl && 
     !imageUrl.startsWith('data:') && 
     !imageUrl.startsWith('blob:') &&
-    !imageUrl.startsWith('local-storage://') &&
     imageUrl.trim() !== ''
   ) {
-    const timestamp = getGlobalTimestamp();
+    const timestamp = Date.now();
     
     // Clean existing timestamp
     let cleanUrl = imageUrl;

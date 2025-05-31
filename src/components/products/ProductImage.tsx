@@ -3,7 +3,7 @@ import React from 'react';
 import { Heart } from 'lucide-react';
 import { Product } from '@/types/product';
 import { useWishlist } from '@/contexts/WishlistContext';
-import { getImageWithTimestamp } from '@/lib/utils';
+import { getUploadedFileUrl } from '@/utils/file-storage';
 
 interface ProductImageProps {
   product: Product;
@@ -24,19 +24,21 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
     }
   };
   
-  // Enhanced image URL processing for mobile compatibility
+  // Enhanced image URL processing for uploaded files
   const getImageUrl = () => {
     if (!product.image) {
       return "/placeholder.svg";
     }
 
-    // For uploaded files, use original URL
+    // For uploaded files (local-storage URLs), convert to displayable format
     if (product.image.startsWith('local-storage://')) {
-      return product.image;
+      const displayUrl = getUploadedFileUrl(product.image);
+      console.log('Converting local storage URL:', product.image, 'to:', displayUrl);
+      return displayUrl;
     }
 
-    // For external URLs, add timestamp for cache busting
-    return getImageWithTimestamp(product.image);
+    // For regular URLs, return as-is
+    return product.image;
   };
   
   return (
@@ -51,7 +53,7 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
           (e.target as HTMLImageElement).src = "/placeholder.svg";
         }}
         onLoad={() => {
-          console.log('Image loaded successfully for product:', product.name);
+          console.log('Image loaded successfully for product:', product.name, 'URL:', getImageUrl());
         }}
       />
       <div className="absolute top-2 right-2">

@@ -1,4 +1,3 @@
-
 import { db } from '../index';
 import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { Product } from '@/types/product';
@@ -10,25 +9,14 @@ import { toast } from 'sonner';
 // Update or add a product to Firestore
 export const saveFirestoreProduct = async (product: Product): Promise<boolean> => {
   try {
-    // Remove any timestamp parameters that might be in the image URL
-    let imageUrl = product.image;
-    
-    // Only clean timestamp parameters from regular URLs
-    if (imageUrl && typeof imageUrl === 'string' && !imageUrl.startsWith('local-storage://')) {
-      if (imageUrl.includes('?t=')) {
-        imageUrl = imageUrl.split('?t=')[0];
-      } else if (imageUrl.includes('&t=')) {
-        imageUrl = imageUrl.replace(/&t=\d+/, '');
-      }
-    }
-    
-    // Save the product with the processed image URL
+    // Keep the original image URL as-is for local storage URLs
+    // This allows them to be properly processed by the display components
     const productToSave = {
       ...product,
-      image: imageUrl
+      image: product.image // Keep original URL including local-storage:// prefix
     };
     
-    console.log('Saving product to Firebase:', productToSave);
+    console.log('Saving product to Firebase with image URL:', productToSave.image);
     
     await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), productToSave);
     
