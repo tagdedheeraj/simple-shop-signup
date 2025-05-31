@@ -1,8 +1,11 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, Award, Shield, Users } from 'lucide-react';
+import { Play, Pause } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import VideoPlayer from './video/VideoPlayer';
+import VideoStats from './video/VideoStats';
+import CallToAction from './video/CallToAction';
 
 interface VideoData {
   id: string;
@@ -63,90 +66,6 @@ const ProcessingVideos: React.FC = () => {
     handleVideoPlay(videoId);
   };
 
-  const VideoPlayer = ({ video }: { video: VideoData }) => (
-    <motion.div 
-      className={`${video.isVertical ? 'aspect-[9/16]' : 'aspect-video'} relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-amber-200/20`}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.3 }}
-    >
-      {playingVideo === video.id ? (
-        <iframe
-          src={`${video.embedUrl}?autoplay=1`}
-          className="w-full h-full rounded-2xl"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title={video.title}
-        />
-      ) : (
-        <div className="w-full h-full bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 flex items-center justify-center relative overflow-hidden">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-4 left-4 text-6xl">🌾</div>
-            <div className="absolute bottom-4 right-4 text-4xl">🚜</div>
-            <div className="absolute top-1/2 right-8 text-3xl">⚙️</div>
-          </div>
-          
-          <div className="text-center z-10 relative">
-            <motion.div 
-              className="text-6xl mb-4"
-              animate={{ rotate: [0, 5, -5, 0] }}
-              transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-            >
-              🌾
-            </motion.div>
-            {/* Mobile: Hide title on video overlay, show below */}
-            <h3 className="text-lg font-bold text-gray-800 px-6 mb-2 leading-tight md:block hidden">
-              {video.title}
-            </h3>
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-              <Award className="h-4 w-4 text-amber-600" />
-              <span>Premium Quality</span>
-            </div>
-          </div>
-          
-          {/* Enhanced Play Button Overlay with Touch Support */}
-          <motion.div 
-            className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/10 flex items-center justify-center cursor-pointer"
-            whileHover={{ backgroundColor: "rgba(0,0,0,0.3)" }}
-            onClick={() => handleVideoPlay(video.id)}
-            onTouchEnd={(e) => handleVideoTouch(video.id, e)}
-          >
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                size="lg"
-                className="bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 rounded-full w-20 h-20 p-0 shadow-2xl border-4 border-white/50 backdrop-blur-sm pointer-events-none"
-              >
-                <Play className="h-8 w-8 ml-1" fill="currentColor" />
-              </Button>
-            </motion.div>
-          </motion.div>
-
-          {/* Enhanced Category Badge */}
-          <div className="absolute top-6 left-6">
-            <motion.span 
-              className="px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow-lg border border-white/20"
-              whileHover={{ scale: 1.05 }}
-            >
-              🎥 Processing
-            </motion.span>
-          </div>
-
-          {/* Quality Badge */}
-          <div className="absolute bottom-6 left-6">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 backdrop-blur-sm shadow-lg">
-              <Shield className="h-4 w-4 text-green-600" />
-              <span className="text-xs font-medium text-gray-700">Certified</span>
-            </div>
-          </div>
-        </div>
-      )}
-    </motion.div>
-  );
-
   const container = {
     hidden: { opacity: 0 },
     show: {
@@ -155,11 +74,6 @@ const ProcessingVideos: React.FC = () => {
         staggerChildren: 0.2
       }
     }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 30 },
-    show: { opacity: 1, y: 0 }
   };
 
   return (
@@ -209,30 +123,7 @@ const ProcessingVideos: React.FC = () => {
               ensure the highest quality standards for every grain
             </p>
             
-            {/* Stats Row */}
-            <div className="flex flex-wrap justify-center gap-8 mb-8">
-              <motion.div 
-                className="flex items-center gap-2 px-4 py-2 bg-white/70 rounded-full shadow-lg backdrop-blur-sm"
-                whileHover={{ scale: 1.05 }}
-              >
-                <Users className="h-5 w-5 text-amber-600" />
-                <span className="font-semibold text-gray-700">25+ Years Experience</span>
-              </motion.div>
-              <motion.div 
-                className="flex items-center gap-2 px-4 py-2 bg-white/70 rounded-full shadow-lg backdrop-blur-sm"
-                whileHover={{ scale: 1.05 }}
-              >
-                <Award className="h-5 w-5 text-amber-600" />
-                <span className="font-semibold text-gray-700">Premium Quality</span>
-              </motion.div>
-              <motion.div 
-                className="flex items-center gap-2 px-4 py-2 bg-white/70 rounded-full shadow-lg backdrop-blur-sm"
-                whileHover={{ scale: 1.05 }}
-              >
-                <Shield className="h-5 w-5 text-amber-600" />
-                <span className="font-semibold text-gray-700">ISO Certified</span>
-              </motion.div>
-            </div>
+            <VideoStats />
           </div>
         </motion.div>
 
@@ -256,7 +147,12 @@ const ProcessingVideos: React.FC = () => {
                 <p className="text-gray-600 text-base md:text-lg hidden md:block">Take a comprehensive look at our advanced processing facility</p>
               </div>
               
-              <VideoPlayer video={horizontalVideo} />
+              <VideoPlayer 
+                video={horizontalVideo}
+                isPlaying={playingVideo === horizontalVideo.id}
+                onPlay={() => handleVideoPlay(horizontalVideo.id)}
+                onTouch={(e) => handleVideoTouch(horizontalVideo.id, e)}
+              />
               
               <div className="mt-8 text-center">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -298,7 +194,7 @@ const ProcessingVideos: React.FC = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {verticalVideos.map((video, index) => (
+              {verticalVideos.map((video) => (
                 <motion.div 
                   key={video.id} 
                   whileHover={{ y: -10 }}
@@ -312,7 +208,12 @@ const ProcessingVideos: React.FC = () => {
                     </h4>
                   </div>
                   
-                  <VideoPlayer video={video} />
+                  <VideoPlayer 
+                    video={video}
+                    isPlaying={playingVideo === video.id}
+                    onPlay={() => handleVideoPlay(video.id)}
+                    onTouch={(e) => handleVideoTouch(video.id, e)}
+                  />
                   
                   <div className="mt-6 text-center">
                     {/* Desktop: Show title below video */}
@@ -349,29 +250,7 @@ const ProcessingVideos: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Enhanced Call to Action - Mobile Optimized */}
-          <motion.div 
-            className="text-center mt-16 p-6 md:p-8 bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100 rounded-3xl shadow-xl border border-amber-200"
-          >
-            <motion.div
-              className="text-4xl md:text-6xl mb-4"
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              📞
-            </motion.div>
-            <h4 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
-              Want to know more about our processing facilities?
-            </h4>
-            <p className="text-gray-600 mb-6 text-base md:text-lg px-2">
-              Get in touch with our experts to learn about our advanced processing techniques
-            </p>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-bold rounded-full shadow-xl border-2 border-white/20 w-full sm:w-auto">
-                Contact Now
-              </Button>
-            </motion.div>
-          </motion.div>
+          <CallToAction />
         </motion.div>
       </div>
     </section>
