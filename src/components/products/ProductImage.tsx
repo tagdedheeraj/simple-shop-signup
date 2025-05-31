@@ -26,7 +26,10 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
   
   // Enhanced image URL processing for uploaded files
   const getImageUrl = () => {
+    console.log('Getting image URL for product:', product.name, 'Image:', product.image);
+    
     if (!product.image) {
+      console.log('No image found, using placeholder');
       return "/placeholder.svg";
     }
 
@@ -34,26 +37,42 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
     if (product.image.startsWith('local-storage://')) {
       const displayUrl = getUploadedFileUrl(product.image);
       console.log('Converting local storage URL:', product.image, 'to:', displayUrl);
-      return displayUrl;
+      return displayUrl || "/placeholder.svg";
+    }
+
+    // For blob URLs, return as-is
+    if (product.image.startsWith('blob:')) {
+      console.log('Using blob URL:', product.image);
+      return product.image;
+    }
+
+    // For data URLs, return as-is
+    if (product.image.startsWith('data:')) {
+      console.log('Using data URL');
+      return product.image;
     }
 
     // For regular URLs, return as-is
+    console.log('Using regular URL:', product.image);
     return product.image;
   };
+  
+  const imageUrl = getImageUrl();
+  console.log('Final image URL for', product.name, ':', imageUrl);
   
   return (
     <div className="aspect-square relative overflow-hidden">
       <img 
-        src={getImageUrl()} 
+        src={imageUrl} 
         alt={product.name} 
         className="object-cover w-full h-full transform transition-transform hover:scale-105 duration-500"
         loading="lazy"
         onError={(e) => {
-          console.error('Image load error for product:', product.name, 'URL:', getImageUrl());
+          console.error('Image load error for product:', product.name, 'URL:', imageUrl);
           (e.target as HTMLImageElement).src = "/placeholder.svg";
         }}
         onLoad={() => {
-          console.log('Image loaded successfully for product:', product.name, 'URL:', getImageUrl());
+          console.log('Image loaded successfully for product:', product.name, 'URL:', imageUrl);
         }}
       />
       <div className="absolute top-2 right-2">

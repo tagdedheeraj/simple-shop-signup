@@ -9,7 +9,7 @@ export const saveUploadedFile = async (file: File): Promise<string> => {
   try {
     // Create a unique filename with timestamp
     const timestamp = Date.now();
-    const extension = file.name.split('.').pop() || 'mp4';
+    const extension = file.name.split('.').pop() || 'jpg';
     const fileType = file.type.startsWith('video/') ? 'video' : 'image';
     const filename = `${fileType}-${timestamp}.${extension}`;
     
@@ -45,7 +45,7 @@ export const saveUploadedFile = async (file: File): Promise<string> => {
     } catch (storageError) {
       console.error('❌ localStorage error:', storageError);
       if (storageError instanceof Error && storageError.name === 'QuotaExceededError') {
-        throw new Error('Storage quota exceeded. Please delete some old videos first.');
+        throw new Error('Storage quota exceeded. Please delete some old files first.');
       }
       throw storageError;
     }
@@ -65,9 +65,9 @@ export const getUploadedFileUrl = (localStorageUrl: string): string => {
   try {
     console.log('🔍 Getting file URL for:', localStorageUrl);
     
-    if (!localStorageUrl.startsWith('local-storage://')) {
+    if (!localStorageUrl || !localStorageUrl.startsWith('local-storage://')) {
       console.log('ℹ️ Not a local storage URL, returning as-is');
-      return localStorageUrl; // Return as-is if not our custom URL
+      return localStorageUrl || "/placeholder.svg";
     }
     
     const filename = localStorageUrl.replace('local-storage://', '');
@@ -81,15 +81,16 @@ export const getUploadedFileUrl = (localStorageUrl: string): string => {
     
     if (!storedData) {
       console.error('❌ Uploaded file not found in storage:', filename);
-      return '/placeholder.svg';
+      console.log('Available storage keys:', Object.keys(localStorage).filter(k => k.startsWith('uploaded-')));
+      return "/placeholder.svg";
     }
     
     const fileData = JSON.parse(storedData);
-    console.log('✅ File data retrieved successfully');
+    console.log('✅ File data retrieved successfully, returning base64 data');
     return fileData.data; // Return the base64 data URL
   } catch (error) {
     console.error('❌ Error retrieving uploaded file:', error);
-    return '/placeholder.svg';
+    return "/placeholder.svg";
   }
 };
 

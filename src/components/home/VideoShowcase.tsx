@@ -17,13 +17,15 @@ const VideoShowcase: React.FC = () => {
   } = useVideoData();
   const { playingVideo, handleVideoPlay, handleVideoEnd } = useVideoPlayer();
 
-  // Enhanced debugging for mobile app
+  // Enhanced debugging
   console.log('🎬 VideoShowcase Debug - Current state:', {
     isLoading,
     totalVideos: videos.length,
     verticalCount: verticalVideos.length,
     horizontalCount: horizontalVideos.length,
-    isCapacitor: !!(window as any).Capacitor
+    isCapacitor: !!(window as any).Capacitor,
+    allVideos: videos,
+    localStorage: localStorage.getItem('admin-videos')
   });
 
   const container = {
@@ -77,16 +79,24 @@ const VideoShowcase: React.FC = () => {
             ensure the highest quality standards for every grain
           </p>
           
-          {/* Reload button for troubleshooting */}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={reloadVideos}
-            className="gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Reload Videos
-          </Button>
+          {/* Debug info and reload button */}
+          <div className="flex flex-col items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={reloadVideos}
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Reload Videos
+            </Button>
+            
+            <div className="text-xs text-gray-500 space-y-1">
+              <p>Total Videos: {videos.length}</p>
+              <p>Vertical: {verticalVideos.length} | Horizontal: {horizontalVideos.length}</p>
+              <p>Storage: {localStorage.getItem('admin-videos') ? 'Data Found' : 'No Data'}</p>
+            </div>
+          </div>
         </motion.div>
 
         <motion.div 
@@ -95,26 +105,12 @@ const VideoShowcase: React.FC = () => {
           animate="show"
           className="space-y-12"
         >
-          {/* Horizontal Videos (Lakshmikrupa Agriculture) */}
-          {horizontalVideos.length > 0 && (
+          {/* Show ALL videos if we have any */}
+          {videos.length > 0 && (
             <motion.div variants={item}>
               <VideoSection
-                title="Lakshmikrupa Agriculture"
-                videos={horizontalVideos}
-                playingVideo={playingVideo}
-                isVertical={false}
-                onVideoPlay={handleVideoPlay}
-                onVideoEnd={handleVideoEnd}
-              />
-            </motion.div>
-          )}
-
-          {/* Vertical Videos (Wheat Processing, etc.) */}
-          {verticalVideos.length > 0 && (
-            <motion.div variants={item}>
-              <VideoSection
-                title="Processing Videos"
-                videos={verticalVideos}
+                title="All Videos"
+                videos={videos}
                 playingVideo={playingVideo}
                 isVertical={true}
                 onVideoPlay={handleVideoPlay}
@@ -136,9 +132,11 @@ const VideoShowcase: React.FC = () => {
               <p className="text-gray-600 mb-6">
                 Videos will appear here once they are added through the admin panel
               </p>
-              <div className="text-sm text-gray-500 space-y-1">
+              <div className="text-sm text-gray-500 space-y-1 bg-gray-100 p-4 rounded-lg max-w-md mx-auto">
+                <p><strong>Debug Info:</strong></p>
                 <p>App Type: {!!(window as any).Capacitor ? 'Mobile App' : 'Web Browser'}</p>
                 <p>Storage Check: {localStorage.getItem('admin-videos') ? 'Data Found' : 'No Data'}</p>
+                <p>Raw Data: {localStorage.getItem('admin-videos')?.substring(0, 100)}...</p>
               </div>
             </motion.div>
           )}
