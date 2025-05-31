@@ -25,8 +25,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       <Link to={`/product/${product.id}`} className="block">
         <ProductImage 
-          product={product}
-          price={formatPrice(product.price)} 
+          src={product.image}
+          alt={product.name}
+          className="w-full h-48 object-cover"
         />
         <ProductInfo product={product} />
       </Link>

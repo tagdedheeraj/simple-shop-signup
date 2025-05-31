@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { UseFormReturn } from 'react-hook-form';
@@ -11,18 +11,38 @@ interface ProductImagePreviewProps {
 }
 
 const ProductImagePreview: React.FC<ProductImagePreviewProps> = ({ form }) => {
+  const [displayUrl, setDisplayUrl] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
   // Get the current image URL for preview
-  const getCurrentImageUrl = () => {
-    const formImageUrl = form.watch('image');
-    if (!formImageUrl) return '';
-    
-    // If it's our custom local storage URL, convert it to displayable format
-    if (formImageUrl.startsWith('local-storage://')) {
-      return getUploadedFileUrl(formImageUrl);
-    }
-    
-    return formImageUrl;
-  };
+  const formImageUrl = form.watch('image');
+
+  useEffect(() => {
+    const updateDisplayUrl = async () => {
+      if (!formImageUrl) {
+        setDisplayUrl('');
+        return;
+      }
+
+      // If it's our custom local storage URL, convert it to displayable format
+      if (formImageUrl.startsWith('local-storage://')) {
+        setIsLoading(true);
+        try {
+          const resolvedUrl = await getUploadedFileUrl(formImageUrl);
+          setDisplayUrl(resolvedUrl);
+        } catch (error) {
+          console.error('Error resolving image URL:', error);
+          setDisplayUrl('');
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        setDisplayUrl(formImageUrl);
+      }
+    };
+
+    updateDisplayUrl();
+  }, [formImageUrl]);
 
   return (
     <div className="border rounded-md overflow-hidden mt-2">
@@ -32,17 +52,21 @@ const ProductImagePreview: React.FC<ProductImagePreviewProps> = ({ form }) => {
       <div className="p-2 bg-background/50">
         <AspectRatio ratio={3/2}>
           <div className="w-full h-full bg-muted/30 rounded flex items-center justify-center overflow-hidden">
-            {getCurrentImageUrl() ? (
+            {isLoading ? (
+              <div className="text-sm text-muted-foreground">
+                Loading image...
+              </div>
+            ) : displayUrl ? (
               <img 
-                src={getCurrentImageUrl()} 
+                src={displayUrl} 
                 alt="Product preview" 
                 className="w-full h-full object-contain"
                 onError={(e) => {
-                  console.error('Image load error:', getCurrentImageUrl());
+                  console.error('Image load error:', displayUrl);
                   (e.target as HTMLImageElement).src = "/placeholder.svg";
                 }}
                 onLoad={() => {
-                  console.log('Image loaded successfully:', getCurrentImageUrl());
+                  console.log('Image loaded successfully:', displayUrl);
                 }}
               />
             ) : (
