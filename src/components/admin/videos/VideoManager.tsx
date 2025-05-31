@@ -30,7 +30,16 @@ const VideoManager: React.FC = () => {
     try {
       const loadedVideos = await loadVideosFromStorage();
       console.log('✅ Videos loaded successfully:', loadedVideos.length, 'videos found');
-      setVideos(loadedVideos);
+      // Map the loaded videos to match our local Video interface
+      const mappedVideos: Video[] = loadedVideos.map(video => ({
+        id: video.id,
+        title: video.title,
+        description: video.description,
+        videoUrl: video.videoUrl || video.embedUrl || video.googleDriveUrl || '',
+        thumbnail: video.thumbnail || '/placeholder.svg',
+        category: video.category
+      }));
+      setVideos(mappedVideos);
     } catch (error) {
       console.error('❌ Error loading videos:', error);
       setVideos([]);

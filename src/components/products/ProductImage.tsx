@@ -1,94 +1,88 @@
 
-import React from 'react';
-import { Heart } from 'lucide-react';
-import { Product } from '@/types/product';
-import { useWishlist } from '@/contexts/WishlistContext';
+import React, { useState, useEffect } from 'react';
+import { getImageWithTimestamp } from '@/lib/utils';
 import { getUploadedFileUrl } from '@/utils/file-storage';
 
 interface ProductImageProps {
-  product: Product;
-  price: string;
+  src: string;
+  alt: string;
+  className?: string;
+  fallback?: string;
 }
 
-const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+const ProductImage: React.FC<ProductImageProps> = ({ 
+  src, 
+  alt, 
+  className = "", 
+  fallback = "/placeholder.svg" 
+}) => {
+  const [imageUrl, setImageUrl] = useState<string>(fallback);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
-  const handleWishlistToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
-    }
+  useEffect(() => {
+    const loadImage = async () => {
+      try {
+        setIsLoading(true);
+        setHasError(false);
+        
+        if (!src) {
+          setImageUrl(fallback);
+          setIsLoading(false);
+          return;
+        }
+
+        // Handle uploaded file URLs
+        if (src.startsWith('firebase-storage://') || src.startsWith('local-storage://')) {
+          const resolvedUrl = await getUploadedFileUrl(src);
+          setImageUrl(resolvedUrl);
+        } else {
+          // Handle regular URLs with timestamp
+          const timestampedUrl = getImageWithTimestamp(src);
+          setImageUrl(timestampedUrl);
+        }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error loading product image:', error);
+        setImageUrl(fallback);
+        setHasError(true);
+        setIsLoading(false);
+      }
+    };
+
+    loadImage();
+  }, [src, fallback]);
+
+  const handleImageError = () => {
+    console.warn('Product image failed to load:', src);
+    setHasError(true);
+    setImageUrl(fallback);
+    setIsLoading(false);
   };
-  
-  // Enhanced image URL processing for uploaded files
-  const getImageUrl = () => {
-    console.log('Getting image URL for product:', product.name, 'Image:', product.image);
-    
-    if (!product.image) {
-      console.log('No image found, using placeholder');
-      return "/placeholder.svg";
-    }
 
-    // For uploaded files (local-storage URLs), convert to displayable format
-    if (product.image.startsWith('local-storage://')) {
-      const displayUrl = getUploadedFileUrl(product.image);
-      console.log('Converting local storage URL:', product.image, 'to:', displayUrl);
-      return displayUrl || "/placeholder.svg";
-    }
-
-    // For blob URLs, return as-is
-    if (product.image.startsWith('blob:')) {
-      console.log('Using blob URL:', product.image);
-      return product.image;
-    }
-
-    // For data URLs, return as-is
-    if (product.image.startsWith('data:')) {
-      console.log('Using data URL');
-      return product.image;
-    }
-
-    // For regular URLs, return as-is
-    console.log('Using regular URL:', product.image);
-    return product.image;
+  const handleImageLoad = () => {
+    setIsLoading(false);
+    setHasError(false);
   };
-  
-  const imageUrl = getImageUrl();
-  console.log('Final image URL for', product.name, ':', imageUrl);
-  
-  return (
-    <div className="aspect-square relative overflow-hidden">
-      <img 
-        src={imageUrl} 
-        alt={product.name} 
-        className="object-cover w-full h-full transform transition-transform hover:scale-105 duration-500"
-        loading="lazy"
-        onError={(e) => {
-          console.error('Image load error for product:', product.name, 'URL:', imageUrl);
-          (e.target as HTMLImageElement).src = "/placeholder.svg";
-        }}
-        onLoad={() => {
-          console.log('Image loaded successfully for product:', product.name, 'URL:', imageUrl);
-        }}
-      />
-      <div className="absolute top-2 right-2">
-        <span className="inline-block bg-primary/90 text-white text-xs px-2 py-1 rounded-full">
-          {price}
-        </span>
+
+  if (isLoading) {
+    return (
+      <div className={`bg-gray-200 animate-pulse flex items-center justify-center ${className}`}>
+        <div className="text-gray-400">Loading...</div>
       </div>
-      <button 
-        onClick={handleWishlistToggle}
-        className="absolute top-2 left-2 p-1.5 bg-white rounded-full shadow-sm hover:shadow-md transition-all"
-      >
-        <Heart 
-          className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-red-500 text-red-500' : 'text-gray-400'}`} 
-        />
-      </button>
-    </div>
+    );
+  }
+
+  return (
+    <img
+      src={imageUrl}
+      alt={alt}
+      className={className}
+      onError={handleImageError}
+      onLoad={handleImageLoad}
+      loading="lazy"
+    />
   );
 };
 

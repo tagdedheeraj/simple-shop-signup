@@ -10,7 +10,7 @@ import TrustBadgesSection from '@/components/home/TrustBadgesSection';
 import CustomerStatistics from '@/components/home/CustomerStatistics';
 import PaymentTrustBadges from '@/components/home/PaymentTrustBadges';
 import FAQSection from '@/components/home/FAQSection';
-import VideoShowcase from '@/components/home/VideoShowcase';
+import ProcessingVideos from '@/components/home/ProcessingVideos';
 import { motion } from 'framer-motion';
 
 const Home: React.FC = () => {
@@ -48,9 +48,9 @@ const Home: React.FC = () => {
           <TrustBadgesSection />
         </motion.div>
         
-        {/* Video Showcase Section - NEW */}
+        {/* Processing Videos Section - NEW */}
         <motion.div variants={item}>
-          <VideoShowcase />
+          <ProcessingVideos />
         </motion.div>
         
         {/* Trending Products Section */}
