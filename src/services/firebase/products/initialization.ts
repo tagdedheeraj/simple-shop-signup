@@ -68,6 +68,7 @@ export const initializeFirestoreProducts = async (): Promise<boolean> => {
     
     // Get deleted product IDs to avoid re-adding them
     const deletedIds = await getDeletedProductIds();
+    console.log('Deleted product IDs that will not be re-added:', deletedIds);
     
     // Add only new products that don't exist and aren't deleted
     const batch = writeBatch(db);
@@ -79,6 +80,8 @@ export const initializeFirestoreProducts = async (): Promise<boolean> => {
         batch.set(productRef, product);
         addedCount++;
         console.log(`Adding new product: ${product.name}`);
+      } else if (deletedIds.includes(product.id)) {
+        console.log(`Skipping deleted product: ${product.name} (${product.id})`);
       }
     }
     
@@ -86,7 +89,7 @@ export const initializeFirestoreProducts = async (): Promise<boolean> => {
       await batch.commit();
       console.log(`✅ Added ${addedCount} new products to Firestore`);
     } else {
-      console.log('✅ All products already exist in Firestore');
+      console.log('✅ All products already exist in Firestore or are marked as deleted');
     }
     
     productsInitialized = true;
@@ -143,7 +146,8 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       return true;
     }
     
-    // For normal refresh (not force reset), reinitialize with fresh data
+    // For normal refresh (not force reset), reinitialize with fresh data but respect deleted products
+    productsInitialized = false; // Reset flag to allow re-initialization
     return await initializeFirestoreProducts();
   } catch (error) {
     console.error('Error refreshing Firestore products:', error);
