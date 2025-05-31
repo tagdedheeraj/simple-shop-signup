@@ -25,7 +25,7 @@ const ProductImagePreview: React.FC<ProductImagePreviewProps> = ({ form }) => {
       }
 
       // If it's our custom local storage URL, convert it to displayable format
-      if (formImageUrl.startsWith('local-storage://')) {
+      if (formImageUrl.startsWith('local-storage://') || formImageUrl.startsWith('firebase-storage://')) {
         setIsLoading(true);
         try {
           const resolvedUrl = await getUploadedFileUrl(formImageUrl);
