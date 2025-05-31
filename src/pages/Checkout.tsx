@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '@/components/layout/Layout';
@@ -11,6 +10,7 @@ import { ArrowLeft, ShoppingBag, Truck, ShieldCheck, CreditCard } from 'lucide-r
 import CustomerInfoForm, { CustomerInfo } from '@/components/checkout/CustomerInfoForm';
 import OrderSummary from '@/components/checkout/OrderSummary';
 import PayPalButton from '@/components/checkout/PayPalButton';
+import PaymentTrustBadges from '@/components/products/PaymentTrustBadges';
 import { Separator } from '@/components/ui/separator';
 
 const Checkout: React.FC = () => {
@@ -287,17 +287,12 @@ const Checkout: React.FC = () => {
             <div className="sticky top-24">
               <OrderSummary />
               
-              {/* Secured by section */}
+              {/* Payment Trust Badges Component */}
               <motion.div 
-                className="mt-6 p-4 bg-gradient-to-r from-white to-gray-50 rounded-lg border border-gray-100 shadow-sm"
+                className="mt-6"
                 variants={itemVariants}
               >
-                <h3 className="text-sm font-medium mb-3 text-gray-700">Secured By</h3>
-                <div className="flex flex-wrap gap-3 items-center justify-center">
-                  <img src="https://cdn.tinyurl.com/paypal-logo" alt="PayPal" className="h-6 object-contain" />
-                  <img src="https://cdn.tinyurl.com/visa-logo" alt="Visa" className="h-6 object-contain" />
-                  <img src="https://cdn.tinyurl.com/mastercard-logo" alt="Mastercard" className="h-6 object-contain" />
-                </div>
+                <PaymentTrustBadges />
               </motion.div>
               
               {/* Help section */}
