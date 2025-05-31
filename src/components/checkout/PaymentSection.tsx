@@ -1,12 +1,12 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CreditCard } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { useLocalization } from '@/contexts/LocalizationContext';
 import { CustomerInfo } from './CustomerInfoForm';
 import PayPalButton from './PayPalButton';
+import RazorpayButton from './RazorpayButton';
 
 interface PaymentSectionProps {
   customerInfo: CustomerInfo;
@@ -59,11 +59,36 @@ const PaymentSection: React.FC<PaymentSectionProps> = ({
           </span>
         </div>
       </div>
-      
-      <PayPalButton 
-        customerInfo={customerInfo}
-        isFormComplete={isFormComplete}
-      />
+
+      {/* Payment Options */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium text-gray-900 mb-3">Choose Payment Method</h3>
+        
+        {/* Razorpay Payment Option */}
+        <div className="border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <CreditCard className="h-5 w-5 text-blue-600" />
+            <span className="font-medium text-gray-900">Razorpay (India)</span>
+            <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded">Recommended</span>
+          </div>
+          <RazorpayButton 
+            customerInfo={customerInfo}
+            isFormComplete={isFormComplete}
+          />
+        </div>
+
+        {/* PayPal Payment Option */}
+        <div className="border border-gray-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <CreditCard className="h-5 w-5 text-yellow-600" />
+            <span className="font-medium text-gray-900">PayPal (International)</span>
+          </div>
+          <PayPalButton 
+            customerInfo={customerInfo}
+            isFormComplete={isFormComplete}
+          />
+        </div>
+      </div>
     </motion.div>
   );
 };
