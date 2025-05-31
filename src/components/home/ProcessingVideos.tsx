@@ -202,7 +202,7 @@ const ProcessingVideos: React.FC = () => {
                 </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Call to Action */}
           <motion.div 
