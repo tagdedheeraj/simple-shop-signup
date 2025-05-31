@@ -32,19 +32,29 @@ const ProductImage: React.FC<ProductImageProps> = ({
           return;
         }
 
-        // Handle uploaded file URLs
+        console.log('🖼️ Loading product image:', src);
+
+        // Handle uploaded file URLs (Firebase Storage or local storage)
         if (src.startsWith('firebase-storage://') || src.startsWith('local-storage://')) {
+          console.log('📁 Resolving uploaded file URL...');
           const resolvedUrl = await getUploadedFileUrl(src);
           setImageUrl(resolvedUrl);
-        } else {
-          // Handle regular URLs with timestamp
+        } 
+        // Handle direct Firebase Storage URLs
+        else if (src.startsWith('https://firebasestorage.googleapis.com')) {
+          console.log('🔗 Direct Firebase Storage URL');
+          setImageUrl(src);
+        }
+        // Handle regular URLs with timestamp
+        else {
+          console.log('🌐 Regular URL with timestamp');
           const timestampedUrl = getImageWithTimestamp(src);
           setImageUrl(timestampedUrl);
         }
         
         setIsLoading(false);
       } catch (error) {
-        console.error('Error loading product image:', error);
+        console.error('❌ Error loading product image:', error);
         setImageUrl(fallback);
         setHasError(true);
         setIsLoading(false);
@@ -55,13 +65,14 @@ const ProductImage: React.FC<ProductImageProps> = ({
   }, [src, fallback]);
 
   const handleImageError = () => {
-    console.warn('Product image failed to load:', src);
+    console.warn('⚠️ Product image failed to load:', src);
     setHasError(true);
     setImageUrl(fallback);
     setIsLoading(false);
   };
 
   const handleImageLoad = () => {
+    console.log('✅ Product image loaded successfully');
     setIsLoading(false);
     setHasError(false);
   };

@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '@/services/product';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { getImageWithTimestamp } from '@/lib/utils';
+import ProductImage from '@/components/products/ProductImage';
 
 const ProductBanner: React.FC = () => {
   // Fetch products for displaying in the banner
@@ -103,13 +103,10 @@ const ProductBanner: React.FC = () => {
               <Card className="rotate-6 shadow-xl w-80 overflow-hidden border-none">
                 <CardContent className="p-0">
                   <AspectRatio ratio={4/3}>
-                    <img 
-                      src={getImageWithTimestamp(firstProduct.image)} 
+                    <ProductImage 
+                      src={firstProduct.image} 
                       alt={firstProduct.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">
@@ -125,13 +122,10 @@ const ProductBanner: React.FC = () => {
               <Card className="-rotate-6 shadow-xl w-80 absolute -bottom-10 -right-5 overflow-hidden border-none">
                 <CardContent className="p-0">
                   <AspectRatio ratio={4/3}>
-                    <img 
-                      src={getImageWithTimestamp(secondProduct.image)} 
+                    <ProductImage 
+                      src={secondProduct.image} 
                       alt={secondProduct.name}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = "/placeholder.svg";
-                      }}
                     />
                   </AspectRatio>
                   <div className="p-4 bg-white">
