@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useLocalization } from '@/contexts/LocalizationContext';
-import { Star, Quote, CheckCircle, Image } from 'lucide-react';
+import { Star, Quote, CheckCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Testimonial {
@@ -16,7 +16,6 @@ interface Testimonial {
   rating: number;
   verifiedPurchase: boolean;
   date: string;
-  photos?: string[];
 }
 
 const TestimonialSection: React.FC = () => {
@@ -31,11 +30,7 @@ const TestimonialSection: React.FC = () => {
       comment: "I've been ordering from Lakshmikrupa for over a year now. The produce is always fresh and the service is excellent!",
       rating: 5,
       verifiedPurchase: true,
-      date: "March 15, 2023",
-      photos: [
-        "https://images.unsplash.com/photo-1540420773420-3366772f4999?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-        "https://images.unsplash.com/photo-1598170845058-c2b7cd343e54?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-      ]
+      date: "March 15, 2023"
     },
     {
       id: 2,
@@ -45,10 +40,7 @@ const TestimonialSection: React.FC = () => {
       comment: "As a professional chef, I'm very particular about ingredients. Lakshmikrupa delivers exceptional quality organic products consistently.",
       rating: 5,
       verifiedPurchase: true,
-      date: "January 8, 2023",
-      photos: [
-        "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-      ]
+      date: "January 8, 2023"
     },
     {
       id: 3,
@@ -58,12 +50,7 @@ const TestimonialSection: React.FC = () => {
       comment: "The organic vegetables from Lakshmikrupa have made a noticeable difference in my health journey. Highly recommended!",
       rating: 4,
       verifiedPurchase: true,
-      date: "February 22, 2023",
-      photos: [
-        "https://images.unsplash.com/photo-1574316071802-0d684efa7bf5?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-        "https://images.unsplash.com/photo-1571680322279-a226e6a4cc2a?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80",
-        "https://images.unsplash.com/photo-1467019972079-a273e1bc9173?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80"
-      ]
+      date: "February 22, 2023"
     }
   ];
   
@@ -126,31 +113,6 @@ const TestimonialSection: React.FC = () => {
                 </div>
                 <blockquote className="text-muted-foreground italic">"{testimonial.comment}"</blockquote>
                 <p className="text-xs text-gray-500 mt-3">{testimonial.date}</p>
-                
-                {/* Photo Gallery Section - NEW */}
-                {testimonial.photos && testimonial.photos.length > 0 && (
-                  <div className="mt-4">
-                    <div className="flex items-center gap-1.5 mb-2">
-                      <Image className="h-4 w-4 text-green-600" />
-                      <span className="text-sm font-medium">Customer Photos</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      {testimonial.photos.map((photo, i) => (
-                        <motion.div 
-                          key={i}
-                          className="relative rounded-md overflow-hidden"
-                          whileHover={{ scale: 1.05 }}
-                        >
-                          <img 
-                            src={photo} 
-                            alt={`Photo by ${testimonial.name}`} 
-                            className="w-full h-20 object-cover" 
-                          />
-                        </motion.div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </CardContent>
               <CardFooter className="px-6 pb-6 pt-4">
                 <div className="flex items-center">
