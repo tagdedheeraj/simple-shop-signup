@@ -51,8 +51,8 @@ export const useVideoData = () => {
           
           return isValid;
         }).map((video: any) => {
-          // Clean up corrupted object properties
-          const cleanVideo = {
+          // Clean up corrupted object properties - properly type the object
+          const cleanVideo: Video = {
             id: video.id,
             title: video.title,
             description: video.description || '',
