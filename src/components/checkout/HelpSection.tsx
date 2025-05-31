@@ -22,7 +22,7 @@ const HelpSection: React.FC = () => {
         Having trouble with your order? Contact our support team.
       </p>
       <div className="text-xs text-amber-800 font-medium">
-        📞 +91 9876543210 | ✉️ support@example.com
+        📞 +91 91455 54139 | ✉️ support@lakshmikrupaagriculture.com
       </div>
     </motion.div>
   );
