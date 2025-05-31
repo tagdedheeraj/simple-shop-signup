@@ -97,7 +97,7 @@ export const initializeFirestoreProducts = async (): Promise<boolean> => {
   }
 };
 
-// Force refresh products with option to reset
+// Force refresh products with option to reset - but don't re-add default products
 export const refreshFirestoreProducts = async (options?: { forceReset?: boolean }): Promise<boolean> => {
   try {
     console.log('🔄 Refreshing Firestore products...');
@@ -136,11 +136,14 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
       // Clear localStorage
       localStorage.removeItem('deleted-products');
       
-      // Reset initialization flag
+      // Reset initialization flag but DON'T re-initialize with default products
       productsInitialized = false;
+      
+      console.log('✅ Force reset completed - no default products re-added');
+      return true;
     }
     
-    // Reinitialize with fresh data
+    // For normal refresh (not force reset), reinitialize with fresh data
     return await initializeFirestoreProducts();
   } catch (error) {
     console.error('Error refreshing Firestore products:', error);

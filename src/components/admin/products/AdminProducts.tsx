@@ -56,18 +56,18 @@ const AdminProducts: React.FC = () => {
   const handleForceRefresh = async () => {
     try {
       setForceRefreshing(true);
-      console.log('Force refreshing products with cleaned data...');
+      console.log('Force cleaning all products from Firebase...');
       
       const success = await refreshFirestoreProducts({ forceReset: true });
       if (success) {
         await fetchProducts();
-        toast.success('Products completely refreshed with cleaned data');
+        toast.success('All products cleared from Firebase. Only manually added products will remain.');
       } else {
-        toast.error('Failed to force refresh products');
+        toast.error('Failed to clean products');
       }
     } catch (error) {
-      console.error('Error force refreshing products:', error);
-      toast.error('Failed to force refresh products');
+      console.error('Error force cleaning products:', error);
+      toast.error('Failed to clean products');
     } finally {
       setForceRefreshing(false);
     }
@@ -100,7 +100,7 @@ const AdminProducts: React.FC = () => {
             className="flex items-center gap-2"
           >
             <RefreshCw className={`h-4 w-4 ${forceRefreshing ? 'animate-spin' : ''}`} />
-            Force Clean Refresh
+            Clear All Products
           </Button>
           
           <Button 
@@ -122,7 +122,7 @@ const AdminProducts: React.FC = () => {
           Current products: {products.length} | Filtered: {filteredProducts.length}
         </p>
         <p className="text-xs text-blue-600 mt-1">
-          Use "Force Clean Refresh" to completely reset with only wheat and rice products for mobile app compatibility.
+          Use "Clear All Products" to remove everything from Firebase. Only manually added products will remain.
         </p>
       </div>
 
