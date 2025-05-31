@@ -11,6 +11,7 @@ import CustomerStatistics from '@/components/home/CustomerStatistics';
 import PaymentTrustBadges from '@/components/home/PaymentTrustBadges';
 import FAQSection from '@/components/home/FAQSection';
 import ProcessingVideos from '@/components/home/ProcessingVideos';
+import HighSellingProducts from '@/components/home/HighSellingProducts';
 import { motion } from 'framer-motion';
 
 const Home: React.FC = () => {
@@ -48,7 +49,12 @@ const Home: React.FC = () => {
           <TrustBadgesSection />
         </motion.div>
         
-        {/* Processing Videos Section - NEW */}
+        {/* High Selling Products Section - NEW */}
+        <motion.div variants={item}>
+          <HighSellingProducts />
+        </motion.div>
+        
+        {/* Processing Videos Section */}
         <motion.div variants={item}>
           <ProcessingVideos />
         </motion.div>
