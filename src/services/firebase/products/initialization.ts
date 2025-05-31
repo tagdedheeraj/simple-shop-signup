@@ -5,10 +5,8 @@ import { PRODUCTS_COLLECTION, DELETED_PRODUCTS_COLLECTION } from './constants';
 import { products } from '../../product/data';
 import { getDeletedProductIds } from './deleted-products';
 
-// Track if products have been initialized
 let productsInitialized = false;
 
-// Clean up old products that are no longer needed
 const cleanupOldProducts = async () => {
   try {
     const productsRef = collection(db, PRODUCTS_COLLECTION);
@@ -22,9 +20,6 @@ const cleanupOldProducts = async () => {
     
     snapshot.docs.forEach((docSnapshot) => {
       const productId = docSnapshot.id;
-      
-      // Only remove products that are not in our current data and not explicitly deleted
-      // AND are not manually added products (don't start with default product prefixes)
       const isDefaultProduct = productId.startsWith('rice-') || productId.startsWith('wheat-');
       
       if (!currentProductIds.includes(productId) && !deletedIds.includes(productId) && isDefaultProduct) {
@@ -43,44 +38,32 @@ const cleanupOldProducts = async () => {
   }
 };
 
-// Initialize Firestore products
 export const initializeFirestoreProducts = async (): Promise<boolean> => {
   if (productsInitialized) {
     return true;
   }
 
   try {
-    // Check if we're in a mobile environment
     const isCapacitor = !!(window as any).Capacitor;
     
-    if (isCapacitor) {
-      console.log('📱 Mobile app detected - loading existing products from Firebase');
-      productsInitialized = true;
-      return true;
-    }
-
     console.log('🔄 Initializing Firestore products...');
     
-    // Get existing products from Firestore first
     const productsRef = collection(db, PRODUCTS_COLLECTION);
     const snapshot = await getDocs(productsRef);
     const existingProducts = snapshot.docs.length;
     
     console.log(`Found ${existingProducts} existing products in Firebase`);
     
-    // If we have existing products, don't add default ones
     if (existingProducts > 0) {
-      console.log('✅ Products already exist in Firestore, skipping default initialization');
+      console.log('✅ Products already exist in Firestore');
       productsInitialized = true;
       return true;
     }
     
-    // Only add default products if no products exist
+    // Add default products only if none exist
     const existingProductIds = snapshot.docs.map(doc => doc.id);
     const deletedIds = await getDeletedProductIds();
-    console.log('Deleted product IDs that will not be re-added:', deletedIds);
     
-    // Add only new default products that don't exist and aren't deleted
     const batch = writeBatch(db);
     let addedCount = 0;
     
@@ -96,8 +79,6 @@ export const initializeFirestoreProducts = async (): Promise<boolean> => {
     if (addedCount > 0) {
       await batch.commit();
       console.log(`✅ Added ${addedCount} default products to Firestore`);
-    } else {
-      console.log('✅ No default products needed');
     }
     
     productsInitialized = true;
@@ -108,7 +89,6 @@ export const initializeFirestoreProducts = async (): Promise<boolean> => {
   }
 };
 
-// Force refresh products with option to reset
 export const refreshFirestoreProducts = async (options?: { forceReset?: boolean }): Promise<boolean> => {
   try {
     console.log('🔄 Refreshing Firestore products...');
@@ -116,7 +96,6 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
     if (options?.forceReset) {
       console.log('🧹 Force reset: Cleaning all existing products...');
       
-      // Delete all existing products
       const productsRef = collection(db, PRODUCTS_COLLECTION);
       const snapshot = await getDocs(productsRef);
       
@@ -130,7 +109,6 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
         console.log(`Deleted ${snapshot.docs.length} existing products`);
       }
       
-      // Clear deleted products tracking
       const deletedRef = collection(db, DELETED_PRODUCTS_COLLECTION);
       const deletedSnapshot = await getDocs(deletedRef);
       
@@ -144,17 +122,12 @@ export const refreshFirestoreProducts = async (options?: { forceReset?: boolean 
         console.log('Cleared deleted products tracking');
       }
       
-      // Clear localStorage
-      localStorage.removeItem('deleted-products');
-      
-      // Reset initialization flag
       productsInitialized = false;
       
-      console.log('✅ Force reset completed - no products remain');
+      console.log('✅ Force reset completed');
       return true;
     }
     
-    // For normal refresh, don't reset the initialization flag
     return await initializeFirestoreProducts();
   } catch (error) {
     console.error('Error refreshing Firestore products:', error);

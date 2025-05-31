@@ -8,24 +8,23 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Function to force browser to reload images by appending a timestamp query parameter
 export function getImageWithTimestamp(imageUrl: string): string {
-  // Handle our custom local storage URLs first
+  // Handle local storage URLs
   if (imageUrl && imageUrl.startsWith('local-storage://')) {
     return getUploadedFileUrl(imageUrl);
   }
   
-  // Only add timestamp to regular URLs (not data URLs or blob URLs)
+  // For regular URLs (not data URLs or blob URLs)
   if (
     imageUrl && 
     !imageUrl.startsWith('data:') && 
     !imageUrl.startsWith('blob:') &&
-    !imageUrl.startsWith('local-storage://')
+    !imageUrl.startsWith('local-storage://') &&
+    imageUrl.trim() !== ''
   ) {
-    // Get the global timestamp for this session
     const timestamp = getGlobalTimestamp();
     
-    // Remove any existing timestamp parameter if present
+    // Clean existing timestamp
     let cleanUrl = imageUrl;
     if (imageUrl.includes('?t=')) {
       cleanUrl = imageUrl.split('?t=')[0];
@@ -33,10 +32,10 @@ export function getImageWithTimestamp(imageUrl: string): string {
       cleanUrl = imageUrl.replace(/&t=\d+/, '');
     }
     
-    // Add timestamp parameter
+    // Add fresh timestamp
     const separator = cleanUrl.includes('?') ? '&' : '?';
     return `${cleanUrl}${separator}t=${timestamp}`;
   }
   
-  return imageUrl;
+  return imageUrl || "/placeholder.svg";
 }

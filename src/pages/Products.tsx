@@ -10,7 +10,6 @@ import ProductHeader from '@/components/products/ProductHeader';
 import SearchBar from '@/components/products/SearchBar';
 import CategoryFilter from '@/components/products/CategoryFilter';
 import SearchResults from '@/components/products/SearchResults';
-import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 
 const Products: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -20,25 +19,15 @@ const Products: React.FC = () => {
   const [category, setCategory] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  
-  // Get deleted product IDs from localStorage
-  const getDeletedProductIds = (): string[] => {
-    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
-  };
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const data = await getProducts();
       
-      // Filter out deleted products
-      const availableProducts = data.filter(product => 
-        !getDeletedProductIds().includes(product.id)
-      );
-      
-      setProducts(availableProducts);
-      setFilteredProducts(availableProducts);
+      // Products are already filtered by Firebase service
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast.error('Failed to load products');
@@ -72,12 +61,10 @@ const Products: React.FC = () => {
   const filterProducts = () => {
     let result = [...products];
     
-    // Filter by category
     if (category !== 'all') {
       result = result.filter(product => product.category === category);
     }
     
-    // Filter by search term
     if (searchTerm.trim() !== '') {
       const searchLower = searchTerm.toLowerCase();
       result = result.filter(
@@ -107,7 +94,6 @@ const Products: React.FC = () => {
           <div className="flex flex-col space-y-4">
             <ProductHeader refreshing={refreshing} handleRefresh={handleRefresh} />
             
-            {/* Search and Filter Section */}
             <div className="flex flex-col space-y-4">
               <SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
               

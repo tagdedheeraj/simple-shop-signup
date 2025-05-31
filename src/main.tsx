@@ -20,28 +20,17 @@ const queryClient = new QueryClient({
 // Clean up old uploaded files on app start
 cleanupOldUploadedFiles();
 
-// Initialize app for mobile builds
+// Initialize app for mobile builds - simplified to avoid localStorage issues
 const initializeApp = async () => {
   const isCapacitor = !!(window as any).Capacitor;
   
   if (isCapacitor) {
-    console.log('📱 Mobile app detected - performing complete data reset...');
+    console.log('📱 Mobile app detected - using Firebase data only');
     
-    // Clear ALL localStorage data except essential Firebase auth
-    const keysToKeep = ['firebase:authUser', 'firebase:host'];
-    const allKeys = Object.keys(localStorage);
-    
-    allKeys.forEach(key => {
-      if (!keysToKeep.some(keepKey => key.includes(keepKey))) {
-        localStorage.removeItem(key);
-        console.log('🗑️ Cleared cache:', key);
-      }
-    });
-    
-    // Set fresh timestamp
+    // Only set essential timestamp for image loading
     localStorage.setItem('global_timestamp', Date.now().toString());
     
-    console.log('✅ Mobile app data completely reset - only Firebase data will be used');
+    console.log('✅ Mobile app initialized - Firebase data will be used');
   }
 };
 

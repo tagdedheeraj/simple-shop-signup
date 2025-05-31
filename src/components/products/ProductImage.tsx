@@ -24,18 +24,34 @@ const ProductImage: React.FC<ProductImageProps> = ({ product, price }) => {
     }
   };
   
-  // Use the global timestamp utility for consistent cache busting
-  const imageUrl = getImageWithTimestamp(product.image);
+  // Enhanced image URL processing for mobile compatibility
+  const getImageUrl = () => {
+    if (!product.image) {
+      return "/placeholder.svg";
+    }
+
+    // For uploaded files, use original URL
+    if (product.image.startsWith('local-storage://')) {
+      return product.image;
+    }
+
+    // For external URLs, add timestamp for cache busting
+    return getImageWithTimestamp(product.image);
+  };
   
   return (
     <div className="aspect-square relative overflow-hidden">
       <img 
-        src={imageUrl} 
+        src={getImageUrl()} 
         alt={product.name} 
         className="object-cover w-full h-full transform transition-transform hover:scale-105 duration-500"
         loading="lazy"
         onError={(e) => {
+          console.error('Image load error for product:', product.name, 'URL:', getImageUrl());
           (e.target as HTMLImageElement).src = "/placeholder.svg";
+        }}
+        onLoad={() => {
+          console.log('Image loaded successfully for product:', product.name);
         }}
       />
       <div className="absolute top-2 right-2">
