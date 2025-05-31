@@ -2,6 +2,9 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Product } from '@/types/product';
+import { db } from '@/services/firebase';
+import { doc, setDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { useAuth } from '@/contexts/auth/AuthContext';
 
 interface CartItem {
   product: Product;
@@ -30,9 +33,43 @@ export const useCart = () => {
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const { user } = useAuth();
   
-  // Load cart from localStorage on component mount
+  // Load cart from Firebase when user changes
   useEffect(() => {
+    if (user) {
+      loadCartFromFirebase();
+    } else {
+      // If no user, load from localStorage as fallback
+      loadCartFromLocalStorage();
+    }
+  }, [user]);
+
+  const loadCartFromFirebase = async () => {
+    if (!user) return;
+    
+    try {
+      const cartQuery = query(
+        collection(db, 'carts'),
+        where('userId', '==', user.uid)
+      );
+      const snapshot = await getDocs(cartQuery);
+      const cartItems = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          product: data.product as Product,
+          quantity: data.quantity
+        } as CartItem;
+      });
+      setItems(cartItems);
+    } catch (error) {
+      console.error('Error loading cart from Firebase:', error);
+      // Fallback to localStorage
+      loadCartFromLocalStorage();
+    }
+  };
+
+  const loadCartFromLocalStorage = () => {
     const savedCart = localStorage.getItem('cart');
     if (savedCart) {
       try {
@@ -41,72 +78,109 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('Failed to parse cart from localStorage', e);
       }
     }
-  }, []);
+  };
+
+  const saveToFirebase = async (cartItem: CartItem, action: 'add' | 'remove' | 'update') => {
+    if (!user) return;
+
+    try {
+      const cartItemId = `${user.uid}_${cartItem.product.id}`;
+      
+      if (action === 'remove') {
+        await deleteDoc(doc(db, 'carts', cartItemId));
+      } else {
+        await setDoc(doc(db, 'carts', cartItemId), {
+          userId: user.uid,
+          productId: cartItem.product.id,
+          product: cartItem.product,
+          quantity: cartItem.quantity,
+          updatedAt: new Date().toISOString()
+        });
+      }
+    } catch (error) {
+      console.error('Error saving to Firebase cart:', error);
+      // Continue with localStorage as fallback
+    }
+  };
   
-  // Save cart to localStorage whenever it changes
+  // Save cart to localStorage whenever it changes (fallback)
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (product: Product, quantity = 1) => {
+  const addToCart = async (product: Product, quantity = 1) => {
     setItems(prevItems => {
       const existingItem = prevItems.find(item => item.product.id === product.id);
       
       if (existingItem) {
-        // Update quantity if item already exists
-        const updatedItems = prevItems.map(item => 
-          item.product.id === product.id 
-            ? { ...item, quantity: item.quantity + quantity } 
-            : item
-        );
+        const updatedItem = { ...existingItem, quantity: existingItem.quantity + quantity };
+        saveToFirebase(updatedItem, 'update');
         toast.success(`Updated quantity of ${product.name} in cart`);
-        return updatedItems;
+        return prevItems.map(item => 
+          item.product.id === product.id ? updatedItem : item
+        );
       } else {
-        // Add new item
+        const newItem = { product, quantity };
+        saveToFirebase(newItem, 'add');
         toast.success(`Added ${product.name} to cart`);
-        return [...prevItems, { product, quantity }];
+        return [...prevItems, newItem];
       }
     });
   };
 
-  const removeFromCart = (productId: string) => {
+  const removeFromCart = async (productId: string) => {
     setItems(prevItems => {
       const itemToRemove = prevItems.find(item => item.product.id === productId);
       if (itemToRemove) {
+        saveToFirebase(itemToRemove, 'remove');
         toast.success(`Removed ${itemToRemove.product.name} from cart`);
       }
       return prevItems.filter(item => item.product.id !== productId);
     });
   };
 
-  const updateQuantity = (productId: string, quantity: number) => {
+  const updateQuantity = async (productId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
       return;
     }
     
     setItems(prevItems => 
-      prevItems.map(item => 
-        item.product.id === productId 
-          ? { ...item, quantity } 
-          : item
-      )
+      prevItems.map(item => {
+        if (item.product.id === productId) {
+          const updatedItem = { ...item, quantity };
+          saveToFirebase(updatedItem, 'update');
+          return updatedItem;
+        }
+        return item;
+      })
     );
   };
 
-  const clearCart = () => {
+  const clearCart = async () => {
+    if (user) {
+      try {
+        // Remove all cart items for this user from Firebase
+        const cartQuery = query(
+          collection(db, 'carts'),
+          where('userId', '==', user.uid)
+        );
+        const snapshot = await getDocs(cartQuery);
+        
+        for (const docRef of snapshot.docs) {
+          await deleteDoc(docRef.ref);
+        }
+      } catch (error) {
+        console.error('Error clearing cart from Firebase:', error);
+      }
+    }
+    
     setItems([]);
     toast.success('Cart cleared');
   };
 
-  // Calculate total number of items
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  
-  // Calculate total price
-  const totalPrice = items.reduce(
-    (sum, item) => sum + (item.product.price * item.quantity), 
-    0
-  );
+  const totalPrice = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
 
   return (
     <CartContext.Provider value={{

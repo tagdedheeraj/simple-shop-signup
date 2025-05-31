@@ -1,4 +1,7 @@
 
+import { db } from '@/services/firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+
 export const saveUploadedFile = async (file: File): Promise<string> => {
   console.log('🔧 saveUploadedFile called with:', {
     name: file.name,
@@ -7,7 +10,6 @@ export const saveUploadedFile = async (file: File): Promise<string> => {
   });
 
   try {
-    // Create a unique filename with timestamp
     const timestamp = Date.now();
     const extension = file.name.split('.').pop() || 'jpg';
     const fileType = file.type.startsWith('video/') ? 'video' : 'image';
@@ -15,12 +17,10 @@ export const saveUploadedFile = async (file: File): Promise<string> => {
     
     console.log('📁 Generated filename:', filename);
     
-    // Convert file to base64 for storage
     console.log('🔄 Converting file to base64...');
     const base64 = await fileToBase64(file);
     console.log('✅ File converted to base64, length:', base64.length);
     
-    // Store in localStorage with the filename as key
     const fileData = {
       data: base64,
       type: file.type,
@@ -33,25 +33,31 @@ export const saveUploadedFile = async (file: File): Promise<string> => {
     const storageKey = `uploaded-${fileType}-${filename}`;
     console.log('💾 Storing file with key:', storageKey);
     
-    // Check localStorage space before saving
-    const dataString = JSON.stringify(fileData);
-    const sizeInMB = (dataString.length / (1024 * 1024)).toFixed(2);
-    console.log('📊 Data size:', sizeInMB, 'MB');
-    
-    // Check available localStorage space
+    // Save to Firebase first
     try {
-      localStorage.setItem(storageKey, dataString);
-      console.log('✅ File saved to localStorage successfully');
-    } catch (storageError) {
-      console.error('❌ localStorage error:', storageError);
-      if (storageError instanceof Error && storageError.name === 'QuotaExceededError') {
-        throw new Error('Storage quota exceeded. Please delete some old files first.');
+      await setDoc(doc(db, 'uploaded-files', storageKey), fileData);
+      console.log('✅ File saved to Firebase successfully');
+    } catch (firebaseError) {
+      console.warn('⚠️ Firebase storage failed, using localStorage fallback:', firebaseError);
+      
+      // Fallback to localStorage
+      const dataString = JSON.stringify(fileData);
+      const sizeInMB = (dataString.length / (1024 * 1024)).toFixed(2);
+      console.log('📊 Data size:', sizeInMB, 'MB');
+      
+      try {
+        localStorage.setItem(storageKey, dataString);
+        console.log('✅ File saved to localStorage successfully');
+      } catch (storageError) {
+        console.error('❌ localStorage error:', storageError);
+        if (storageError instanceof Error && storageError.name === 'QuotaExceededError') {
+          throw new Error('Storage quota exceeded. Please delete some old files first.');
+        }
+        throw storageError;
       }
-      throw storageError;
     }
     
-    // Return a custom URL that we can recognize later
-    const customUrl = `local-storage://${filename}`;
+    const customUrl = `firebase-storage://${filename}`;
     console.log('🔗 Returning custom URL:', customUrl);
     return customUrl;
     
@@ -61,19 +67,44 @@ export const saveUploadedFile = async (file: File): Promise<string> => {
   }
 };
 
-export const getUploadedFileUrl = (localStorageUrl: string): string => {
+export const getUploadedFileUrl = async (storageUrl: string): Promise<string> => {
   try {
-    console.log('🔍 Getting file URL for:', localStorageUrl);
+    console.log('🔍 Getting file URL for:', storageUrl);
     
-    if (!localStorageUrl || !localStorageUrl.startsWith('local-storage://')) {
-      console.log('ℹ️ Not a local storage URL, returning as-is');
-      return localStorageUrl || "/placeholder.svg";
+    if (!storageUrl || (!storageUrl.startsWith('firebase-storage://') && !storageUrl.startsWith('local-storage://'))) {
+      console.log('ℹ️ Not a storage URL, returning as-is');
+      return storageUrl || "/placeholder.svg";
     }
     
-    const filename = localStorageUrl.replace('local-storage://', '');
+    let filename = '';
+    if (storageUrl.startsWith('firebase-storage://')) {
+      filename = storageUrl.replace('firebase-storage://', '');
+    } else {
+      filename = storageUrl.replace('local-storage://', '');
+    }
+    
     console.log('📁 Extracted filename:', filename);
     
-    // Try both video and image prefixes
+    // Try Firebase first
+    try {
+      const fileDoc = await getDoc(doc(db, 'uploaded-files', `uploaded-video-${filename}`));
+      if (fileDoc.exists()) {
+        const fileData = fileDoc.data();
+        console.log('✅ File data retrieved from Firebase');
+        return fileData.data;
+      }
+      
+      const imageDoc = await getDoc(doc(db, 'uploaded-files', `uploaded-image-${filename}`));
+      if (imageDoc.exists()) {
+        const fileData = imageDoc.data();
+        console.log('✅ File data retrieved from Firebase');
+        return fileData.data;
+      }
+    } catch (firebaseError) {
+      console.warn('⚠️ Firebase retrieval failed, trying localStorage:', firebaseError);
+    }
+    
+    // Fallback to localStorage
     let storedData = localStorage.getItem(`uploaded-video-${filename}`);
     if (!storedData) {
       storedData = localStorage.getItem(`uploaded-image-${filename}`);
@@ -81,13 +112,12 @@ export const getUploadedFileUrl = (localStorageUrl: string): string => {
     
     if (!storedData) {
       console.error('❌ Uploaded file not found in storage:', filename);
-      console.log('Available storage keys:', Object.keys(localStorage).filter(k => k.startsWith('uploaded-')));
       return "/placeholder.svg";
     }
     
     const fileData = JSON.parse(storedData);
-    console.log('✅ File data retrieved successfully, returning base64 data');
-    return fileData.data; // Return the base64 data URL
+    console.log('✅ File data retrieved from localStorage');
+    return fileData.data;
   } catch (error) {
     console.error('❌ Error retrieving uploaded file:', error);
     return "/placeholder.svg";
@@ -110,12 +140,13 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-export const cleanupOldUploadedFiles = () => {
+export const cleanupOldUploadedFiles = async () => {
   try {
     console.log('🧹 Cleaning up old uploaded files...');
     const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
     let cleanedCount = 0;
     
+    // Clean localStorage
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('uploaded-image-') || key.startsWith('uploaded-video-')) {
         try {
@@ -125,7 +156,6 @@ export const cleanupOldUploadedFiles = () => {
             cleanedCount++;
           }
         } catch (error) {
-          // Remove corrupted entries
           localStorage.removeItem(key);
           cleanedCount++;
         }
