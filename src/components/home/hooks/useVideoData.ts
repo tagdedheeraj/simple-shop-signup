@@ -24,9 +24,9 @@ export const useVideoData = () => {
       const isCapacitor = !!(window as any).Capacitor;
       
       if (isCapacitor) {
-        console.log('📱 Mobile app - loading and cleaning videos from admin storage');
+        console.log('📱 Mobile app - loading videos from admin storage');
       } else {
-        console.log('🌐 Web app - loading and cleaning videos from admin storage');
+        console.log('🌐 Web app - loading videos from admin storage');
       }
       
       const storedVideos = localStorage.getItem('admin-videos');
@@ -35,67 +35,69 @@ export const useVideoData = () => {
         const adminVideos = JSON.parse(storedVideos);
         console.log('📺 Found admin videos:', adminVideos.length);
         
-        // Enhanced cleaning and validation for corrupted data
-        const cleanedVideos = adminVideos.filter((video: any) => {
-          const isValid = video && 
-                         typeof video === 'object' && 
-                         video.id && 
-                         video.title && 
-                         video.category &&
-                         (video.category === 'wheat' || video.category === 'rice') &&
-                         (video.googleDriveUrl || video.embedUrl || video.videoUrl);
-          
-          if (!isValid) {
-            console.warn('⚠️ Invalid video found and removed:', video);
+        // Simple validation and cleaning
+        const validVideos = adminVideos.filter((video: any) => {
+          // Basic validation
+          if (!video || typeof video !== 'object') {
+            console.warn('⚠️ Invalid video object found:', video);
+            return false;
           }
           
-          return isValid;
+          if (!video.id || !video.title || !video.category) {
+            console.warn('⚠️ Video missing required fields:', video);
+            return false;
+          }
+          
+          if (video.category !== 'wheat' && video.category !== 'rice') {
+            console.warn('⚠️ Video has invalid category:', video.category);
+            return false;
+          }
+          
+          // Must have at least one video URL
+          if (!video.googleDriveUrl && !video.embedUrl && !video.videoUrl) {
+            console.warn('⚠️ Video missing video URL:', video);
+            return false;
+          }
+          
+          return true;
         }).map((video: any) => {
-          // Clean up corrupted object properties - properly type the object
+          // Create clean video object
           const cleanVideo: Video = {
             id: video.id,
             title: video.title,
             description: video.description || '',
-            category: video.category === 'rice' ? 'rice' as const : 'wheat' as const
+            category: video.category
           };
 
-          // Clean up URL properties - remove corrupted objects
+          // Add URL properties if they exist and are valid strings
           if (video.googleDriveUrl && typeof video.googleDriveUrl === 'string' && video.googleDriveUrl.trim()) {
-            cleanVideo.googleDriveUrl = video.googleDriveUrl;
+            cleanVideo.googleDriveUrl = video.googleDriveUrl.trim();
           }
           
           if (video.embedUrl && typeof video.embedUrl === 'string' && video.embedUrl.trim()) {
-            cleanVideo.embedUrl = video.embedUrl;
+            cleanVideo.embedUrl = video.embedUrl.trim();
           }
           
           if (video.videoUrl && typeof video.videoUrl === 'string' && video.videoUrl.trim()) {
-            cleanVideo.videoUrl = video.videoUrl;
+            cleanVideo.videoUrl = video.videoUrl.trim();
           }
           
           if (video.thumbnail && typeof video.thumbnail === 'string' && video.thumbnail.trim()) {
-            cleanVideo.thumbnail = video.thumbnail;
+            cleanVideo.thumbnail = video.thumbnail.trim();
           }
 
-          console.log('🧹 Cleaned video:', cleanVideo.title, cleanVideo);
+          console.log('✅ Cleaned video:', cleanVideo.title);
           return cleanVideo;
         });
         
-        // Save cleaned data back to localStorage
-        if (cleanedVideos.length !== adminVideos.length) {
-          console.log('💾 Saving cleaned video data back to localStorage');
-          localStorage.setItem('admin-videos', JSON.stringify(cleanedVideos));
-        }
-        
-        console.log('✅ Valid and cleaned videos loaded:', cleanedVideos.length);
-        setVideos(cleanedVideos);
+        console.log(`✅ ${validVideos.length} valid videos loaded`);
+        setVideos(validVideos);
       } else {
         console.log('📱 No admin videos found - showing empty state');
         setVideos([]);
       }
     } catch (error) {
       console.error('❌ Error loading videos:', error);
-      // Clear corrupted data
-      localStorage.removeItem('admin-videos');
       setVideos([]);
     }
   };
@@ -129,7 +131,7 @@ export const useVideoData = () => {
     video && isLakshmikrupaVideo(video)
   );
 
-  console.log('📊 Video categorization after cleaning:', {
+  console.log('📊 Video categorization:', {
     total: videos.length,
     vertical: verticalVideos.length, 
     horizontal: horizontalVideos.length,
