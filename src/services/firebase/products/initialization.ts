@@ -1,187 +1,149 @@
 
 import { db } from '../index';
-import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { products as initialProducts } from '@/services/product/data';
-import { PRODUCTS_COLLECTION, DELETED_PRODUCTS_COLLECTION, productsInitialized } from './constants';
+import { collection, getDocs, doc, setDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { PRODUCTS_COLLECTION, DELETED_PRODUCTS_COLLECTION } from './constants';
+import { products } from '../../product/data';
 import { getDeletedProductIds } from './deleted-products';
-import { toast } from 'sonner';
-import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
-import { queryClient } from '@/services/query-client';
 
-// Initialize Firestore products collection - NEVER for mobile apps
-export const initializeFirestoreProducts = async () => {
+// Track if products have been initialized
+let productsInitialized = false;
+
+// Clean up old products that are no longer needed
+const cleanupOldProducts = async () => {
   try {
-    // Completely skip initialization for mobile builds
-    const isCapacitor = !!(window as any).Capacitor;
-    if (isCapacitor) {
-      console.log('📱 Mobile app detected - NO default product initialization allowed');
-      return;
-    }
-
-    // Skip initialization if already done in this session
-    if (productsInitialized) {
-      console.log('Products already initialized in this session, skipping');
-      return;
-    }
-
-    // Check if products collection exists and has documents
-    const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
+    const productsRef = collection(db, PRODUCTS_COLLECTION);
+    const snapshot = await getDocs(productsRef);
     
-    if (productsSnapshot.empty) {
-      console.log('Initializing Firestore products collection with cleaned data (web only)');
+    const currentProductIds = products.map(p => p.id);
+    const deletedIds = await getDeletedProductIds();
+    
+    const batch = writeBatch(db);
+    let hasChanges = false;
+    
+    snapshot.docs.forEach((docSnapshot) => {
+      const productId = docSnapshot.id;
       
-      // Get list of deleted product IDs to avoid re-adding them
-      const deletedIds = await getDeletedProductIds();
-      
-      // Filter out products that were previously deleted
-      const productsToAdd = initialProducts.filter(product => !deletedIds.includes(product.id));
-      
-      // Add remaining products
-      await Promise.all(
-        productsToAdd.map(async (product) => {
-          await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
-        })
-      );
-      
-      console.log('Firestore products initialized with cleaned data successfully');
-    } else {
-      console.log('Firestore products collection already exists, cleaning old products');
-      
-      // For web, clean up old products that are not in our current list
-      const currentProductIds = new Set(initialProducts.map(p => p.id));
-      const existingDocs = productsSnapshot.docs;
-      
-      // Delete products that are no longer in our cleaned list
-      for (const docSnapshot of existingDocs) {
-        if (!currentProductIds.has(docSnapshot.id)) {
-          console.log('Removing old product:', docSnapshot.id);
-          await deleteDoc(docSnapshot.ref);
-        }
+      // Remove products that are not in our current data and not explicitly deleted
+      if (!currentProductIds.includes(productId) && !deletedIds.includes(productId)) {
+        batch.delete(doc(db, PRODUCTS_COLLECTION, productId));
+        hasChanges = true;
+        console.log(`Marking old product for cleanup: ${productId}`);
       }
-      
+    });
+    
+    if (hasChanges) {
+      await batch.commit();
       console.log('Old products cleaned up successfully');
     }
-    
-    // Mark as initialized for this session
-    global.productsInitialized = true;
   } catch (error) {
-    console.error('Error initializing Firestore products:', error);
-    if (typeof window !== 'undefined' && !(window as any).Capacitor) {
-      toast.error('Failed to initialize product data from Firebase');
-    }
+    console.error('Error cleaning up old products:', error);
   }
 };
 
-// Refresh product data - for mobile, absolutely no defaults
-export const refreshFirestoreProducts = async (options?: { forceReset?: boolean }): Promise<boolean> => {
+// Initialize Firestore products
+export const initializeFirestoreProducts = async (): Promise<boolean> => {
+  if (productsInitialized) {
+    return true;
+  }
+
   try {
-    console.log('Refreshing Firestore products');
+    // Check if we're in a mobile environment
     const isCapacitor = !!(window as any).Capacitor;
     
     if (isCapacitor) {
-      console.log('📱 Mobile app - only refreshing existing Firebase data, NO defaults');
-      // For mobile, just invalidate cache - no data manipulation
-      queryClient.invalidateQueries({ queryKey: ['products'] });
-      queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
-      queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+      console.log('📱 Mobile app detected - skipping default product initialization');
+      productsInitialized = true;
       return true;
     }
+
+    console.log('🔄 Initializing Firestore products...');
     
-    // Only perform full reset if explicitly requested AND not on mobile
-    if (options?.forceReset) {
-      console.log('Performing full reset of product data with cleaned list (web only)');
-      
-      // Delete all existing products
-      const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
-      await Promise.all(
-        productsSnapshot.docs.map(async (doc) => {
-          await deleteDoc(doc.ref);
-        })
-      );
-      
-      // Clear the deleted products collection
-      const deletedSnapshot = await getDocs(collection(db, DELETED_PRODUCTS_COLLECTION));
-      await Promise.all(
-        deletedSnapshot.docs.map(async (doc) => {
-          await deleteDoc(doc.ref);
-        })
-      );
-      
-      // Reset the initialized flag
-      global.productsInitialized = false;
-      
-      // Clear deleted products list if doing a full reset
-      localStorage.removeItem(DELETED_PRODUCTS_KEY);
-      
-      // Re-initialize with cleaned data
-      await Promise.all(
-        initialProducts.map(async (product) => {
-          await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
-        })
-      );
-      
-      toast.success('Product data completely reset with cleaned products');
-    } else {
-      // Just add any missing products from the cleaned data for web only
-      console.log('Adding any missing cleaned products (web only)');
-      
-      // Get existing product IDs
-      const productsSnapshot = await getDocs(collection(db, PRODUCTS_COLLECTION));
-      const existingProductIds = new Set(productsSnapshot.docs.map(doc => doc.id));
-      
-      // Get deleted product IDs to respect user deletions
-      const deletedIds = await getDeletedProductIds();
-      
-      // Find missing products that weren't explicitly deleted
-      const missingProducts = initialProducts.filter(
-        product => !existingProductIds.has(product.id) && !deletedIds.includes(product.id)
-      );
-      
-      // Remove old products that are no longer in our cleaned list
-      const currentProductIds = new Set(initialProducts.map(p => p.id));
-      const productsToRemove = productsSnapshot.docs.filter(
-        doc => !currentProductIds.has(doc.id)
-      );
-      
-      if (productsToRemove.length > 0) {
-        console.log(`Removing ${productsToRemove.length} old products`);
-        await Promise.all(
-          productsToRemove.map(async (doc) => {
-            await deleteDoc(doc.ref);
-          })
-        );
-      }
-      
-      if (missingProducts.length > 0) {
-        console.log(`Adding ${missingProducts.length} missing products`);
-        
-        // Add missing products
-        await Promise.all(
-          missingProducts.map(async (product) => {
-            await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), product);
-          })
-        );
-        
-        toast.success(`Updated products: removed ${productsToRemove.length}, added ${missingProducts.length}`);
-      } else if (productsToRemove.length > 0) {
-        toast.success(`Cleaned up ${productsToRemove.length} old products`);
-      } else {
-        console.log('No product updates needed');
-        toast.info('Product data is already up to date');
+    // Clean up old products first
+    await cleanupOldProducts();
+    
+    // Get existing products from Firestore
+    const productsRef = collection(db, PRODUCTS_COLLECTION);
+    const snapshot = await getDocs(productsRef);
+    const existingProductIds = snapshot.docs.map(doc => doc.id);
+    
+    // Get deleted product IDs to avoid re-adding them
+    const deletedIds = await getDeletedProductIds();
+    
+    // Add only new products that don't exist and aren't deleted
+    const batch = writeBatch(db);
+    let addedCount = 0;
+    
+    for (const product of products) {
+      if (!existingProductIds.includes(product.id) && !deletedIds.includes(product.id)) {
+        const productRef = doc(db, PRODUCTS_COLLECTION, product.id);
+        batch.set(productRef, product);
+        addedCount++;
+        console.log(`Adding new product: ${product.name}`);
       }
     }
     
-    // Invalidate the products query cache
-    queryClient.invalidateQueries({ queryKey: ['products'] });
-    queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
-    queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
+    if (addedCount > 0) {
+      await batch.commit();
+      console.log(`✅ Added ${addedCount} new products to Firestore`);
+    } else {
+      console.log('✅ All products already exist in Firestore');
+    }
     
+    productsInitialized = true;
     return true;
   } catch (error) {
-    console.error('Error refreshing Firestore products:', error);
-    if (typeof window !== 'undefined' && !(window as any).Capacitor) {
-      toast.error('Failed to refresh product data in Firebase');
+    console.error('Error initializing Firestore products:', error);
+    return false;
+  }
+};
+
+// Force refresh products with option to reset
+export const refreshFirestoreProducts = async (options?: { forceReset?: boolean }): Promise<boolean> => {
+  try {
+    console.log('🔄 Refreshing Firestore products...');
+    
+    if (options?.forceReset) {
+      console.log('🧹 Force reset: Cleaning all existing products...');
+      
+      // Delete all existing products
+      const productsRef = collection(db, PRODUCTS_COLLECTION);
+      const snapshot = await getDocs(productsRef);
+      
+      const batch = writeBatch(db);
+      snapshot.docs.forEach((docSnapshot) => {
+        batch.delete(docSnapshot.ref);
+      });
+      
+      if (snapshot.docs.length > 0) {
+        await batch.commit();
+        console.log(`Deleted ${snapshot.docs.length} existing products`);
+      }
+      
+      // Clear deleted products tracking
+      const deletedRef = collection(db, DELETED_PRODUCTS_COLLECTION);
+      const deletedSnapshot = await getDocs(deletedRef);
+      
+      const deletedBatch = writeBatch(db);
+      deletedSnapshot.docs.forEach((docSnapshot) => {
+        deletedBatch.delete(docSnapshot.ref);
+      });
+      
+      if (deletedSnapshot.docs.length > 0) {
+        await deletedBatch.commit();
+        console.log('Cleared deleted products tracking');
+      }
+      
+      // Clear localStorage
+      localStorage.removeItem('deleted-products');
+      
+      // Reset initialization flag
+      productsInitialized = false;
     }
+    
+    // Reinitialize with fresh data
+    return await initializeFirestoreProducts();
+  } catch (error) {
+    console.error('Error refreshing Firestore products:', error);
     return false;
   }
 };

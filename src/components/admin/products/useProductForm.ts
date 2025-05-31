@@ -51,26 +51,59 @@ export const useProductForm = ({ product, onSave, onOpenChange }: UseProductForm
 
   const onSubmit = async (data: ProductFormData) => {
     try {
-      console.log('Saving product:', data);
+      console.log('Form submission started:', data);
+      
+      // Validate required fields
+      if (!data.name?.trim()) {
+        toast.error('Product name is required');
+        return;
+      }
+      
+      if (!data.description?.trim()) {
+        toast.error('Product description is required');
+        return;
+      }
+      
+      if (!data.image?.trim()) {
+        toast.error('Product image URL is required');
+        return;
+      }
+      
+      if (data.price <= 0) {
+        toast.error('Product price must be greater than 0');
+        return;
+      }
+      
+      if (data.stock < 0) {
+        toast.error('Product stock cannot be negative');
+        return;
+      }
       
       // Create a properly typed object for the onSave function
       const productData: Omit<Product, 'id'> = {
-        name: data.name,
-        description: data.description,
-        price: data.price,
-        stock: data.stock,
+        name: data.name.trim(),
+        description: data.description.trim(),
+        price: Number(data.price),
+        stock: Number(data.stock),
         category: data.category,
-        image: data.image,
+        image: data.image.trim(),
       };
+      
+      console.log('Saving product data:', productData);
       
       const success = await onSave(productData);
       
       if (success) {
+        console.log('Product saved successfully');
+        toast.success(`Product ${isEditing ? 'updated' : 'created'} successfully`);
         onOpenChange(false);
+      } else {
+        console.error('Failed to save product');
+        toast.error('Failed to save product');
       }
     } catch (error) {
+      console.error('Error in form submission:', error);
       toast.error('Failed to save product');
-      console.error(error);
     }
   };
 

@@ -14,9 +14,10 @@ export const useProductOperations = () => {
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Fetching products from Firebase...');
       // Get products directly from Firebase to ensure we have the latest data
       const data = await getFirestoreProducts();
-      console.log('Fetched products directly from Firebase:', data);
+      console.log('Fetched products:', data);
       setProducts(data);
       
       // Update the query cache as well
@@ -32,6 +33,7 @@ export const useProductOperations = () => {
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
+      console.log('Refreshing product data...');
       await refreshProductData();
       await fetchProducts();
       // Invalidate all product-related queries
@@ -51,6 +53,7 @@ export const useProductOperations = () => {
   const resetDeletedProducts = useCallback(async () => {
     try {
       setRefreshing(true);
+      console.log('Resetting deleted products...');
       await clearAllDeletedProductIds();
       await fetchProducts();
       
@@ -63,38 +66,76 @@ export const useProductOperations = () => {
     }
   }, [fetchProducts]);
 
-  const handleSaveProduct = useCallback(async (productData: Omit<Product, 'id'>, currentProductId: string | null) => {
+  const handleSaveProduct = useCallback(async (productData: Omit<Product, 'id'>, currentProductId: string | null): Promise<boolean> => {
     try {
-      // We'll store clean image URLs without timestamps in Firebase
-      // The timestamp will be added when displayed
-      const cleanImageUrl = productData.image;
+      console.log('Saving product:', { productData, currentProductId });
+      
+      // Validate the product data
+      if (!productData.name?.trim()) {
+        throw new Error('Product name is required');
+      }
+      
+      if (!productData.description?.trim()) {
+        throw new Error('Product description is required');
+      }
+      
+      if (!productData.image?.trim()) {
+        throw new Error('Product image is required');
+      }
+      
+      if (productData.price <= 0) {
+        throw new Error('Product price must be greater than 0');
+      }
+      
+      if (productData.stock < 0) {
+        throw new Error('Product stock cannot be negative');
+      }
+      
+      // Clean image URL by removing any timestamp parameters for storage
+      let cleanImageUrl = productData.image;
+      if (cleanImageUrl.includes('?t=')) {
+        cleanImageUrl = cleanImageUrl.split('?t=')[0];
+      } else if (cleanImageUrl.includes('&t=')) {
+        cleanImageUrl = cleanImageUrl.replace(/&t=\d+/, '');
+      }
       
       const updatedProductData = {
         ...productData,
-        image: cleanImageUrl
+        image: cleanImageUrl,
+        name: productData.name.trim(),
+        description: productData.description.trim(),
+        price: Number(productData.price),
+        stock: Number(productData.stock)
       };
+      
+      let product: Product;
       
       if (currentProductId) {
         // Update existing product
-        const updatedProduct = {
+        product = {
           id: currentProductId,
           ...updatedProductData,
         };
         
-        console.log('Saving updated product to Firebase:', updatedProduct);
-        await saveFirestoreProduct(updatedProduct);
-        toast.success("Product updated successfully");
+        console.log('Updating existing product:', product);
       } else {
-        // Add new product
-        const newProduct = {
-          id: `product-${Date.now()}`,
+        // Add new product with unique ID
+        product = {
+          id: `product-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           ...updatedProductData,
         };
         
-        console.log('Saving new product to Firebase:', newProduct);
-        await saveFirestoreProduct(newProduct);
-        toast.success("Product added successfully");
+        console.log('Creating new product:', product);
       }
+      
+      // Save to Firebase
+      const success = await saveFirestoreProduct(product);
+      
+      if (!success) {
+        throw new Error('Failed to save product to Firebase');
+      }
+      
+      console.log('Product saved successfully to Firebase');
       
       // Refresh products list immediately
       await fetchProducts();
@@ -107,15 +148,21 @@ export const useProductOperations = () => {
       return true;
     } catch (error) {
       console.error('Error saving product:', error);
-      toast.error("Failed to save product");
+      toast.error(error instanceof Error ? error.message : "Failed to save product");
       return false;
     }
   }, [fetchProducts]);
 
   const handleDeleteProduct = useCallback(async (productId: string) => {
     try {
-      console.log('Deleting product from Firebase:', productId);
-      await deleteFirestoreProduct(productId);
+      console.log('Deleting product:', productId);
+      const success = await deleteFirestoreProduct(productId);
+      
+      if (!success) {
+        throw new Error('Failed to delete product from Firebase');
+      }
+      
+      console.log('Product deleted successfully');
       toast.success("Product deleted successfully");
       
       // Refresh products list immediately
