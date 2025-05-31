@@ -58,6 +58,11 @@ const ProcessingVideos: React.FC = () => {
     setPlayingVideo(playingVideo === videoId ? null : videoId);
   };
 
+  const handleVideoTouch = (videoId: string, event: React.TouchEvent) => {
+    event.preventDefault();
+    handleVideoPlay(videoId);
+  };
+
   const VideoPlayer = ({ video }: { video: VideoData }) => (
     <motion.div 
       className={`${video.isVertical ? 'aspect-[9/16]' : 'aspect-video'} relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-amber-200/20`}
@@ -90,7 +95,8 @@ const ProcessingVideos: React.FC = () => {
             >
               🌾
             </motion.div>
-            <h3 className="text-lg font-bold text-gray-800 px-6 mb-2 leading-tight">
+            {/* Mobile: Hide title on video overlay, show below */}
+            <h3 className="text-lg font-bold text-gray-800 px-6 mb-2 leading-tight md:block hidden">
               {video.title}
             </h3>
             <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
@@ -99,10 +105,12 @@ const ProcessingVideos: React.FC = () => {
             </div>
           </div>
           
-          {/* Enhanced Play Button Overlay */}
+          {/* Enhanced Play Button Overlay with Touch Support */}
           <motion.div 
-            className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/10 flex items-center justify-center"
+            className="absolute inset-0 bg-gradient-to-br from-black/20 via-transparent to-black/10 flex items-center justify-center cursor-pointer"
             whileHover={{ backgroundColor: "rgba(0,0,0,0.3)" }}
+            onClick={() => handleVideoPlay(video.id)}
+            onTouchEnd={(e) => handleVideoTouch(video.id, e)}
           >
             <motion.div
               whileHover={{ scale: 1.1 }}
@@ -110,8 +118,7 @@ const ProcessingVideos: React.FC = () => {
             >
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 rounded-full w-20 h-20 p-0 shadow-2xl border-4 border-white/50 backdrop-blur-sm"
-                onClick={() => handleVideoPlay(video.id)}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:from-amber-600 hover:to-orange-600 rounded-full w-20 h-20 p-0 shadow-2xl border-4 border-white/50 backdrop-blur-sm pointer-events-none"
               >
                 <Play className="h-8 w-8 ml-1" fill="currentColor" />
               </Button>
@@ -237,14 +244,16 @@ const ProcessingVideos: React.FC = () => {
         >
           {/* Enhanced Horizontal Main Video */}
           {horizontalVideo && (
-            <motion.div variants={item} className="max-w-5xl mx-auto">
-              <div className="text-center mb-8">
-                <h3 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
-                  <span className="text-3xl">🏭</span>
-                  Main Processing Facility Tour
-                  <span className="text-3xl">🏭</span>
+            <motion.div className="max-w-5xl mx-auto">
+              {/* Mobile: Show title above video */}
+              <div className="text-center mb-8 md:mb-8">
+                <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
+                  <span className="text-2xl md:text-3xl">🏭</span>
+                  <span className="md:hidden text-xl">{horizontalVideo.title}</span>
+                  <span className="hidden md:inline">Main Processing Facility Tour</span>
+                  <span className="text-2xl md:text-3xl">🏭</span>
                 </h3>
-                <p className="text-gray-600 text-lg">Take a comprehensive look at our advanced processing facility</p>
+                <p className="text-gray-600 text-base md:text-lg hidden md:block">Take a comprehensive look at our advanced processing facility</p>
               </div>
               
               <VideoPlayer video={horizontalVideo} />
@@ -254,7 +263,7 @@ const ProcessingVideos: React.FC = () => {
                   <Button
                     variant={playingVideo === horizontalVideo.id ? "destructive" : "default"}
                     onClick={() => handleVideoPlay(horizontalVideo.id)}
-                    className={`gap-3 px-8 py-4 text-lg font-semibold rounded-full shadow-xl transition-all duration-300 ${
+                    className={`gap-3 px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-semibold rounded-full shadow-xl transition-all duration-300 ${
                       playingVideo === horizontalVideo.id 
                         ? "bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700" 
                         : "bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white"
@@ -262,12 +271,12 @@ const ProcessingVideos: React.FC = () => {
                   >
                     {playingVideo === horizontalVideo.id ? (
                       <>
-                        <Pause className="h-5 w-5" />
+                        <Pause className="h-4 md:h-5 w-4 md:w-5" />
                         Stop Video
                       </>
                     ) : (
                       <>
-                        <Play className="h-5 w-5" fill="currentColor" />
+                        <Play className="h-4 md:h-5 w-4 md:w-5" fill="currentColor" />
                         Watch Full Tour
                       </>
                     )}
@@ -278,28 +287,36 @@ const ProcessingVideos: React.FC = () => {
           )}
 
           {/* Enhanced Vertical Videos Section */}
-          <motion.div variants={item} className="max-w-7xl mx-auto">
+          <motion.div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <h3 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
-                <span className="text-3xl">✨</span>
+              <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center gap-3">
+                <span className="text-2xl md:text-3xl">✨</span>
                 Processing Highlights
-                <span className="text-3xl">✨</span>
+                <span className="text-2xl md:text-3xl">✨</span>
               </h3>
-              <p className="text-gray-600 text-lg">Discover the excellence in every step of our processing</p>
+              <p className="text-gray-600 text-base md:text-lg">Discover the excellence in every step of our processing</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {verticalVideos.map((video, index) => (
                 <motion.div 
                   key={video.id} 
-                  variants={item}
                   whileHover={{ y: -10 }}
                   transition={{ duration: 0.3 }}
                   className="group"
                 >
+                  {/* Mobile: Show title above video */}
+                  <div className="md:hidden text-center mb-4">
+                    <h4 className="font-bold text-lg text-gray-800 group-hover:text-amber-700 transition-colors">
+                      {video.title}
+                    </h4>
+                  </div>
+                  
                   <VideoPlayer video={video} />
+                  
                   <div className="mt-6 text-center">
-                    <h4 className="font-bold text-xl text-gray-800 mb-3 group-hover:text-amber-700 transition-colors">
+                    {/* Desktop: Show title below video */}
+                    <h4 className="hidden md:block font-bold text-xl text-gray-800 mb-3 group-hover:text-amber-700 transition-colors">
                       {video.title}
                     </h4>
                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -307,7 +324,7 @@ const ProcessingVideos: React.FC = () => {
                         variant={playingVideo === video.id ? "destructive" : "outline"}
                         size="lg"
                         onClick={() => handleVideoPlay(video.id)}
-                        className={`gap-2 px-6 py-3 rounded-full font-semibold transition-all duration-300 ${
+                        className={`gap-2 px-4 md:px-6 py-2 md:py-3 rounded-full font-semibold transition-all duration-300 ${
                           playingVideo === video.id 
                             ? "bg-gradient-to-r from-red-500 to-red-600 text-white border-red-500" 
                             : "border-2 border-amber-500 text-amber-700 hover:bg-gradient-to-r hover:from-amber-500 hover:to-orange-500 hover:text-white"
@@ -332,27 +349,26 @@ const ProcessingVideos: React.FC = () => {
             </div>
           </motion.div>
 
-          {/* Enhanced Call to Action */}
+          {/* Enhanced Call to Action - Mobile Optimized */}
           <motion.div 
-            variants={item}
-            className="text-center mt-16 p-8 bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100 rounded-3xl shadow-xl border border-amber-200"
+            className="text-center mt-16 p-6 md:p-8 bg-gradient-to-r from-amber-100 via-orange-100 to-yellow-100 rounded-3xl shadow-xl border border-amber-200"
           >
             <motion.div
-              className="text-6xl mb-4"
+              className="text-4xl md:text-6xl mb-4"
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
               📞
             </motion.div>
-            <h4 className="text-2xl font-bold text-gray-800 mb-4">
+            <h4 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
               Want to know more about our processing facilities?
             </h4>
-            <p className="text-gray-600 mb-6 text-lg">
+            <p className="text-gray-600 mb-6 text-base md:text-lg px-2">
               Get in touch with our experts to learn about our advanced processing techniques
             </p>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <Button className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-8 py-4 text-lg font-bold rounded-full shadow-xl border-2 border-white/20">
-                Contact Us for More Information
+              <Button className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-bold rounded-full shadow-xl border-2 border-white/20 w-full sm:w-auto">
+                Contact Now
               </Button>
             </motion.div>
           </motion.div>

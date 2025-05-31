@@ -34,6 +34,15 @@ const ProductImage: React.FC<ProductImageProps> = ({
 
         console.log('🖼️ Loading product image:', src);
 
+        // Handle lovable-uploads paths (mobile fix)
+        if (src.startsWith('/lovable-uploads/') || src.includes('lovable-uploads/')) {
+          console.log('📱 Mobile lovable-uploads path detected');
+          const cleanPath = src.startsWith('/') ? src : `/${src}`;
+          setImageUrl(cleanPath);
+          setIsLoading(false);
+          return;
+        }
+
         // Handle uploaded file URLs (Firebase Storage or local storage)
         if (src.startsWith('firebase-storage://') || src.startsWith('local-storage://')) {
           console.log('📁 Resolving uploaded file URL...');
@@ -80,7 +89,7 @@ const ProductImage: React.FC<ProductImageProps> = ({
   if (isLoading) {
     return (
       <div className={`bg-gray-200 animate-pulse flex items-center justify-center ${className}`}>
-        <div className="text-gray-400">Loading...</div>
+        <div className="text-gray-400 text-sm">Loading...</div>
       </div>
     );
   }
