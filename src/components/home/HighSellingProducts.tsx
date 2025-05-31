@@ -244,7 +244,7 @@ const HighSellingProducts: React.FC = () => {
               </Link>
             </Button>
           </motion.div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
