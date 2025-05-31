@@ -24,9 +24,9 @@ export const useVideoData = () => {
       const isCapacitor = !!(window as any).Capacitor;
       
       if (isCapacitor) {
-        console.log('📱 Mobile app - loading videos from admin storage and ensuring proper format');
+        console.log('📱 Mobile app - loading and cleaning videos from admin storage');
       } else {
-        console.log('🌐 Web app - loading videos from admin storage');
+        console.log('🌐 Web app - loading and cleaning videos from admin storage');
       }
       
       const storedVideos = localStorage.getItem('admin-videos');
@@ -35,8 +35,8 @@ export const useVideoData = () => {
         const adminVideos = JSON.parse(storedVideos);
         console.log('📺 Found admin videos:', adminVideos.length);
         
-        // Enhanced validation and filtering for mobile
-        const safeVideos = adminVideos.filter((video: any) => {
+        // Enhanced cleaning and validation for corrupted data
+        const cleanedVideos = adminVideos.filter((video: any) => {
           const isValid = video && 
                          typeof video === 'object' && 
                          video.id && 
@@ -46,53 +46,56 @@ export const useVideoData = () => {
                          (video.googleDriveUrl || video.embedUrl || video.videoUrl);
           
           if (!isValid) {
-            console.warn('⚠️ Invalid video found:', video);
+            console.warn('⚠️ Invalid video found and removed:', video);
           }
           
           return isValid;
-        }).map((video: any) => ({
-          ...video,
-          googleDriveUrl: typeof video.googleDriveUrl === 'string' && video.googleDriveUrl.trim() ? video.googleDriveUrl : undefined,
-          embedUrl: typeof video.embedUrl === 'string' && video.embedUrl.trim() ? video.embedUrl : undefined,
-          videoUrl: typeof video.videoUrl === 'string' && video.videoUrl.trim() ? video.videoUrl : undefined,
-          thumbnail: typeof video.thumbnail === 'string' && video.thumbnail.trim() ? video.thumbnail : undefined,
-          category: video.category === 'rice' ? 'rice' as const : 'wheat' as const
-        }));
+        }).map((video: any) => {
+          // Clean up corrupted object properties
+          const cleanVideo = {
+            id: video.id,
+            title: video.title,
+            description: video.description || '',
+            category: video.category === 'rice' ? 'rice' as const : 'wheat' as const
+          };
+
+          // Clean up URL properties - remove corrupted objects
+          if (video.googleDriveUrl && typeof video.googleDriveUrl === 'string' && video.googleDriveUrl.trim()) {
+            cleanVideo.googleDriveUrl = video.googleDriveUrl;
+          }
+          
+          if (video.embedUrl && typeof video.embedUrl === 'string' && video.embedUrl.trim()) {
+            cleanVideo.embedUrl = video.embedUrl;
+          }
+          
+          if (video.videoUrl && typeof video.videoUrl === 'string' && video.videoUrl.trim()) {
+            cleanVideo.videoUrl = video.videoUrl;
+          }
+          
+          if (video.thumbnail && typeof video.thumbnail === 'string' && video.thumbnail.trim()) {
+            cleanVideo.thumbnail = video.thumbnail;
+          }
+
+          console.log('🧹 Cleaned video:', cleanVideo.title, cleanVideo);
+          return cleanVideo;
+        });
         
-        console.log('✅ Valid videos loaded for mobile:', safeVideos.length);
-        setVideos(safeVideos);
+        // Save cleaned data back to localStorage
+        if (cleanedVideos.length !== adminVideos.length) {
+          console.log('💾 Saving cleaned video data back to localStorage');
+          localStorage.setItem('admin-videos', JSON.stringify(cleanedVideos));
+        }
+        
+        console.log('✅ Valid and cleaned videos loaded:', cleanedVideos.length);
+        setVideos(cleanedVideos);
       } else {
         console.log('📱 No admin videos found - showing empty state');
-        
-        // For mobile, try to load default sample videos if no admin videos exist
-        if (isCapacitor) {
-          const defaultVideos: Video[] = [
-            {
-              id: 'default-1',
-              title: 'Lakshmikrupa Agriculture - Wheat Processing',
-              description: 'Advanced wheat processing techniques at our facility',
-              category: 'wheat',
-              googleDriveUrl: 'https://drive.google.com/file/d/1example/view',
-              thumbnail: 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&q=80'
-            },
-            {
-              id: 'default-2', 
-              title: 'Rice Quality Control Process',
-              description: 'Quality assurance in rice processing',
-              category: 'rice',
-              googleDriveUrl: 'https://drive.google.com/file/d/2example/view',
-              thumbnail: 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=400&q=80'
-            }
-          ];
-          
-          console.log('📱 Loading default videos for mobile demo');
-          setVideos(defaultVideos);
-        } else {
-          setVideos([]);
-        }
+        setVideos([]);
       }
     } catch (error) {
       console.error('❌ Error loading videos:', error);
+      // Clear corrupted data
+      localStorage.removeItem('admin-videos');
       setVideos([]);
     }
   };
@@ -126,10 +129,12 @@ export const useVideoData = () => {
     video && isLakshmikrupaVideo(video)
   );
 
-  console.log('📊 Video categorization for mobile display:', {
+  console.log('📊 Video categorization after cleaning:', {
     total: videos.length,
     vertical: verticalVideos.length, 
-    horizontal: horizontalVideos.length
+    horizontal: horizontalVideos.length,
+    verticalTitles: verticalVideos.map(v => v.title),
+    horizontalTitles: horizontalVideos.map(v => v.title)
   });
 
   return {
