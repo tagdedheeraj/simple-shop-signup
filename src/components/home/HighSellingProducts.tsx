@@ -8,10 +8,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { getProducts } from '@/services/product';
 import { useLocalization } from '@/contexts/LocalizationContext';
+import { useCart } from '@/contexts/CartContext';
+import { toast } from 'sonner';
 import ProductImage from '@/components/products/ProductImage';
 
 const HighSellingProducts: React.FC = () => {
   const { formatPrice } = useLocalization();
+  const { addToCart } = useCart();
   
   const { data: products, isLoading } = useQuery({
     queryKey: ['highSellingProducts'],
@@ -21,6 +24,17 @@ const HighSellingProducts: React.FC = () => {
       return allProducts.slice(0, 2);
     }
   });
+
+  const handleAddToCart = (product: any) => {
+    try {
+      console.log('Adding product to cart from HighSellingProducts:', product);
+      addToCart(product, 1);
+      toast.success(`${product.name} added to cart successfully!`);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add product to cart');
+    }
+  };
 
   if (isLoading || !products) {
     return (
@@ -193,9 +207,14 @@ const HighSellingProducts: React.FC = () => {
                     <Button 
                       className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                       size="lg"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAddToCart(product);
+                      }}
+                      disabled={product.stock <= 0}
                     >
                       <ShoppingCart className="h-5 w-5 mr-2" />
-                      Add to Cart
+                      {product.stock <= 0 ? 'Out of Stock' : 'Add to Cart'}
                     </Button>
                   </motion.div>
                 </div>
@@ -225,7 +244,7 @@ const HighSellingProducts: React.FC = () => {
               </Link>
             </Button>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
