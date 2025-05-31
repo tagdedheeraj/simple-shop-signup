@@ -1,3 +1,4 @@
+
 import { Product } from '@/types/product';
 import { delay } from './utils';
 import { 
@@ -7,21 +8,11 @@ import {
 } from '../firebase/products';
 import { queryClient } from '@/services/query-client';
 
-// Base product retrieval functions
+// Base product retrieval functions - Firebase only, no local storage
 export const getProducts = async (): Promise<Product[]> => {
-  await delay(300); // Reduced delay for better UX
+  await delay(300);
   
-  // Check if we have cached products
-  const cachedProducts = queryClient.getQueryData<Product[]>(['products']);
-  if (cachedProducts) {
-    console.log('Using cached products', cachedProducts.length);
-    // Filter out deleted products even from cache
-    const deletedIds = await getDeletedProductIds();
-    return cachedProducts.filter(product => !deletedIds.includes(product.id));
-  }
-  
-  // Otherwise fetch from Firestore
-  console.log('Fetching products from Firestore');
+  console.log('Fetching products from Firebase only');
   const products = await getFirestoreProducts();
   
   // Cache the products (already filtered by getFirestoreProducts)
@@ -31,7 +22,7 @@ export const getProducts = async (): Promise<Product[]> => {
 };
 
 export const getProductById = async (id: string): Promise<Product | undefined> => {
-  await delay(300); // Reduced delay for better UX
+  await delay(300);
   
   // Check if product is deleted
   const deletedIds = await getDeletedProductIds();
@@ -50,15 +41,15 @@ export const getProductById = async (id: string): Promise<Product | undefined> =
     }
   }
   
-  // Otherwise fetch from Firestore
-  console.log('Fetching product from Firestore', id);
+  // Fetch from Firebase only
+  console.log('Fetching product from Firebase', id);
   return getFirestoreProductById(id);
 };
 
 export const getProductsByCategory = async (category: string): Promise<Product[]> => {
-  await delay(300); // Reduced delay for better UX
+  await delay(300);
   
-  // First get all products (which will filter deleted ones)
+  // Get all products from Firebase (which will filter deleted ones)
   const allProducts = await getProducts();
   
   // Then filter by category

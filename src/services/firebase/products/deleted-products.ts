@@ -1,71 +1,49 @@
 
 import { db } from '../index';
-import { collection, getDocs, doc, setDoc, deleteDoc, query, limit } from 'firebase/firestore';
+import { collection, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import { DELETED_PRODUCTS_COLLECTION } from './constants';
-import { DELETED_PRODUCTS_KEY } from '@/config/app-config';
 import { toast } from 'sonner';
 
-// Get deleted product IDs from both localStorage and Firebase
+// Get deleted product IDs from Firebase only - no local storage
 export const getDeletedProductIds = async (): Promise<string[]> => {
   try {
-    // Get IDs from localStorage (legacy approach)
-    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-    const localDeletedIds = deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+    console.log('🔍 Getting deleted products from Firebase only');
     
-    // Get IDs from Firestore - ensure we get ALL deleted products
+    // Get IDs from Firestore only
     const deletedSnapshot = await getDocs(collection(db, DELETED_PRODUCTS_COLLECTION));
     const firestoreDeletedIds = deletedSnapshot.docs.map(doc => doc.id);
     
-    console.log('Local deleted IDs:', localDeletedIds);
-    console.log('Firestore deleted IDs:', firestoreDeletedIds);
+    console.log('Firebase deleted IDs:', firestoreDeletedIds);
     
-    // Combine both sources
-    const allDeletedIds = [...new Set([...localDeletedIds, ...firestoreDeletedIds])];
-    
-    console.log('Combined deleted IDs:', allDeletedIds);
-    
-    // Update localStorage with combined list for backward compatibility
-    localStorage.setItem(DELETED_PRODUCTS_KEY, JSON.stringify(allDeletedIds));
-    
-    return allDeletedIds;
+    return firestoreDeletedIds;
   } catch (error) {
-    console.error('Error getting deleted product IDs:', error);
-    
-    // Fallback to localStorage if Firebase fails
-    const deletedIdsJson = localStorage.getItem(DELETED_PRODUCTS_KEY);
-    return deletedIdsJson ? JSON.parse(deletedIdsJson) : [];
+    console.error('Error getting deleted product IDs from Firebase:', error);
+    return [];
   }
 };
 
-// Store a deleted product ID in both localStorage and Firebase
+// Store a deleted product ID in Firebase only - no local storage
 export const addDeletedProductId = async (productId: string): Promise<void> => {
   try {
-    // Add to localStorage (legacy approach)
-    const deletedIds = localStorage.getItem(DELETED_PRODUCTS_KEY);
-    const parsedIds = deletedIds ? JSON.parse(deletedIds) : [];
-    if (!parsedIds.includes(productId)) {
-      parsedIds.push(productId);
-      localStorage.setItem(DELETED_PRODUCTS_KEY, JSON.stringify(parsedIds));
-    }
+    console.log(`🗑️ Adding product ${productId} to Firebase deleted list`);
     
-    // Add to Firestore deleted products collection
+    // Add to Firestore deleted products collection only
     await setDoc(doc(db, DELETED_PRODUCTS_COLLECTION, productId), {
       id: productId,
       deletedAt: new Date().toISOString()
     });
     
-    console.log(`Product ${productId} marked as deleted in both localStorage and Firebase`);
+    console.log(`Product ${productId} marked as deleted in Firebase`);
   } catch (error) {
-    console.error('Error adding product to deleted list:', error);
+    console.error('Error adding product to Firebase deleted list:', error);
     toast.error("Failed to track deleted product");
   }
 };
 
-// Clear all deleted products IDs - useful for troubleshooting
+// Clear all deleted products IDs from Firebase only
 export const clearAllDeletedProductIds = async (): Promise<void> => {
   try {
-    // Clear localStorage
-    localStorage.removeItem(DELETED_PRODUCTS_KEY);
+    console.log('🧹 Clearing all deleted products from Firebase');
     
     // Clear all documents from the deletedProducts collection
     const deletedSnapshot = await getDocs(collection(db, DELETED_PRODUCTS_COLLECTION));
@@ -77,12 +55,12 @@ export const clearAllDeletedProductIds = async (): Promise<void> => {
       );
       
       await Promise.all(deletePromises);
-      console.log(`Cleared ${deletedSnapshot.docs.length} deleted product records`);
+      console.log(`Cleared ${deletedSnapshot.docs.length} deleted product records from Firebase`);
     }
     
     toast.success("Deleted product tracking has been reset");
   } catch (error) {
-    console.error('Error clearing deleted products list:', error);
+    console.error('Error clearing deleted products list from Firebase:', error);
     toast.error("Failed to clear deleted products tracking");
   }
 };

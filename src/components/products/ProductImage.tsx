@@ -32,29 +32,29 @@ const ProductImage: React.FC<ProductImageProps> = ({
           return;
         }
 
-        console.log('🖼️ Loading product image:', src);
+        console.log('🖼️ Loading product image from Firebase:', src);
 
-        // Handle lovable-uploads paths (mobile fix)
+        // Handle lovable-uploads paths (mobile compatibility)
         if (src.startsWith('/lovable-uploads/') || src.includes('lovable-uploads/')) {
-          console.log('📱 Mobile lovable-uploads path detected');
+          console.log('📱 Lovable-uploads path detected');
           const cleanPath = src.startsWith('/') ? src : `/${src}`;
           setImageUrl(cleanPath);
           setIsLoading(false);
           return;
         }
 
-        // Handle uploaded file URLs (Firebase Storage or local storage)
+        // Handle Firebase Storage URLs (both custom and direct)
         if (src.startsWith('firebase-storage://') || src.startsWith('local-storage://')) {
-          console.log('📁 Resolving uploaded file URL...');
+          console.log('🔗 Resolving Firebase Storage URL...');
           const resolvedUrl = await getUploadedFileUrl(src);
           setImageUrl(resolvedUrl);
         } 
         // Handle direct Firebase Storage URLs
         else if (src.startsWith('https://firebasestorage.googleapis.com')) {
-          console.log('🔗 Direct Firebase Storage URL');
+          console.log('✅ Direct Firebase Storage URL');
           setImageUrl(src);
         }
-        // Handle regular URLs with timestamp
+        // Handle regular URLs with timestamp for cache busting
         else {
           console.log('🌐 Regular URL with timestamp');
           const timestampedUrl = getImageWithTimestamp(src);

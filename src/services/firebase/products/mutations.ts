@@ -9,14 +9,13 @@ import { toast } from 'sonner';
 // Update or add a product to Firestore
 export const saveFirestoreProduct = async (product: Product): Promise<boolean> => {
   try {
-    // Keep the original image URL as-is for local storage URLs
-    // This allows them to be properly processed by the display components
+    console.log('💾 Saving product to Firebase with image URL:', product.image);
+    
+    // Keep the original image URL as-is for Firebase Storage URLs
     const productToSave = {
       ...product,
-      image: product.image // Keep original URL including local-storage:// prefix
+      image: product.image // Keep original URL including firebase-storage:// prefix
     };
-    
-    console.log('Saving product to Firebase with image URL:', productToSave.image);
     
     await setDoc(doc(db, PRODUCTS_COLLECTION, product.id), productToSave);
     
@@ -24,10 +23,6 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
     const deletedIds = await getDeletedProductIds();
     if (deletedIds.includes(product.id)) {
       await deleteDoc(doc(db, DELETED_PRODUCTS_COLLECTION, product.id));
-      
-      // Also update localStorage
-      const filteredIds = deletedIds.filter(id => id !== product.id);
-      localStorage.setItem('deleted-products', JSON.stringify(filteredIds));
     }
     
     // Invalidate the products query cache to ensure fresh data is fetched
@@ -35,6 +30,7 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
     queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
     queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
     
+    console.log('✅ Product saved successfully to Firebase');
     return true;
   } catch (error) {
     console.error('Error saving product to Firestore:', error);
@@ -46,10 +42,12 @@ export const saveFirestoreProduct = async (product: Product): Promise<boolean> =
 // Delete a product from Firestore and mark as deleted
 export const deleteFirestoreProduct = async (productId: string): Promise<boolean> => {
   try {
+    console.log('🗑️ Deleting product from Firebase:', productId);
+    
     // Remove from products collection
     await deleteDoc(doc(db, PRODUCTS_COLLECTION, productId));
     
-    // Add to deleted products tracking in both places
+    // Add to deleted products tracking in Firebase
     await addDeletedProductId(productId);
     
     // Invalidate the products query cache to ensure fresh data is fetched
@@ -57,6 +55,7 @@ export const deleteFirestoreProduct = async (productId: string): Promise<boolean
     queryClient.invalidateQueries({ queryKey: ['trendingProducts'] });
     queryClient.invalidateQueries({ queryKey: ['featuredProducts'] });
     
+    console.log('✅ Product deleted successfully from Firebase');
     return true;
   } catch (error) {
     console.error('Error deleting product from Firestore:', error);

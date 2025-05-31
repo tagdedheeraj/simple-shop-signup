@@ -29,13 +29,12 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [items, setItems] = useState<Product[]>([]);
   const { user } = useAuth();
   
-  // Load wishlist from Firebase when user changes
+  // Load wishlist from Firebase only when user changes
   useEffect(() => {
     if (user) {
       loadWishlistFromFirebase();
     } else {
-      // If no user, load from localStorage as fallback
-      loadWishlistFromLocalStorage();
+      setItems([]);
     }
   }, [user]);
 
@@ -43,6 +42,7 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     if (!user) return;
     
     try {
+      console.log('❤️ Loading wishlist from Firebase for user:', user.uid);
       const wishlistQuery = query(
         collection(db, 'wishlists'),
         where('userId', '==', user.uid)
@@ -50,21 +50,10 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       const snapshot = await getDocs(wishlistQuery);
       const wishlistItems = snapshot.docs.map(doc => doc.data().product as Product);
       setItems(wishlistItems);
+      console.log('✅ Wishlist loaded from Firebase:', wishlistItems.length, 'items');
     } catch (error) {
       console.error('Error loading wishlist from Firebase:', error);
-      // Fallback to localStorage
-      loadWishlistFromLocalStorage();
-    }
-  };
-
-  const loadWishlistFromLocalStorage = () => {
-    const savedWishlist = localStorage.getItem('wishlist');
-    if (savedWishlist) {
-      try {
-        setItems(JSON.parse(savedWishlist));
-      } catch (e) {
-        console.error('Failed to parse wishlist from localStorage', e);
-      }
+      setItems([]);
     }
   };
 
@@ -86,14 +75,8 @@ export const WishlistProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     } catch (error) {
       console.error('Error saving to Firebase wishlist:', error);
-      // Continue with localStorage as fallback
     }
   };
-  
-  // Save wishlist to localStorage whenever it changes (fallback)
-  useEffect(() => {
-    localStorage.setItem('wishlist', JSON.stringify(items));
-  }, [items]);
 
   const addToWishlist = async (product: Product) => {
     setItems(prevItems => {

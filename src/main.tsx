@@ -20,18 +20,15 @@ const queryClient = new QueryClient({
 // Clean up old uploaded files on app start
 cleanupOldUploadedFiles();
 
-// Initialize app for mobile builds - simplified to avoid localStorage issues
+// Initialize app for Firebase only - no local storage
 const initializeApp = async () => {
-  const isCapacitor = !!(window as any).Capacitor;
+  console.log('🚀 App starting - Firebase only mode');
   
-  if (isCapacitor) {
-    console.log('📱 Mobile app detected - using Firebase data only');
-    
-    // Only set essential timestamp for image loading
-    localStorage.setItem('global_timestamp', Date.now().toString());
-    
-    console.log('✅ Mobile app initialized - Firebase data will be used');
-  }
+  // Set essential timestamp for image loading only
+  const timestamp = Date.now().toString();
+  localStorage.setItem('global_timestamp', timestamp);
+  
+  console.log('✅ Firebase-only app initialized');
 };
 
 // Initialize app
